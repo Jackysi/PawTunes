@@ -1,0 +1,74 @@
+@charset "UTF-8";
+@use "sass:color";
+
+/**
+ * ----------------------------------------------------
+ * Prahec UI Framework based on Bootstrap class names
+ * ----------------------------------------------------
+ *
+ * Copyright © 2024 Prahec. All Rights Reserved.
+ * Built with love by your friend Jacky.
+ * Visit: https://www.prahec.com
+ *
+ * Description:
+ * A lightweight UI framework utilizing Bootstrap class names to simplify development.
+ */
+
+// General Settings
+$base-font-size: 13px;
+$base-line-height: 1.5 !default;
+$font-family: "Inter", "Verdana", sans-serif;
+$icon-font: "Font Awesome 6 Free";
+$font-bold: 500 !default;
+$font-light: 300 !default;
+$font-normal: 400 !default;
+
+// Base paddings
+$input-padding-base: .4rem !default;
+$btn-padding-base: .4rem !default;
+
+
+$primary-color: #fff;
+$secondary-color: #575757;
+$primary-bg-color: #137594;
+$secondary-bg-color: #0a576f;
+
+$header-color: #fff;
+$header-bg-color: #0a576f;
+
+$footer-color: #999;
+$footer-bg-color: #333;
+
+// Navigation Settings
+$navigation-height: 42px;
+
+// FontAwesome
+$fa-font-path: "../fonts";
+
+// Flag icons
+$flag-icons-path: "./../flags" !default;
+$flag-icons-rect-path: "/4x3" !default;
+$flag-icons-square-path: "/1x1" !default;
+$flag-icons-use-square: false;
+
+
+// Reset all browser styles to default (match all browsers)
+@import "flags/flag-icons";
+@import "FontAwesome/fontawesome.scss";
+@import "FontAwesome/solid.scss";
+@import "FontAwesome/regular.scss";
+@import "normalize";
+@import "basic-styles";
+@import "grids";
+@import "pages";
+@import "UI/all";
+@import "UI/utilities";
+@import "pawtunes-panel";
+@import "dark-style";
+
+:root {
+    --primary-color: #{$primary-color};
+    --primary-bg-color: #{$primary-bg-color};
+    --secondary-color: #{$secondary-color};
+    --secondary-bg-color: #{$secondary-bg-color};
+}

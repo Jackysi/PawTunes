@@ -1,0 +1,56 @@
+{
+    "author":   "Jaka Prašnikar",
+    "name":     "PawTunes",
+    "schemes":  [
+        {
+            "compile": "scss/pawtunes.scss",
+            "name":    "Default",
+            "style":   "./css/pawtunes.css"
+        },
+        {
+            "compile": "scss/pawtunes.dark.scss",
+            "name":    "Dark Mode",
+            "style":   "./css/pawtunes-dark.css"
+        }
+    ],
+    "template": "template.html",
+    "size":     "1024x650",
+    "url":      "https://prahec.com",
+    "extra":    {
+        "songSearch":         {
+            "default":     "https://music.apple.com/us/search?term={query}",
+            "name":        "songSearch",
+            "description": "{query} - will be replaced by an actual playing song.",
+            "label":       "Song search/purchase URL",
+            "type":        "text"
+        },
+        "songSearchEnable":   {
+            "default":     true,
+            "name":        "songSearchEnable",
+            "description": "Enable song search/purchase when artwork is clicked.",
+            "type":        "checkbox",
+            "value":       "true"
+        },
+        "useChannelLogos":    {
+            "default":     false,
+            "name":        "useChannelLogos",
+            "description": "Instead of showing channel names, show channel logotypes (images).",
+            "type":        "checkbox",
+            "value":       "true"
+        },
+        "disableSettings":    {
+            "default":     false,
+            "name":        "disableSettings",
+            "description": "Disable settings page & the button - disables ability to switch channels / stream groups.",
+            "type":        "checkbox",
+            "value":       "true"
+        },
+        "hideBlurredArtwork": {
+            "default":     false,
+            "name":        "hideBlurredArtwork",
+            "description": "Hide blurred background, makes player look a little more clean.",
+            "type":        "checkbox",
+            "value":       "true"
+        }
+    }
+}

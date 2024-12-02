@@ -1,0 +1,100 @@
+// Imports (other required SCSS files)
+@import "reset-browsers.scss";
+@import "aio.light.scss";
+
+/* This file will overwrite existing CSS styles with dark ones. The changeable colors will stay the same as in light scheme. */
+body, html {
+    color: #fff;
+    background: darken($accent-color, 52%);
+}
+
+// White tooltips
+.css-hint {
+    &:before {
+        border-bottom-color: #fff;
+    }
+
+    &:after {
+        color: #363636;
+        background: #fff;
+    }
+}
+
+// Main container
+.main-container {
+
+    // Views
+    .view {
+
+        .artwork-image {
+            .share-area {
+                background: rgba(darken($accent-color, 50%), 0.75);
+            }
+        }
+
+        .on-air {
+            color: #fff;
+
+            a {
+                color: #fff;
+            }
+
+            .time {
+                color: #f4f4f4;
+            }
+
+        }
+
+    }
+
+    // History (since 1.15)
+    .view.history {
+        table {
+            tr:hover > td {
+                background: rgba(255, 255, 255, 0.1);
+            }
+        }
+    }
+
+    // END HISTORY
+
+}
+
+// Player
+/* ================================================================================================== */
+// Now the player section
+.player {
+
+    // Volume control, including mute
+    .volume-control {
+
+        // Mute/Unmute, well the icon left of bar
+        .volume-icon {
+            svg {
+                fill: #fff;
+            }
+        }
+
+        // Now the slider
+        .volume-slider {
+            .vol-progress {
+                background: darken($accent-color, 35%);
+            }
+
+            // Status messages
+            .player-status {
+                color: #fff;
+            }
+
+        }
+
+    }
+
+    // Playlists for players, use sprite
+    .playlists {
+        span {
+            color: #fff;
+        }
+    }
+
+}

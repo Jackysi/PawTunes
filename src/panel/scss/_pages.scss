@@ -1,0 +1,42 @@
+// ALL pages
+.intro {
+    margin-top: -10px;
+    border-bottom: 1px solid #efefef;
+    background-color: #f5f5f5;
+
+    .content {
+        padding: 50px 15px;
+    }
+
+    h2 {
+        font-size: 27px;
+    }
+
+    h3 {
+        font-size: 18px;
+        font-weight: $font-normal;
+        margin: 0;
+        padding: 0;
+    }
+
+    &.small > .content {
+        padding: 30px 15px;
+
+        h2 {
+            font-size: 24px;
+            margin: 0 0 5px;
+        }
+
+        h3 {
+            font-size: 16px;
+        }
+
+    }
+
+}
+
+.footer-margin {
+    display: block;
+    padding-bottom: 1.5rem;
+    content: "";
+}

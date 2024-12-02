@@ -1,0 +1,142 @@
+/* Tables */
+table.table {
+    line-height: 160%;
+    display: table;
+    width: 100%;
+    max-width: 100%;
+    margin-bottom: 20px;
+    table-layout: auto;
+    border-spacing: 0;
+    border-collapse: collapse;
+    text-indent: 0px;
+    color: #5d5d5d;
+    background-color: transparent;
+}
+
+// Use Bootstrap GRID in tables
+table.table td[class*="col-"],
+table.table th[class*="col-"] {
+    position: static;
+    display: table-cell;
+    float: none;
+}
+
+table.table tr td.table-input {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+table.table thead th,
+table.table tbody td,
+table.table tr td {
+    display: table-cell;
+    padding: 10px;
+    text-align: left;
+    vertical-align: top;
+    border-top: 1px solid #eaeaea;
+
+    // Ensure images are aligned with text
+    img {
+        display: inline-block;
+        float: left;
+        vertical-align: baseline;
+    }
+
+    // Ensure CHECKBOXES & RADIO's are aligned
+    .checkbox, .radio {
+        display: inline;
+    }
+
+    .btn {
+        margin: 0;
+    }
+
+}
+
+table.table thead {
+    display: table-header-group;
+    vertical-align: middle;
+}
+
+table.table thead tr th,
+table.table thead tr th a {
+    font-size: inherit;
+    font-weight: $font-bold;
+    vertical-align: bottom;
+    color: #3e3e3e;
+    border: 0;
+}
+
+// sortable theads
+table.table thead tr.sortable a {
+    display: block;
+    padding: 10px;
+}
+
+table.table thead tr.sortable th,
+table.table thead tr.sortable td {
+    padding: 0 !important;
+}
+
+table.table.animated tbody tr {
+    transition: background-color 50ms ease-out;
+}
+
+table.table tbody tr {
+    //transition: background-color 50ms ease-out;
+
+    a.block {
+        font-weight: $font-normal;
+        display: block;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+}
+
+// Stripes
+/*table tbody tr:nth-of-type(odd) {
+	background: #fafafa;
+}*/
+
+// Hover
+table.table.hover tbody tr {
+    transition: background-color 350ms ease;
+}
+
+table.table.hover tbody tr:hover {
+    transition: background-color 0ms ease;
+    background-color: rgba(241, 243, 246, 0.5);
+}
+
+table.table tbody tr.selected {
+    background-color: rgba($primary-bg-color, 0.1);
+}
+
+table.table.vertical-center tbody tr td {
+    vertical-align: middle !important;
+}
+
+// Sortable
+table.table.sortable-table {
+    &.entire tr td {
+        cursor: move;
+    }
+
+    .sort-handle-cell {
+        width: .5rem;
+        padding: 0;
+        vertical-align: middle;
+
+        .sort-handle {
+            cursor: move;
+            user-select: none;
+            vertical-align: middle;
+        }
+    }
+
+    tbody tr.sorting-row {
+        opacity: 0.5;
+    }
+}
