@@ -1,0 +1,1059 @@
+// Imports (other required SCSS files)
+@import "reset-browsers.scss";
+
+// Configure SASS options (Colors, Animations, Fonts etc...)
+$font-family: "Roboto", sans-serif;
+$ease-out: cubic-bezier(0.25, 0.8, 0.25, 1);
+$ease-in: cubic-bezier(0.55, 0, 0.55, 0.2);
+
+// Other options
+$base-font-size: .8rem; // Base font size
+
+// Configure colors
+$accent-color: #62a8ea !default;
+$path: "../img";
+$sprite: "#{$path}/sprite.png";
+/* ================================================================================================== */
+
+:root {
+    --accent-color: #{$accent-color};
+}
+
+html {
+    font-size: 16px;
+}
+
+body {
+    font-size: $base-font-size;
+}
+
+// Body & HTML styles
+body, html {
+    font-family: $font-family;
+    font-weight: 400;
+    margin: 0;
+    padding: 0;
+    color: #fff;
+    background: url("#{$path}/background.jpg") 0 0;
+    background-color: #4e4e4e;
+    background-size: cover;
+
+    // Improve Font rendering
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+// Basic HTML styles
+.pawtunes {
+    a {
+        text-decoration: none;
+        color: inherit;
+        outline-width: 0;
+        outline-style: none;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    b, strong {
+        font-weight: 500;
+    }
+
+    .pointer {
+        cursor: pointer;
+    }
+
+    .css-hint {
+        position: relative;
+
+        &:before {
+            position: absolute;
+            z-index: 14;
+            bottom: -.125rem;
+            left: 1.5625rem;
+            width: 0;
+            height: 0;
+            margin-bottom: -0.625rem;
+            margin-left: -0.3125rem;
+            content: " ";
+            -webkit-transform: translate3d(0, 0, 0);
+            transform: translate3d(0, 0, 0);
+            pointer-events: none;
+
+            // Performance & rendering fix
+            border: .7rem solid transparent;
+            border-bottom-color: rgba(#000, 0.85);
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+        }
+
+        &:after {
+            font-size: $base-font-size;
+            position: absolute;
+            z-index: 15;
+            bottom: -1.75rem;
+            left: 0;
+            display: block;
+            width: max-content;
+            max-width: 22rem;
+            margin-bottom: -.31rem;
+            padding: .375rem .5rem;
+            content: attr(data-title);
+            -webkit-transform: translate3d(0, 0, 0);
+            transform: translate3d(0, 0, 0);
+            color: #fff;
+            border-radius: .18rem;
+
+            // Performance & rendering fix
+            background: #111;
+            background: rgba(#000, 0.85);
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+        }
+
+        &:after, &:before {
+            visibility: hidden;
+            -webkit-transition: all 350ms $ease-out;
+            transition: all 350ms $ease-out;
+            -webkit-transform: scale(0.8);
+            transform: scale(0.8);
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        &:hover {
+
+            &:before, &:after {
+                visibility: visible;
+                margin-bottom: 0;
+                -webkit-transform: scale(1);
+                transform: scale(1);
+                opacity: 1;
+            }
+
+        }
+
+    }
+
+    /* ================================================================================================== */
+    // Header stylesheet
+    .header {
+        display: block;
+        height: 3.125rem;
+        color: #fff;
+        border-bottom: .1rem solid rgba(0, 0, 0, 0.10);
+        background: rgba(#fff, 0.1);
+        background: linear-gradient(to bottom, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.1) 100%);
+        box-shadow: 0 0 .2rem rgba(#000, 0.15);
+
+        .hidden {
+            display: none;
+        }
+
+        // Change scroll bars design in Chrome/Webkit
+        ::-webkit-scrollbar {
+            width: .5rem;
+            height: .5rem;
+        }
+
+        /* Track */
+        ::-webkit-scrollbar-track {
+            border-radius: .125rem;
+            background: transparent;
+        }
+
+        /* Handle */
+        ::-webkit-scrollbar-thumb {
+            border-radius: .125rem;
+            background-color: lighten($accent-color, 20%);
+
+            &:hover {
+                background: lighten($accent-color, 25%);
+            }
+        }
+
+        // Logo, simple div
+        .logo {
+            line-height: 3.125rem;
+            display: inline-block;
+            float: left;
+            height: 3.125rem;
+            margin: 0 0 0 .5rem;
+
+            img {
+                vertical-align: middle;
+            }
+        }
+
+        // Menus, including setup etc...
+        ul {
+            font-size: 0; /* FIX SPACING */
+            position: absolute;
+            right: 0;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+
+            > li {
+                position: relative;
+                display: inline-block;
+                margin: 0;
+                padding: 0;
+
+                > a {
+                    font-weight: 300;
+                    line-height: 3.125rem;
+                    display: inline-block;
+                    width: 3.5rem;
+                    height: 3.125rem;
+                    -webkit-transition: background-color 150ms $ease-out;
+                    transition: background-color 150ms $ease-out;
+                    text-align: center;
+                    border-left: .1rem solid rgba(255, 255, 255, 0.05);
+                    box-shadow: -.1rem 0 0 rgba(0, 0, 0, 0.1);
+
+                    img {
+                        vertical-align: middle;
+                    }
+
+                }
+
+                &:hover a, &.active a {
+                    background: rgba(#fff, 0.1);
+                }
+
+                // Settings & Channels
+                > ul {
+                    font-size: $base-font-size;
+                    position: absolute;
+                    z-index: 99;
+                    top: 75%;
+                    right: 0;
+                    visibility: hidden;
+                    overflow-x: hidden;
+                    overflow-y: auto;
+                    min-width: 12.5rem;
+                    max-height: 13.125rem;
+                    margin-top: .1rem;
+                    -webkit-transition: top 250ms $ease-out, opacity 350ms $ease-out, visibility 350ms $ease-out;
+                    transition: top 250ms $ease-out, opacity 350ms $ease-out, visibility 350ms $ease-out;
+                    -webkit-transform: translate3d(0, 0, 0);
+                    transform: translate3d(0, 0, 0);
+
+                    // Add scrollbars if we go over content
+                    opacity: 0;
+                    border-bottom-right-radius: .2rem;
+                    border-bottom-left-radius: .2rem;
+
+                    // Performance & rendering fix
+                    background: url("#{$path}/background.jpg") -43.75rem 0;
+                    box-shadow: 0 .2rem .32rem rgba(#000, 0.15);
+                    -webkit-backface-visibility: hidden;
+                    backface-visibility: hidden;
+
+                    li {
+                        display: block;
+                        margin: 0;
+                        padding: .625rem 1.5rem;
+                        padding: 0;
+
+                        > a {
+                            line-height: normal;
+                            display: block;
+                            width: auto;
+                            height: auto;
+                            padding: 0.625rem 0.9375rem;
+                            -webkit-transition: none;
+                            transition: none;
+                            text-align: left;
+                            white-space: nowrap;
+                            text-decoration: none;
+                            color: rgba(#fff, 0.75);
+                        }
+
+                        &.active a {
+                            font-weight: 500;
+                            color: #fff;
+                            background: rgba(#fff, 0.15);
+                            text-shadow: 0 0 .125rem rgba(#000, 0.5);
+                        }
+
+                        &:hover a {
+                            background: rgba(#fff, 0.15);
+                        }
+                    }
+
+                }
+
+                &.dropdown {
+                    &.active {
+                        > a {
+                            background: rgba(#fff, 0.15);
+                        }
+
+                        > ul {
+                            top: 100%;
+                            visibility: visible;
+                            opacity: 1;
+                        }
+                    }
+                }
+
+            }
+
+        }
+
+        // End header
+    }
+
+    /* ================================================================================================== */
+    // Main Container
+    .main-container {
+        font-size: 0; // Fight inline-block spacing
+        overflow: hidden;
+        max-width: 45rem;
+        margin: 0 auto;
+        white-space: nowrap;
+
+        // Stats (Artist Image, Playing Artist, Title and Song time)
+        .view {
+            font-size: $base-font-size;
+            display: inline-block;
+            width: 100%;
+            margin: 2.1875rem 0 1.5625rem;
+            transition: margin-left $ease-out 550ms;
+            text-align: center;
+            vertical-align: top;
+            white-space: normal;
+
+            // Image, align middle vertically
+            .artwork-image {
+                position: relative;
+                display: inline-block;
+                overflow: hidden;
+                width: 9.375rem;
+                height: 9.375rem;
+                margin: 0 .625rem;
+                vertical-align: middle;
+                box-shadow: .1rem .1rem .3125rem rgba(#000, 0.1);
+
+                .share-area {
+                    position: absolute;
+                    z-index: 5;
+                    top: 0;
+                    right: 0;
+                    bottom: 0;
+                    left: 0;
+                    visibility: hidden;
+                    -webkit-transition: all 200ms $ease-out;
+                    transition: all 200ms $ease-out;
+                    -webkit-transform: scale(1.5);
+                    transform: scale(1.5);
+                    opacity: 0;
+                    background: rgba(#000, 0.75);
+
+                    a {
+                        margin: 0 .2rem;
+                        -webkit-transition: opacity 200ms $ease-out;
+                        transition: opacity 200ms $ease-out;
+                        opacity: 0.75;
+
+                        &:hover {
+                            opacity: 1;
+                        }
+
+                        &.facebook-share {
+                            position: absolute;
+                            left: -6.25rem;
+                            -webkit-transition: left 400ms $ease-out;
+                            transition: left 400ms $ease-out;
+                        }
+
+                        &.x-share {
+                            position: absolute;
+                            right: -6.25rem;
+                            -webkit-transition: right 400ms $ease-out;
+                            transition: right 400ms $ease-out;
+                        }
+
+                    }
+
+                    span {
+                        font-size: 1.24em;
+                        display: block;
+                        margin: 2.5rem 0 .1rem;
+                        text-align: center;
+                    }
+                }
+
+                .artwork-img {
+                    -webkit-transition: all 400ms $ease-out;
+                    transition: all 400ms $ease-out;
+
+                    img {
+                        display: block;
+                        width: 100%;
+                        height: auto;
+                    }
+                }
+
+                // Hover effects
+                &:hover {
+
+                    .share-area {
+                        visibility: visible;
+                        -webkit-transform: scale(1);
+                        transform: scale(1);
+                        opacity: 1;
+
+                        .facebook-share {
+                            left: 1.5625rem;
+                            -webkit-transform: rotate(360deg);
+                            transform: rotate(360deg);
+                        }
+
+                        .x-share {
+                            right: 1.5625rem;
+                            -webkit-transform: rotate(360deg);
+                            transform: rotate(360deg);
+                        }
+
+                    }
+
+                    .artwork-img {
+                        -webkit-transform: scale(1.15);
+                        transform: scale(1.15);
+                    }
+
+                }
+
+                // Disabled state (NEW 1.26)
+                &.sharing_disabled {
+                    .share-area {
+                        display: none;
+                    }
+
+                    &:hover {
+                        .artwork-img {
+                            -webkit-transform: scale(1);
+                            transform: scale(1);
+                        }
+                    }
+                }
+
+                .artwork-preloader {
+                    position: absolute;
+                    z-index: 6;
+                    right: 0;
+                    bottom: 0;
+                    left: 0;
+                    height: .25rem;
+                    animation: preloader-background linear 3s infinite;
+                    background-color: #159756;
+
+                    &:after, &:before {
+                        position: absolute;
+                        z-index: 9;
+                        bottom: 0;
+                        display: block;
+                        width: 0;
+                        height: .25rem;
+                        content: "";
+                        animation: preloader-front $ease-in 3s infinite;
+                        background: #afa;
+                    }
+
+                    &:after {
+                        right: 50%;
+                    }
+
+                    &:before {
+                        left: 50%;
+                    }
+
+                }
+            }
+
+            // Now the track info, middle valign
+            .onair {
+                font-weight: 400;
+                display: inline-block;
+                margin: 0 .625rem;
+                text-align: left;
+                vertical-align: middle;
+                color: #fff;
+
+                a {
+                    color: #fff;
+                }
+
+                .artist {
+                    font-size: 2.2em;
+                }
+
+                .title {
+                    font-size: 1.61em;
+                }
+
+                .time {
+                    font-size: 1.077em;
+                    font-weight: 300;
+                    margin-top: .35rem;
+                    color: #f0f0f0;
+                }
+
+            }
+
+        }
+
+        // History (since 1.15)
+        .view.history {
+            height: 13rem;
+            margin: 0;
+
+            .table-scroll {
+                display: block;
+                overflow-x: hidden;
+                overflow-y: auto;
+                max-height: 11.5rem;
+                padding: 0.625rem 1rem;
+
+                // Change scroll bars design in Chrome/Webkit
+                &::-webkit-scrollbar {
+                    width: .5rem;
+                    height: .5rem;
+                }
+
+                /* Track */
+                &::-webkit-scrollbar-track {
+                    border-radius: .125rem;
+                    background: transparent;
+                }
+
+                /* Handle */
+                &::-webkit-scrollbar-thumb {
+                    border-radius: .125rem;
+                    background-color: lighten($accent-color, 20%);
+
+                    &:hover {
+                        background: lighten($accent-color, 25%);
+                    }
+                }
+
+                &::-webkit-scrollbar-thumb:window-inactive {
+                    background: lighten($accent-color, 15%);
+                }
+            }
+
+            .artwork-preloader {
+                position: relative;
+                display: inline-block;
+                width: var(--size);
+                height: var(--size);
+                vertical-align: middle;
+                --size: 24px;
+                --color: currentColor;
+                --animation-timing-function: linear;
+                --animation-duration: 2s;
+
+                &:before, &:after {
+                    position: absolute;
+                    content: "";
+                    transform: scale(0);
+                    animation: var(--animation-timing-function) var(--animation-duration) infinite circle-pulse-1-animation;
+                    opacity: 1;
+                    border-radius: 50%;
+                    background-color: var(--color);
+                    inset: 0;
+                }
+
+                &:after {
+                    animation-delay: calc(var(--animation-duration) / 2);
+                }
+            }
+
+            @keyframes circle-pulse-1-animation {
+                0% {
+                    opacity: 1;
+                    transform: scale(0);
+                }
+
+                100% {
+                    opacity: 0;
+                    transform: scale(1);
+                }
+            }
+
+            table {
+                width: 100%;
+                table-layout: auto;
+                border-collapse: collapse;
+                text-align: left;
+
+                thead tr th {
+                    font-weight: normal;
+                    padding: .125rem .3125rem .3125rem;
+                }
+
+                tr th, tr td {
+                    padding: .25rem .375rem;
+
+                    &.history-time-ago {
+                        min-width: 4.6875rem;
+                        padding-right: .375rem;
+                        text-align: right;
+                    }
+
+                    &.history-track {
+                        width: 60%;
+                    }
+
+                    &.history-artwork {
+                        width: 1.875rem;
+                        text-align: right;
+
+                        img {
+                            width: 1.875rem;
+                            height: 1.875rem;
+                            vertical-align: middle;
+                        }
+                    }
+
+                    img {
+                        vertical-align: middle;
+                    }
+                }
+
+                // Table row hover
+                tr:hover > td {
+                    background: rgba(0, 0, 0, 0.05);
+                }
+            }
+
+        }
+
+        // END HISTORY
+
+    }
+
+    /* ================================================================================================== */
+    // Now the player section
+    .player {
+        position: relative;
+        max-width: 45rem;
+        height: 4.875rem;
+        margin: -.3125rem auto 0;
+        padding: .9375rem 0 .3125rem;
+        background: url($sprite) no-repeat center -1.4375rem;
+
+        // Play/Stop
+        .playback {
+            position: absolute;
+            left: 0;
+            overflow: hidden;
+            width: 4.25rem;
+            height: 4.875rem;
+            padding: .25rem .625rem 0;
+            text-align: center;
+
+            // Play and Stop buttons
+            .play, .stop {
+                float: left;
+                cursor: pointer;
+
+                &.hidden {
+                    display: none;
+                }
+
+                svg {
+                    display: none;
+                }
+
+            }
+
+            .play {
+                position: relative;
+                display: inline-block;
+                width: 4.5rem;
+                height: 4.5rem;
+                cursor: pointer;
+                vertical-align: bottom;
+                background: url($sprite) no-repeat -.0625rem -13.125rem;
+            }
+
+            .play:hover {
+                background-position: -5.1875rem -13.125rem;
+            }
+
+            .stop {
+                position: relative;
+                display: inline-block;
+                width: 4.5rem;
+                height: 4.5rem;
+                cursor: pointer;
+                vertical-align: bottom;
+                background: url($sprite) no-repeat -10.3125rem -13.125rem;
+            }
+
+            .stop:hover {
+                background-position: -15.4375rem -13.125rem;
+            }
+
+            .stop:before {
+                position: absolute;
+                top: 0;
+                left: 0;
+                display: block;
+                width: 4.5rem;
+                height: 4.5rem;
+                content: " ";
+                animation: play-spin 3s infinite linear;
+                background: transparent url($sprite) no-repeat -20.625rem -13.125rem;
+            }
+
+        }
+
+        // Volume control, including mute
+        .volume-control {
+            position: absolute;
+            right: 0;
+            left: 0;
+            height: 1.75rem;
+            margin: 0 15rem 0 5.625rem;
+            padding: 1.5625rem 0.625rem;
+            vertical-align: middle;
+
+            // Mute/Unmute, well the icon left of bar
+            .volume-icon {
+                position: absolute;
+                left: 0.625rem;
+                height: 1.75rem;
+                cursor: pointer;
+                vertical-align: middle;
+
+                svg {
+                    fill: #fff;
+                }
+            }
+
+            // Now the slider
+            .volume-slider {
+                position: absolute;
+                top: 50%;
+                right: 0;
+                left: 2.5rem;
+                margin-top: -0.25rem;
+                vertical-align: middle;
+
+                .vol-progress {
+                    width: 100%;
+                    height: 0.5rem;
+                    margin: 0 .3125rem;
+                    padding: .0625rem;
+                    cursor: pointer;
+                    border-radius: .2rem;
+                    background: #ccc;
+                    background: rgba(0, 0, 0, 0.2);
+                    box-shadow: inset 0 1px 2px rgba(#000, 0.15), 0 1px 0 rgba(#fff, 0.05);
+
+                    // Progressbar
+                    .vol-bar {
+                        position: relative;
+                        display: block;
+                        width: 50%;
+                        height: 100%;
+                        border-radius: .2rem;
+                        background: rgba(#0dff00, 0.65);
+                    }
+
+                    // Circle to push/pull
+                    .circle-control {
+                        position: absolute;
+                        top: -.375rem;
+                        right: -.375rem;
+                        display: block;
+                        width: 1.4375rem;
+                        height: 1.4375rem;
+                        -webkit-transition: opacity 250ms $ease-out;
+                        transition: opacity 250ms $ease-out;
+                        background: transparent url($sprite) no-repeat -10rem 0;
+                    }
+
+                    &:hover .circle-control {
+                        cursor: pointer;
+                        opacity: 0.95;
+                    }
+
+                }
+
+                // Status messages
+                .player-status {
+                    font-size: $base-font-size;
+                    position: absolute;
+                    top: 100%;
+                    width: 100%;
+                    margin-top: .625rem;
+                    text-align: center;
+                    opacity: 1;
+                    color: #fff;
+
+                    &.text-animate {
+                        animation: text-change-anim 2s;
+                        opacity: 1;
+                    }
+                }
+
+            }
+
+        }
+
+        // Playlists for players, use sprite
+        .playlists {
+            display: inline-block;
+            float: right;
+            width: 13.75rem;
+            height: 3.4375rem;
+            margin: .625rem .32rem 0 0;
+            text-align: center;
+            vertical-align: middle;
+            background: url($sprite) no-repeat .25rem -21.875rem;
+
+            // MSG
+            span {
+                font-size: $base-font-size;
+                display: block;
+                margin: 0 0 .5rem;
+                color: #fff;
+            }
+
+            a {
+                position: relative;
+                top: 0;
+                display: inline-block;
+                margin: 0 .375rem;
+                -webkit-transition: all 200ms $ease-out;
+                transition: all 200ms $ease-out;
+                opacity: 0.75;
+
+                &:hover {
+                    top: -.25rem;
+                    -webkit-transform: scale(1.05);
+                    transform: scale(1.05);
+                    opacity: 1;
+                }
+            }
+
+            // End playlists
+
+        }
+
+    }
+
+    /**
+     * Animations
+     */
+    @keyframes text-change-anim {
+        0% {
+            opacity: 0;
+        }
+        100% {
+            opacity: 1;
+        }
+    }
+
+    @keyframes preloader-background {
+        0%, 24.9% {
+            background-color: #159756;
+        }
+        25%, 49.9% {
+            background-color: #da4733;
+        }
+        50%, 74.9% {
+            background-color: #3b78e7;
+        }
+        75%, 100% {
+            background-color: #fdba2c;
+        }
+    }
+
+
+    @keyframes preloader-front {
+        0% {
+            width: 0;
+            background-color: #da4733;
+        }
+        24.9% {
+            width: 50%;
+            background-color: #da4733;
+        }
+        25% {
+            width: 0;
+            background-color: #3b78e7;
+        }
+        49.9% {
+            width: 50%;
+            background-color: #3b78e7;
+        }
+        50% {
+            width: 0;
+            background-color: #fdba2c;
+        }
+        74.9% {
+            width: 50%;
+            background-color: #fdba2c;
+        }
+        75% {
+            width: 0%;
+            background-color: #159756;
+        }
+        100% {
+            width: 50%;
+            background-color: #159756;
+        }
+    }
+
+    // Spinner animation
+    @keyframes play-spin {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    // Responsive design
+    @media (max-width: 640px) {
+        .main-container {
+            .view {
+                margin: 1.25rem 0 1rem;
+
+                .artwork-image {
+                    margin: 0 0 .625rem;
+                }
+
+                .onair {
+                    display: block;
+                    margin: 0 .32rem .625rem;
+                    text-align: center;
+
+                    .artist {
+                        font-size: 1.23em;
+                        display: inline;
+
+                        &:after {
+                            content: " - ";
+                        }
+                    }
+
+                    .title {
+                        font-size: 1.23em;
+                        display: inline;
+                    }
+
+                    .time {
+                        display: none !important;
+                        visibility: hidden;
+                    }
+
+                }
+            }
+        }
+    }
+
+    @media (min-height: 125px) and (max-height: 339px) and (min-width: 620px) {
+        .player .playback {
+            padding: 0 .32rem;
+        }
+        .main-container {
+            .view {
+                margin: 1.25rem 0 1rem;
+
+                .artwork-image {
+                    width: 7.5rem;
+                    height: 7.5rem;
+
+                    .artwork-img {
+                        width: 7.5rem !important;
+                        height: 7.5rem !important;
+                    }
+
+                    // Change position of hovered facebook/twitter buttons
+                    &:hover .share-area a {
+
+                        &.facebook-share {
+                            left: 1.125rem;
+                        }
+
+                        &.x-share {
+                            right: 1.125rem;
+                        }
+
+                    }
+                }
+            }
+
+            .view.history {
+                height: 9.7rem;
+            }
+        }
+    }
+
+    @media (max-height: 125px) {
+        .header {
+            display: none;
+        }
+        .main-container {
+            display: none;
+        }
+        body, html {
+            overflow: hidden;
+        }
+        .player {
+            margin: 0;
+            padding: 0;
+            background-position: center -2.125rem;
+        }
+    }
+
+    // Hide all scroll bars on screens bigger than 720x342px.
+    @media (min-height: 340px) and (min-width: 720px) {
+        body, html {
+            overflow: hidden;
+        }
+    }
+
+    // Volume Slider Responsive Code
+    @media (max-width: 520px) {
+        .player .volume-control .volume-slider .player-status {
+            display: none !important;
+        }
+    }
+
+    @media (max-width: 400px) {
+        .player .volume-control {
+            display: none;
+        }
+        .player {
+            text-align: center;
+        }
+        .player .playback {
+            position: static;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .player .playlists {
+            float: none;
+            margin-top: 0;
+            padding: 0;
+        }
+    }
+
+    @media (max-width: 315px) {
+        .player .playlists {
+            display: none;
+        }
+    }
+}

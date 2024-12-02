@@ -1,0 +1,23 @@
+{
+    "compilerOptions": {
+        "target":                     "es2020",
+        "module":                     "esnext",
+        "moduleResolution":           "node",
+        "noImplicitAny":              true,
+        "sourceMap":                  true,
+        "lib":                        [
+            "ES2020",
+            "DOM",
+            "DOM.Iterable"
+        ],
+        "isolatedModules":            true,
+        "moduleDetection":            "force",
+        "esModuleInterop":            true,
+        "strict":                     true,
+        "noUnusedParameters":         true,
+        "noFallthroughCasesInSwitch": true
+    },
+    "include":         [
+        "./"
+    ]
+}

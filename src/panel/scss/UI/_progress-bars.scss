@@ -1,0 +1,63 @@
+/* Progress Bars */
+.progress-bar {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    height: 20px;
+    margin: 8px 0;
+    padding: 0;
+    border-radius: 3px;
+    background: #efefef;
+
+    &.small, &.progress-sm {
+        height: 5px;
+        border-radius: 2px;
+    }
+
+    .bar {
+        display: flex;
+        align-items: center;
+        width: 0;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        transition: width 250ms linear;
+        background-color: $primary-bg-color;
+
+        &.primary {
+            background-color: $header-bg-color;
+        }
+
+        &.warning {
+            background-color: #f39c12;
+        }
+
+        &.success {
+            background-color: #2ecc71;
+        }
+
+        &.danger {
+            background-color: #e74c3c;
+        }
+
+        &.info {
+            background-color: #3498db;
+        }
+
+        p {
+            font-size: 12px;
+            position: absolute;
+            left: 50%;
+            width: 30px;
+            margin: 0 0 0 -15px;
+            padding: 0;
+            text-align: center;
+            vertical-align: middle;
+            color: #000;
+            text-shadow: none;
+
+        }
+
+    }
+
+}

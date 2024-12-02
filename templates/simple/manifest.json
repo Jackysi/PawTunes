@@ -1,0 +1,37 @@
+{
+    "author":   "Jaka Prašnikar",
+    "name":     "Simple Template",
+    "url":      "https://prahec.com",
+    "schemes":  [
+        {
+            "compile": "scss/simple.scss",
+            "name":    "Simple Light",
+            "style":   "./css/simple.css"
+        }
+    ],
+    "size":     "360x475",
+    "template": "template.html",
+    "extra":    {
+        "autoWindowResize":   {
+            "default":     false,
+            "name":        "autoWindowResize",
+            "description": "Automatically resize a player popup window to fit the player container <strong class=\"text-danger\">(experimental)</strong>",
+            "type":        "checkbox",
+            "value":       "true"
+        },
+        "visualization":      {
+            "default":     true,
+            "name":        "visualization",
+            "description": "Enable Audio Spectrum Visualization using Web Audio API <strong class=\"text-danger\">(experimental)</strong>",
+            "type":        "checkbox",
+            "value":       "true"
+        },
+        "visualizationColor": {
+            "default":     false,
+            "name":        "visualizationColor",
+            "description": "Use accent color from the template color scheme to set main color of Audio Spectrum Visualization",
+            "type":        "checkbox",
+            "value":       "true"
+        }
+    }
+}

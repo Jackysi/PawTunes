@@ -1,0 +1,33 @@
+{
+    "author":   "Jaka Prašnikar",
+    "name":     "HTML5 Radio Player",
+    "schemes":  [
+        {
+            "compile": "scss/html5-radio-skin.scss",
+            "name":    "HTML5 Radio Player",
+            "style":   "./css/html5-radio-skin.css"
+        }
+    ],
+    "size":     "720x355",
+    "template": "template.html",
+    "url":      "https://prahec.com",
+    "extra":    {
+        "playlistIconSize":      {
+            "label-full":  false,
+            "default":     32,
+            "placeholder": 32,
+            "name":        "playlistIconSize",
+            "class":       "col-sm-3",
+            "label":       "Playlist(s) icon size",
+            "type":        "number",
+            "reset":       true
+        },
+        "disableArtworkSharing": {
+            "default":     false,
+            "name":        "disableArtworkSharing",
+            "description": " Disable artwork hover and sharing function (Default: <i>Enabled</i>)",
+            "type":        "checkbox",
+            "value":       "true"
+        }
+    }
+}

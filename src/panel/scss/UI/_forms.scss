@@ -1,0 +1,756 @@
+// Custom bootstrap based form design
+fieldset {
+    min-width: 0;
+    margin: 20px 0;
+    padding: 0;
+    border: 0;
+}
+
+.form-controls {
+    margin-top: 10px;
+    padding: 15px 0 0;
+    border-top: 1px solid #e5e5e5;
+}
+
+input, legend, button, select, textarea, output {
+    line-height: $base-line-height;
+}
+
+legend {
+    font-size: 15px;
+    font-weight: $font-bold;
+    position: relative;
+    display: block;
+    width: 100%;
+    margin-bottom: 20px;
+    padding: $input-padding-base 15px;
+    color: #5d5d5d;
+    border-bottom: 1px solid #e5e5e5;
+    background: transparent;
+}
+
+label {
+    font-size: $base-font-size;
+    font-weight: $font-bold;
+    display: inline-block;
+    max-width: 100%;
+    margin-bottom: 5px;
+    cursor: pointer;
+    user-select: none;
+    color: #838383;
+}
+
+input[type="file"] {
+    display: block;
+}
+
+input[type="range"] {
+    display: block;
+    width: 100%;
+}
+
+select[multiple],
+select[size] {
+    height: auto;
+}
+
+output {
+    font-size: 14px;
+    display: block;
+    padding-top: 7px;
+    color: #555555;
+}
+
+.form-control {
+    font-family: $font-family;
+    font-size: $base-font-size;
+    font-weight: $font-normal;
+    display: block;
+    width: 100%;
+    padding: $input-padding-base 12px;
+    transition: border 200ms ease-out, color 200ms ease-out, background-color 200ms ease-out;
+    color: #606266;
+    border: 1px solid #e8ebeb;
+    border-radius: 3px;
+    background-color: #fff;
+    background-image: none;
+    background-clip: padding-box;
+    appearance: none;
+
+    &:autofill {
+        color: #606266;
+        background: transparent !important;
+    }
+
+    &:-webkit-autofill,
+    &:-webkit-autofill:hover,
+    &:-webkit-autofill:focus,
+    &:-webkit-autofill:active {
+        -webkit-box-shadow: 0 0 0 40px white inset !important;
+        -webkit-text-fill-color: #606266;
+    }
+
+    &:hover {
+        transition: none;
+        border: 1px solid #a9acb2;
+    }
+
+    &:focus {
+        color: #313131;
+        border-color: $primary-bg-color;
+        outline: 0;
+    }
+
+    &::placeholder {
+        font-style: italic;
+        opacity: 1;
+        color: #bcc2c8 !important;
+    }
+
+    &:hover::placeholder,
+    &:focus::placeholder {
+        color: #9ba5ad !important;
+    }
+
+}
+
+
+.form-control[disabled],
+.form-control[readonly],
+fieldset[disabled] .form-control {
+    cursor: not-allowed;
+    opacity: 1;
+    background-color: #eeeeee;
+}
+
+textarea.form-control {
+    height: auto;
+    resize: vertical;
+}
+
+input[type="search"] {
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    -webkit-appearance: none;
+}
+
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"],
+input[type="month"] {
+}
+
+.form-group {
+    margin-bottom: 15px;
+    @extend .clearfix;
+}
+
+.form-control-static {
+    margin-bottom: 0;
+    padding: $input-padding-base 0 0;
+}
+
+.form-control-static.input-lg,
+.form-control-static.input-sm {
+    padding-right: 0;
+    padding-left: 0;
+}
+
+.input-sm,
+.form-group-sm .form-control {
+    font-size: 12px;
+    line-height: 1.5;
+    height: 30px;
+    padding: 5px 10px;
+    border-radius: 3px;
+}
+
+select.input-sm {
+    line-height: 30px;
+    height: 30px;
+}
+
+textarea.input-sm,
+select[multiple].input-sm {
+    height: auto;
+}
+
+.input-lg,
+.form-group-lg .form-control {
+    font-size: 18px;
+    line-height: 1.33;
+    height: 46px;
+    padding: 10px 16px;
+    border-radius: 6px;
+}
+
+select.input-lg {
+    line-height: 46px;
+    height: 46px;
+}
+
+textarea.input-lg,
+select[multiple].input-lg {
+    height: auto;
+}
+
+.has-feedback {
+    position: relative;
+}
+
+.has-feedback .form-control {
+    padding-right: 42.5px;
+}
+
+.form-control-feedback {
+    position: absolute;
+    z-index: 2;
+    top: 25px;
+    right: 0;
+    display: block;
+    width: 34px;
+    text-align: center;
+}
+
+.input-lg + .form-control-feedback {
+    line-height: 46px;
+    width: 46px;
+    height: 46px;
+}
+
+.input-sm + .form-control-feedback {
+    line-height: 30px;
+    width: 30px;
+    height: 30px;
+}
+
+.help-block {
+    font-size: 12px;
+    font-style: italic;
+    display: block;
+    padding: $input-padding-base 0 0 0;
+    color: #808080;
+
+    &.extra {
+        font-style: normal;
+    }
+}
+
+@media (min-width: 768px) {
+
+    // Safari & Chrome fix for Legend tag
+    form > fieldset {
+        & > legend {
+            margin-bottom: 0;
+        }
+
+        & > div.form-group:first-of-type > * {
+            margin-top: 20px;
+        }
+    }
+
+    .form-inline .form-group {
+        display: inline-block;
+        margin-bottom: 0;
+        vertical-align: middle;
+    }
+    .form-inline .form-control {
+        display: inline-block;
+        width: auto;
+        vertical-align: middle;
+    }
+    .form-inline .input-group {
+        display: inline-table;
+        vertical-align: middle;
+    }
+    .form-inline .input-group .input-group-addon,
+    .form-inline .input-group .input-group-btn,
+    .form-inline .input-group .form-control {
+        width: auto;
+    }
+    .form-inline .input-group > .form-control {
+        width: 100%;
+    }
+    .form-inline .control-label {
+        margin-bottom: 0;
+        vertical-align: middle;
+    }
+    .form-inline .radio,
+    .form-inline .checkbox {
+        display: inline-block;
+        margin-top: 0;
+        margin-bottom: 0;
+        vertical-align: middle;
+    }
+    .form-inline .radio label,
+    .form-inline .checkbox label {
+        padding-left: 0;
+    }
+    .form-inline .radio input[type="radio"],
+    .form-inline .checkbox input[type="checkbox"] {
+        position: relative;
+        margin-left: 0;
+    }
+    .form-inline .has-feedback .form-control-feedback {
+        top: 0;
+    }
+}
+
+.radio,
+.checkbox,
+.radio-inline,
+.checkbox-inline {
+    line-height: $base-line-height;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.form-group {
+    margin-right: -15px;
+    margin-left: -15px;
+}
+
+@media (min-width: 768px) {
+    .control-label {
+        margin-bottom: 0;
+        padding-top: 9px;
+        text-align: right;
+    }
+}
+
+@media (min-width: 768px) {
+    .form-group-lg .control-label {
+        padding-top: 14.3px;
+    }
+}
+
+@media (min-width: 768px) {
+    .form-group-sm .control-label {
+        padding-top: 6px;
+    }
+}
+
+// Custom checkboxes & radios
+.checkbox,
+.radio {
+    line-height: $base-line-height;
+    position: relative;
+    display: inline-block;
+    margin: 0;
+    padding: $input-padding-base 0 6px 20px;
+
+    label { // Label to allow bigger area of selection (inline)
+        line-height: 1;
+        display: inline !important;
+        margin: 0;
+        padding: 0;
+        cursor: pointer;
+        vertical-align: middle;
+
+
+        input { // Any input (this hides original input)
+            position: absolute;
+            width: 20px !important;
+            height: 20px !important;
+            margin-left: -20px !important;
+            cursor: pointer;
+            opacity: 0;
+        }
+
+        .description {
+            display: inline;
+            margin-left: .6rem;
+        }
+
+        span.icon { // Check box without icon
+            position: absolute;
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            margin: 0 0 0 -20px;
+            cursor: pointer;
+            transition: all 250ms ease;
+            border: 1px solid #e5e5e5;
+            -webkit-border-radius: 2px;
+            border-radius: 2px;
+            background: #fff;
+
+            &:before { // Icon Position
+                font-size: 11px;
+                line-height: 20px;
+                position: absolute;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                left: 0;
+                transition: all 450ms cubic-bezier(0.680, -0.750, 0.265, 1.550) 50ms;
+                transform: scale(0);
+                text-align: center !important;
+                vertical-align: middle;
+                opacity: 0;
+                color: #fff;
+            }
+
+        }
+
+        &:hover, &:focus {
+            span {
+                border-color: #a9acb2;
+            }
+        }
+    }
+
+    // Determine states
+    input[type=checkbox],
+    input[type=radio] {
+
+        // Checked state
+        &:checked + span {
+            border-color: color.adjust($primary-bg-color, $lightness: -5%);;
+            background-color: $primary-bg-color;
+
+            &:before {
+                transform: scale(1);
+                opacity: 1;
+                color: $primary-color;
+            }
+
+        }
+
+        // Disabled state
+        &:disabled + span {
+            pointer-events: none;
+            border-color: #dddddd !important;
+            background-color: #dddddd !important;
+
+            &:before { // Icon
+                color: #dddddd;
+            }
+
+        }
+
+    }
+
+}
+
+/* Radio Specific OVERRIDES */
+.radio span {
+    border-radius: 50%;
+}
+
+.radio input[type=radio]:checked + span {
+    background-color: #fff;
+}
+
+.radio input[type=radio]:checked + span:before {
+    color: $primary-bg-color;
+}
+
+.radio input[type=radio]:disabled + span {
+    pointer-events: none;
+    background-color: #fff !important;
+}
+
+// Input Appends/Prepends ( special - differ from Bootstrap )
+.input-append {
+    position: relative;
+
+    .append {
+        line-height: $base-line-height;
+        position: absolute;
+        top: 0;
+        right: 1px;
+        bottom: 0;
+        width: 34px;
+        padding: $input-padding-base 4px;
+        text-align: center;
+        border: 1px solid transparent;
+
+        &.btn {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+
+    }
+
+    .form-control {
+        padding-right: 35px;
+    }
+}
+
+.input-prepend {
+    position: relative;
+
+    .prepend {
+        line-height: $base-line-height;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 1px;
+        width: 34px;
+        padding: $input-padding-base 4px;
+        text-align: center;
+
+        &.btn {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+
+    }
+
+    .form-control {
+        padding-left: 35px;
+    }
+}
+
+.input-group {
+    position: relative;
+    display: table;
+    border-collapse: separate;
+}
+
+.input-group[class*="col-"] {
+    float: none;
+    padding-right: 0;
+    padding-left: 0;
+}
+
+.input-group .form-control {
+    position: relative;
+    z-index: 2;
+    float: left;
+    width: 100%;
+    margin-bottom: 0;
+}
+
+.input-group .form-control:first-child,
+.input-group-addon:first-child,
+.input-group-btn:first-child > .btn,
+.input-group-btn:first-child > .btn-group > .btn,
+.input-group-btn:first-child > .dropdown-toggle,
+.input-group-btn:last-child > .btn:not(:last-child):not(.dropdown-toggle),
+.input-group-btn:last-child > .btn-group:not(:last-child) > .btn {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.input-group-addon:first-child {
+    border-right: 0;
+}
+
+.input-group .form-control:last-child,
+.input-group-addon:last-child,
+.input-group-btn:last-child > .btn,
+.input-group-btn:last-child > .btn-group > .btn,
+.input-group-btn:last-child > .dropdown-toggle,
+.input-group-btn:first-child > .btn:not(:first-child),
+.input-group-btn:first-child > .btn-group:not(:first-child) > .btn {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.input-group-addon:last-child {
+    border-left: 0;
+}
+
+.input-group-btn {
+    font-size: 0;
+    position: relative;
+    white-space: nowrap;
+}
+
+.input-group-btn > .btn {
+    position: relative;
+}
+
+.input-group-btn > .btn:hover,
+.input-group-btn > .btn:focus,
+.input-group-btn > .btn:active {
+    z-index: 2;
+}
+
+// Custom file inputs
+.file-input {
+    position: relative;
+    cursor: pointer;
+
+    input[type="file"] {
+        position: absolute;
+        z-index: 99;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+        text-align: right;
+        opacity: 0;
+    }
+
+    &:hover .form-control {
+        border-color: color.adjust($primary-bg-color, $lightness: 20%);
+    }
+
+    .btn {
+        box-shadow: none;
+    }
+
+}
+
+// Custom selectbox (Requires JQUERY Plugin)
+.select-box {
+    font-size: $base-font-size;
+    line-height: $base-line-height;
+    position: relative;
+    display: block;
+
+    &.opened .current-value {
+        border-color: $primary-bg-color;
+        box-shadow: none;
+    }
+
+    i {
+        margin: -2px 4px 0 0
+    }
+
+    .current-value {
+        font-weight: $font-bold;
+        display: flex;
+        align-content: center;
+        justify-content: center;
+        padding: 4px 12px;
+        cursor: pointer;
+        user-select: none;
+        transition: background-color 150ms ease-out;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        color: #7a7a7a;
+        border: 1px solid #e8ebeb;
+        border-radius: 3px;
+        outline-style: none;
+        background: #fff;
+
+        .placeholder {
+            line-height: 24px;
+        }
+
+        .drop-arrow {
+            margin-left: auto;
+            justify-self: flex-end;
+        }
+
+    }
+
+    &:hover:not(.opened) {
+        .current-value {
+            border-color: #a9acb2;
+        }
+    }
+
+    .search_string {
+        font-size: 11px;
+        line-height: 24px;
+        position: absolute;
+        z-index: 999;
+        display: inline-block;
+        overflow: hidden;
+        max-width: 150px;
+        height: 24px;
+        padding: 0 10px;
+        white-space: nowrap;
+        color: #fff;
+        background: rgba(0, 0, 0, 0.75);
+    }
+
+    ul.options {
+        position: absolute;
+        z-index: 999;
+        right: 0;
+        left: 0;
+        display: block;
+        visibility: hidden;
+        overflow-x: hidden;
+        overflow-y: auto;
+        max-height: 30rem;
+        margin: 2px 0 0;
+        padding: .3rem;
+        list-style: none;
+        transition: opacity 150ms ease-out, visibility 150ms ease-out;
+        opacity: 0;
+        border: 1px solid #e0e0e0;
+        border-radius: .2rem;
+        background-color: #fff;
+        box-shadow: rgba(0, 0, 0, 0.02) 0 0 0 .1rem, rgba(0, 0, 0, 0.08) 0 .25rem .5rem, rgba(0, 0, 0, 0) 0 .1rem .25rem, rgba(0, 0, 0, 0.08) 0 2rem 3.5rem;
+
+        // Change scroll bars design in Chrome/Webkit
+        &::-webkit-scrollbar {
+            width: 0.4rem;
+            height: 0.4rem;
+        }
+
+        /* Track */
+        &::-webkit-scrollbar-track {
+            border-radius: 0.2rem;
+            background: transparent;
+        }
+
+        /* Handle */
+        &::-webkit-scrollbar-thumb {
+            border-radius: 0.2rem;
+            background-color: #b0afaf;
+
+            &:hover {
+                background-color: #757575;
+            }
+        }
+
+        &::-webkit-scrollbar-thumb:window-inactive {
+            background: #e0e0e0;
+        }
+
+        li {
+            display: block;
+            margin: 0;
+
+            &:first-child a {
+                border-top: 0;
+            }
+
+            .ico-left {
+                margin-right: .6rem;
+            }
+
+            a {
+                display: flex;
+                justify-content: left;
+                min-height: 2rem;
+                padding: $input-padding-base 12px;
+                cursor: pointer;
+                user-select: none;
+                white-space: nowrap;
+                color: #606d7a;
+                border-radius: .25rem;
+
+
+                &:hover {
+                    color: #fff;
+                    background-color: $primary-bg-color;
+                }
+
+                &.selected {
+                    //color: #55606c;
+                    //background: rgba(202, 206, 209, .5);
+                }
+            }
+        }
+
+    }
+
+    &.opened ul.options {
+        visibility: visible;
+        max-height: 30rem;
+        opacity: 1;
+    }
+}
