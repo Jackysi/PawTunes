@@ -17,18 +17,18 @@
 
 #### Fixes
 
-- fix: PHP 8.4.1 issues with explicit "nullable"   [`abf188d`](https://github.com/Jackysi/pawtunes/commit/abf188dfd7461b8655aa4f12de06311a5ba984b9)
-- fix: mmd function for warnings and updates was renamed to markdown   [`4a46491`](https://github.com/Jackysi/pawtunes/commit/4a4649102ed7397f2a03b7f3ebc5008d0187b923)
+- Fix: PHP 8.4.1 issues with explicit "nullable"   [`f372362`](https://github.com/Jackysi/pawtunes/commit/f372362c7464bd455e58a0c645ae13ea2d836c46)
+- Fix: mmd function for warnings and updates was renamed to markdown   [`f4b7f1d`](https://github.com/Jackysi/pawtunes/commit/f4b7f1d4c62043e63d080f97ae9f11b5433c19a5)
 
 
 
 
 
-#### Tidying of Code eg Whitespace
-
-- style: improve change log looks on the update page  [`211f615`](https://github.com/Jackysi/pawtunes/commit/211f615d193c188d01c717c8a2d055ab5f5e2163)
 
 
+#### General Changes
+
+- Improve change log looks on the update page  [`cda67dc`](https://github.com/Jackysi/pawtunes/commit/cda67dc6de90cfb13b665e0e1f20956d98b32c71)
 
 ### v1.0.0
 

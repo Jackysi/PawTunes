@@ -178,9 +178,9 @@
 
                 }
 
-                const lastRelease        = data.releases[ data.releases.length - 1 ];
+                const lastRelease        = data.releases[ 0 ];
                 const lastReleaseVersion = lastRelease.tag_name.replace( 'v', '' )
-                if ( compareVersions( version, lastReleaseVersion ) >= 0 ) {
+                if ( shouldUpdate( version, lastReleaseVersion ) ) {
 
                     $( '.update-content' ).html( '{!!$panel->alert( 'Great news! You are running the latest version!', 'success' )!!}' );
 
