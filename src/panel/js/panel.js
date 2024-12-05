@@ -1,25 +1,27 @@
 /**
  * Compares two version strings.
  *
- * @param {string} v1 - The first version string.
- * @param {string} v2 - The second version string.
- * @returns {number} - Returns 1 if v1 > v2, -1 if v1 < v2, or 0 if equal.
+ * @returns {boolean} - Returns 1 if v1 > v2, -1 if v1 < v2, or 0 if equal.
+ * @param serverVersion
+ * @param localVersion
+ * @param segments
  */
-function compareVersions( v1, v2 ) {
+function shouldUpdate( serverVersion, localVersion, segments = 3 ) {
 
-    const parts1    = v1.split( '.' ).map( Number );
-    const parts2    = v2.split( '.' ).map( Number );
-    const maxLength = Math.max( parts1.length, parts2.length );
+    const normalize = ( version ) => {
+        return version
+            .split( '.' )
+            .map( Number ) // Convert to numbers for consistency
+            .map( part => String( part ).padStart( 2, '0' ) ) // Pad with zeros
+            .concat( Array( segments ).fill( '00' ) ) // Ensure enough segments
+            .slice( 0, segments ) // Trim excess segments
+            .join( '' ); // Combine into a single string
+    };
 
-    for ( let i = 0; i < maxLength; i++ ) {
-        const num1 = parts1[ i ] || 0; // Default to 0 if undefined
-        const num2 = parts2[ i ] || 0;
+    const normalizedServer = normalize( serverVersion );
+    const normalizedLocal  = normalize( localVersion );
 
-        if ( num1 > num2 ) return 1;
-        if ( num1 < num2 ) return -1;
-    }
-
-    return 0; // Versions are equal
+    return normalizedServer > normalizedLocal;
 }
 
 ( function( $, version ) {
@@ -179,9 +181,9 @@ function compareVersions( v1, v2 ) {
                 }
 
                 // Check if an update is available
-                const lastRelease        = data.releases[ data.releases.length - 1 ];
+                const lastRelease        = data.releases[ 0 ];
                 const lastReleaseVersion = lastRelease.tag_name.replace( 'v', '' )
-                if ( compareVersions( version, lastReleaseVersion ) < 0 ) {
+                if ( shouldUpdate( version, lastReleaseVersion ) ) {
 
                     // Indicate that an update is available
                     $( '#tab-updates' ).append( `&nbsp;&nbsp;<span class="label label-important">v${lastReleaseVersion}</span>` );
