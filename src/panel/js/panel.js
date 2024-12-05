@@ -204,11 +204,11 @@ function compareVersions( v1, v2 ) {
                 // Display warnings and info messages
                 if ( warning.type === 'warning' ) {
 
-                    $mainContainer.prepend( `<div class="alert alert-warning alert-icon"><div class="content">${mmd( warning.message )}</div></div>` );
+                    $mainContainer.prepend( `<div class="alert alert-warning alert-icon"><div class="content">${markdown( warning.message )}</div></div>` );
 
                 } else if ( warning.type === 'info' ) {
 
-                    $mainContainer.prepend( `<div class="alert alert-info alert-icon"><div class="content">${mmd( warning.message )}</div></div>` );
+                    $mainContainer.prepend( `<div class="alert alert-info alert-icon"><div class="content">${markdown( warning.message )}</div></div>` );
 
                 } else if ( warning.type === 'finish-upgrade' ) {
 
