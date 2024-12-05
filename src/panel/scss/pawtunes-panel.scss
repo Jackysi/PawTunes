@@ -29,13 +29,26 @@ pre .text-label {
         font-family: $font-family !important;
     }
 
+    .divider {
+        margin-top: .6rem;
+    }
+
     h3 {
-        font-size: 1.1rem;
+        font-size: 1rem;
+        margin-top: 2rem;
         color: #45565f;
+
+        &:first-child {
+            margin-top: 1rem;
+        }
+    }
+
+    ul {
+        padding: 0 0 0 2rem;
     }
 
     h4 {
-        font-size: .9rem;
+        font-size: .85rem;
         font-weight: 400;
         color: #45565f
     }
