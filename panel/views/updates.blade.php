@@ -95,10 +95,10 @@
 
                 // Tweak Update Name
                 changeLog = changeLog.replace(
-                    /<h3>([a-z0-9.]+)<\/h3>/gi,
+                    /<h3>(.*)<\/h3>/gi,
                     function( a, b, c ) {
                         if ( noHeader ) return '';
-                        return '<h3 class="title">Release <strong>' + b + '</strong></h3><div class="divider"></div>';
+                        return '<h3>Release ' + b + '</h3><div class="divider"></div>';
                     }
                 );
 
