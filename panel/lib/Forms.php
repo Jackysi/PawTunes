@@ -59,7 +59,7 @@
          *
          * @return void
          */
-        public function generateForm( array $fields = null, $forcedValue = null ): void {
+        public function generateForm( $fields = null, $forcedValue = null ): void {
             $fields = $fields ?? $this->fields;
 
             foreach ( $fields as $field ) {

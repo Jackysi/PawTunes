@@ -975,7 +975,6 @@ export default class PawTunes extends HTML5Audio {
             historyContainer.innerHTML = "";
 
         if ( historyContainer && this.historyTemplate && this.history.length >= 1 ) {
-
             for ( const history of this.history ) {
 
                 let at = new Date( history.time );
@@ -1006,7 +1005,6 @@ export default class PawTunes extends HTML5Audio {
 
             unavailable?.classList.add( 'hidden' );
             historyList?.classList.remove( 'hidden' );
-
 
         } else {
 
