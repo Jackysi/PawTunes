@@ -90,7 +90,7 @@ Example Definitions
 
 
   {{! List commits with 'breaking:' or 'Breaking change:' anywhere in the message under a heading}}
-  {{#commit-list commits heading='#### Breaking Changes :warning:' message='[bB]reaking [cC]hange:|[bB]reaking:' }}
+  {{#commit-list commits heading='#### Breaking Changes ⚠️' message='[bB]reaking [cC]hange:|[bB]reaking:' }}
     - {{subject}} {{!--@{{author}}--}} [`{{shorthash}}`]({{href}})
   {{/commit-list}}
 
@@ -115,7 +115,7 @@ Example Definitions
         - {{subject}} {{!--@{{author}}--}} [`{{shorthash}}`]({{href}})
       {{/commit-list}}
 
-      {{#commit-list commits heading='#### Changes to Test Assests' message='^[tT]est:|^[tT]est\(' exclude='[bB]reaking [cC]hange:|[bB]reaking:'}}
+      {{#commit-list commits heading='#### Changes to Test Assets' message='^[tT]est:|^[tT]est\(' exclude='[bB]reaking [cC]hange:|[bB]reaking:'}}
         - {{subject}} {{!--@{{author}}--}} [`{{shorthash}}`]({{href}})
       {{/commit-list}}
 
@@ -123,7 +123,7 @@ Example Definitions
         - {{subject}} {{!--@{{author}}--}} [`{{shorthash}}`]({{href}})
       {{/commit-list}}
 
-      {{#commit-list commits heading='#### Performance Improvments' message='^[pP]erf:|^[pP]erf\(' exclude='[bB]reaking [cC]hange:|[bB]reaking:'}}
+      {{#commit-list commits heading='#### Performance Improvements' message='^[pP]erf:|^[pP]erf\(' exclude='[bB]reaking [cC]hange:|[bB]reaking:'}}
         - {{subject}} {{!--@{{author}}--}} [`{{shorthash}}`]({{href}})
       {{/commit-list}}
 
