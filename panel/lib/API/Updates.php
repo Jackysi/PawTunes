@@ -276,13 +276,15 @@
 
         public function getHistory() {
 
-            header( "Content-Type: text/markdown" );
+            header( "Content-Type: text/plain" );
             if ( !is_file( realpath( getcwd() ) . '/CHANGELOG.md' ) ) {
                 echo "";
                 exit();
             }
 
-            echo file_get_contents( realpath( getcwd() ) . '/CHANGELOG.md' );
+            // Fix line breaks
+            $contents = file_get_contents( realpath( getcwd() ) . '/CHANGELOG.md' );
+            echo str_replace( "\r", "", $contents );
 
         }
 
