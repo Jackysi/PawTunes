@@ -237,7 +237,7 @@ export default class PawTunes extends HTML5Audio {
 
         // Options
         this.autoplay = this.settings.defaults.autoplay;
-        this.language = settings.language;
+        this.language = Object.assign( {}, this.language, settings.language ?? {} );
         this.channels = settings.channels ?? [];
 
         // Debug?
