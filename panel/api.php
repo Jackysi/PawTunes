@@ -41,23 +41,23 @@
         }
 
         $routes = [
-            'artwork-lookup'  => 'API\Artwork::artworkLookup',
-            'import-artwork'  => 'API\Artwork::importArtwork',
-            'get-themes-list' => 'API\Themes::getThemes',
-            'delete-theme'    => 'API\Themes::deleteTheme',
-            'get-artwork'     => 'API\Artwork::getArtwork',
-            'delete-artwork'  => 'API\Artwork::deleteArtwork',
-            'delete-log'      => 'API\Debug::deleteLog',
-            'get-log'         => 'API\Debug::readLog',
-            'get-settings'    => 'API\Settings::getSettings',
-            'update-settings' => 'API\Settings::updateSettings',
-            'get-api-status'  => 'API\Api::getApiStatus',
-            'check-warnings'  => 'API\CheckRequirements::__invoke',
-            'debug'           => 'API\Debug::__invoke',
-            'update'          => 'API\Updates::__invoke',
-            'update-check'    => 'API\Updates::checkForUpdates',
-            'update-history'  => 'API\Updates::getHistory',
-            'update-postscript'  => 'API\Updates::manualPostUpdate',
+            'artwork-lookup'    => 'API\Artwork::artworkLookup',
+            'import-artwork'    => 'API\Artwork::importArtwork',
+            'get-themes-list'   => 'API\Themes::getThemes',
+            'delete-theme'      => 'API\Themes::deleteTheme',
+            'get-artwork'       => 'API\Artwork::getArtwork',
+            'delete-artwork'    => 'API\Artwork::deleteArtwork',
+            'delete-log'        => 'API\Debug::deleteLog',
+            'get-log'           => 'API\Debug::readLog',
+            'get-settings'      => 'API\Settings::getSettings',
+            'update-settings'   => 'API\Settings::updateSettings',
+            'get-api-status'    => 'API\Api::getApiStatus',
+            'check-warnings'    => 'API\CheckRequirements::__invoke',
+            'debug'             => 'API\Debug::__invoke',
+            'update'            => 'API\Updates::__invoke',
+            'update-check'      => 'API\Updates::checkForUpdates',
+            'update-history'    => 'API\Updates::getHistory',
+            'update-postscript' => 'API\Updates::manualPostUpdate',
         ];
 
         // Get the action from $_GET
@@ -76,7 +76,7 @@
 
         }
 
-        header( "HTTP/1.1 404 Not Found" );
+        http_send_status( 404 );
         die( "404 - Not Found" );
 
     } catch ( Throwable|Exception $e ) {
@@ -88,7 +88,7 @@
         $pawtunes->writeLog( 'panel_errors', $e->getMessage() );
         $pawtunes->writeLog( 'panel_errors', $e->getTraceAsString() );
 
-        header( "HTTP/1.1 500 Internal Server Error" );
+        http_send_status( 500 );
         die( "500 - Internal Server Error" );
 
     }

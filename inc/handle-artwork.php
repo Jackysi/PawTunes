@@ -23,7 +23,7 @@
     }
 
     if ( !isset( $_GET[ 'artist' ] ) ) {
-        header( "HTTP/1.1 404 Not Found" );
+        http_send_status( 404 );
         exit;
     }
 

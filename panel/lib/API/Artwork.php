@@ -30,7 +30,7 @@
 
             $art = $this->pawtunes->getArtwork( $text, '', '', $skip );
             if ( !$art ) {
-                header( "HTTP/1.0 404 Not Found" );
+                http_send_status( 404 );
                 exit;
             }
 
