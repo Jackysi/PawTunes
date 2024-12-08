@@ -742,14 +742,12 @@ html {
         align-items: center;
         height: $player-height;
         margin-top: auto;
-        padding: .4rem 0;
 
         .center-container {
             display: flex;
             align-items: center;
             flex: 1 1 auto;
             justify-content: center;
-            margin-top: .5rem;
         }
 
         .history-btn-alt, .history-btn {
