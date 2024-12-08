@@ -107,15 +107,15 @@ export default class HTML5AudioMSE extends HTML5Audio {
         if ( matches && matches[ 1 ] ) {
 
             const trackTitle = matches[ 1 ];
-            this.trigger( 'metadata', { trackTitle } );
+            this.trigger( 'metadata', trackTitle );
 
         }
 
     }
 
     private startBufferManagement() {
-        const BUFFER_THRESHOLD = 30; // seconds
 
+        const BUFFER_THRESHOLD = 30; // seconds
         this.bufferRemoveInterval = window.setInterval( () => {
             if ( !this.sourceBuffer || !this.audio ) return;
 
@@ -153,6 +153,7 @@ export default class HTML5AudioMSE extends HTML5Audio {
         }
 
         await this.fetchAndStream();
+        this.startBufferManagement();
 
     }
 
