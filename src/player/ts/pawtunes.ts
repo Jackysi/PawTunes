@@ -390,10 +390,11 @@ export default class PawTunes extends HTML5Audio {
             return;
         }
 
-        // Web Sockets - Azuracast
+        // Web Sockets - Azura Cast/Custom supported
         if ( this.channel.ws && this.channel.ws.url ) {
 
-            this.ws.connectToSocket( this.channel.ws.url, this.channel.ws.station );
+            // Handles everything
+            this.ws.connectToSocket();
             return;
 
         }

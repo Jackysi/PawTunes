@@ -12,21 +12,31 @@
 import PawTunes from "./pawtunes";
 
 export default class PawtunesWS {
+
     private socket: WebSocket | null = null;
     private pawtunes: PawTunes;
 
-
     constructor( pawtunes: PawTunes ) {
+
         this.pawtunes = pawtunes;
+
     }
 
 
-    isWebSocketActive() {
-        return ( this.socket && this.socket.readyState !== WebSocket.CLOSED );
+    /**
+     * Check if the web socket is active
+     * @returns {boolean}
+     */
+    isWebSocketActive(): boolean {
+        return <boolean>( this.socket && this.socket.readyState !== WebSocket.CLOSED );
     }
 
 
-    close() {
+    /**
+     * Closes the current web socket connection
+     * @returns {Promise.<boolean>}
+     */
+    close(): Promise<boolean> {
         return new Promise( ( resolve ) => {
             if ( this.isWebSocketActive() ) {
 
@@ -53,70 +63,154 @@ export default class PawtunesWS {
     }
 
 
-    connectToSocket( url: string, station: string ) {
+    /**
+     * Connects to a custom Web Socket
+     */
+    connectToSocket() {
 
         this.pawtunes.showLoading();
-        this.socket        = new WebSocket( url );
-        this.socket.onopen = () => {
+        this.socket = new WebSocket( this.pawtunes.channel.ws.url );
+        this.bindSocketEvents();
 
-            const socket      = this.socket as WebSocket;
-            const stationName = `station:${station}`;
+    }
 
-            socket.send( JSON.stringify( { "subs": { [ stationName ]: { "recover": true } } } ) );
+    /**
+     * Binds web socket events
+     */
+    bindSocketEvents() {
+
+        if ( this.socket === null ) {
+            return;
+        }
+
+        // Let's make TS happy
+        const socket = this.socket as WebSocket;
+
+        // Open web socket (initial established connection)
+        socket.onopen = () => {
 
             this.pawtunes.hideLoading();
             console.log( "Websocket connection established" );
 
-            socket.onmessage = ( event ) => {
+            // Azura cast requires sending "subscribe" message on open
+            if ( this.pawtunes.channel.ws.method === 'azuracast' ) {
 
-                let data = JSON.parse( event.data );
-
-                // Handle initial push
-                if ( data.connect && data.connect.subs[ stationName ] ) {
-
-                    let initialStation = data.connect.subs[ stationName ];
-                    if ( initialStation.publications && initialStation.publications.length >= 1 && initialStation.publications[ 0 ]?.data?.np ) {
-                        this.handleAzuraData( initialStation.publications[ 0 ].data.np );
-                    }
-
-                }
-
-                // Regular data
-                if ( data.channel === stationName && data.pub?.data?.np?.now_playing ) {
-                    this.handleAzuraData( data.pub.data.np );
-                }
+                const stationName = `station:${this.pawtunes.channel.ws.station}`;
+                socket.send( JSON.stringify( { "subs": { [ stationName ]: { "recover": true } } } ) );
 
             }
 
-            socket.onerror = ( event ) => {
+        };
 
-                this.pawtunes.hideLoading();
-                console.log( "Websocket connection error: " + event );
+        // Messages are expected in JSON
+        socket.onmessage = ( event ) => {
 
-                // Retry connection
-                if ( this.pawtunes.state === 'online' ) {
+            let data = JSON.parse( event.data );
+            if ( !data ) {
+                return;
+            }
 
-                    this.connectToSocket( url, station );
+            if ( this.pawtunes.channel.ws.method === 'azuracast' ) {
 
-                }
+                this.azuraSocketHandler( data );
+                return;
 
             }
 
-            socket.onclose = () => {
+            this.customSocketHandler( data );
 
-                console.log( "Websocket connection closed" );
-                this.pawtunes.hideLoading();
+        }
 
-                // Retry connection
-                this.connectToSocket( url, station );
+        socket.onerror = ( event ) => {
 
+            this.pawtunes.hideLoading();
+            console.log( "Websocket connection error: " + event );
+
+            // Retry connection
+            if ( this.pawtunes.state === 'online' ) {
+                this.connectToSocket();
             }
+
+        }
+
+        socket.onclose = () => {
+
+            console.log( "Websocket connection closed" );
+            this.pawtunes.hideLoading();
+
+            // Retry connection
+            this.connectToSocket();
 
         }
 
     }
 
 
+    /**
+     * Handles custom Web Socket data
+     * @param {any} data - incoming data from Web Socket
+     */
+    customSocketHandler( data: any ) {
+
+        // Take care of artworks
+        if ( !data.artwork ) {
+            data.artwork = this.pawtunes.pawArtworkURL( data.artist, data.title );
+        }
+
+        /**
+         * Handle Artwork Loading & History Time Ago
+         * Some providers may use played_at instead of time, so let's try both
+         * Notes: we also convert to milliseconds here
+         */
+        if ( data.history ) {
+            for ( let history of data.history ) {
+
+                // Take care of artworks
+                if ( !history.artwork ) {
+                    history.artwork = this.pawtunes.pawArtworkURL( history.artist, history.title );
+                }
+
+                if ( history.played_at ) {
+                    history.time = new Date( history.played_at ).getTime() || history.played_at;
+                }
+
+            }
+        }
+
+        this.pawtunes.handleOnAirResponse( data );
+
+    }
+
+    /**
+     * Azura Cast sends initial data differently than other messages
+     */
+    azuraSocketHandler( data: any ) {
+
+        const stationName = `station:${this.pawtunes.channel.ws.station}`;
+
+        // Handle initial push
+        if ( data.connect && data.connect.subs[ stationName ] ) {
+
+            let initialStation = data.connect.subs[ stationName ];
+            if ( initialStation.publications && initialStation.publications.length >= 1 && initialStation.publications[ 0 ]?.data?.np ) {
+                this.handleAzuraData( initialStation.publications[ 0 ].data.np );
+            }
+
+        }
+
+        // Regular data
+        if ( data.channel === stationName && data.pub?.data?.np?.now_playing ) {
+            this.handleAzuraData( data.pub.data.np );
+        }
+
+
+    }
+
+    /**
+     * Handles AzuraCast WS messages
+     *
+     * @param {object} data JSON object received from AzuraCast websocket
+     */
     handleAzuraData( data: any ) {
 
         let pass = {
