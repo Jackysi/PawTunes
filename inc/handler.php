@@ -52,17 +52,29 @@
 
                 }
 
-                // Check if we need to use websocket
-                if ( $chn[ 'stats' ][ 'method' ] === 'azuracast' && !empty( $chn[ 'stats' ][ 'url' ] ) ) {
+                // Web sockets
+                if (
+                    !empty( $chn[ 'stats' ][ 'url' ] ) &&
+                    in_array( $chn[ 'stats' ][ 'method' ], [ 'azuracast', 'custom' ] )
+                ) {
 
                     $statsURL = parse_url( $chn[ 'stats' ][ 'url' ] );
-                    $chn[ 'websocket' ][ 'method' ] = 'azuracast';
-                    $chn[ 'websocket' ][ 'station' ] = $chn[ 'stats' ][ 'station' ];
+
+                    // Set websocket info
+                    $chn[ 'websocket' ][ 'method' ] = $chn[ 'stats' ][ 'method' ];
                     $chn[ 'websocket' ][ 'url' ] = ( $statsURL[ 'scheme' ] === 'wss' ) ? $chn[ 'stats' ][ 'url' ] : false;
-                    $chn[ 'websocket' ][ 'history' ] = $chn[ 'stats' ][ 'azura-history' ];
-                    $chn[ 'websocket' ][ 'useRemoteCovers' ] = $chn[ 'stats' ][ 'use-cover' ];
+
+                    // Azura Cast has additional parameters
+                    if ( $chn[ 'stats' ][ 'method' ] === 'azuracast' ) {
+
+                        $chn[ 'websocket' ][ 'station' ] = $chn[ 'stats' ][ 'station' ];
+                        $chn[ 'websocket' ][ 'history' ] = $chn[ 'stats' ][ 'azura-history' ];
+                        $chn[ 'websocket' ][ 'useRemoteCovers' ] = $chn[ 'stats' ][ 'use-cover' ];
+
+                    }
 
                 }
+
 
                 $out[ $chn_key ] = [
                     'name'      => $chn[ 'name' ],
