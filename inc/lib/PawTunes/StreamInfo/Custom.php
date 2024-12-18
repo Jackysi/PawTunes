@@ -25,6 +25,12 @@
             $this->requireCURLExt()
                  ->requireURLSet();
 
+            // Cancel if websocket
+            $url = parse_url( $this->channel[ 'stats' ][ 'url' ] );
+            if ( $url[ 'scheme' ] === 'wss' ) {
+                return $this->handleTrack( null, [ 'artist' => "", 'title' => "" ] );
+            }
+
             // Attempt connection
             $data = $this->pawtunes->get(
                 $this->channel[ 'stats' ][ 'url' ],
