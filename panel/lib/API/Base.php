@@ -35,8 +35,8 @@
 
 
         /**
-         * @param $content
-         * @param $name
+         * @param      $content
+         * @param null $name
          *
          * @return void
          */
