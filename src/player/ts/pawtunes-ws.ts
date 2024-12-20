@@ -16,6 +16,9 @@ export default class PawtunesWS {
     private socket: WebSocket | null = null;
     private pawtunes: PawTunes;
 
+    // Used to track retries
+    private retryTimes: number = 1;
+
     constructor( pawtunes: PawTunes ) {
 
         this.pawtunes = pawtunes;
@@ -89,6 +92,7 @@ export default class PawtunesWS {
         // Open web socket (initial established connection)
         socket.onopen = () => {
 
+            this.retryTimes = 1;
             this.pawtunes.hideLoading();
             console.log( "Websocket connection established" );
 
@@ -124,12 +128,8 @@ export default class PawtunesWS {
         socket.onerror = ( event ) => {
 
             this.pawtunes.hideLoading();
-            console.log( "Websocket connection error: " + event );
-
-            // Retry connection
-            if ( this.pawtunes.state === 'online' ) {
-                this.connectToSocket();
-            }
+            console.log( "Websocket connection error: ", event );
+            console.log( this.retryTimes * 2500 );
 
         }
 
@@ -139,7 +139,14 @@ export default class PawtunesWS {
             this.pawtunes.hideLoading();
 
             // Retry connection
-            this.connectToSocket();
+            if ( this.pawtunes.state === 'online' ) {
+                setTimeout( () => {
+
+                    this.connectToSocket();
+                    this.retryTimes++;
+
+                }, 2500 * this.retryTimes )
+            }
 
         }
 
