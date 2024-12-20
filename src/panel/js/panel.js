@@ -21,8 +21,6 @@ function shouldUpdate( serverVersion, localVersion, segments = 3 ) {
     const normalizedServer = normalize( serverVersion );
     const normalizedLocal  = normalize( localVersion );
 
-    console.warn( normalizedServer, normalizedLocal );
-
     return normalizedServer > normalizedLocal;
 }
 
@@ -52,6 +50,7 @@ function shouldUpdate( serverVersion, localVersion, segments = 3 ) {
 
             // Insert the reset button after the field
             $field.after( $resetButton );
+
         } );
 
         /**
