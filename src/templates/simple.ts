@@ -16,7 +16,7 @@ export default class PawTunesTpl {
 
     protected pawtunes: PawTunes;
     private resizeCounter: number = 0;
-    private firstResize: Date = new Date();
+    private firstResize: Date     = new Date();
 
 
     constructor( PawTunes: PawTunes ) {
@@ -82,10 +82,10 @@ export default class PawTunesTpl {
             } )
         } )
 
-        this.pawtunes.on( 'track.change', ( track ) => {
+        this.pawtunes.on( 'track.change', ( track: { artist: string; title: string } ) => {
 
             const artist = this.pawtunes._( '.onair .track-artist' )[ 0 ];
-            const title = this.pawtunes._( '.onair .track-title' )[ 0 ];
+            const title  = this.pawtunes._( '.onair .track-title' )[ 0 ];
 
             // No element found? QUIT!
             if ( !artist || !title )
@@ -93,7 +93,7 @@ export default class PawTunesTpl {
 
             // Set contents
             artist.innerText = track.artist;
-            title.innerText = track.title;
+            title.innerText  = track.title;
 
             // Bind artist
             if ( track.artist.length >= this.pawtunes.settings.trackInfo.artistMaxLen ) {
@@ -142,7 +142,7 @@ export default class PawTunesTpl {
                 // Reset resize if more than 50, but it has taken 5 seconds to get here
             } else if ( this.resizeCounter > 50 && ( this.firstResize.getTime() - new Date().getTime() ) > 5000 ) {
 
-                this.firstResize = new Date();
+                this.firstResize   = new Date();
                 this.resizeCounter = 0;
 
             }
@@ -159,10 +159,10 @@ export default class PawTunesTpl {
 
         // Clone the content to create a seamless loop
         const content = el.innerHTML;
-        el.innerHTML = `<div class="marquee-content">${content}</div><div class="marquee-content">${content}</div>`;
+        el.innerHTML  = `<div class="marquee-content">${content}</div><div class="marquee-content">${content}</div>`;
 
         // Apply necessary styles
-        el.style.display = 'flex';
+        el.style.display  = 'flex';
         el.style.overflow = 'hidden';
         el.style.position = 'relative'; // Ensure the container is positioned relative
 
@@ -173,7 +173,7 @@ export default class PawTunesTpl {
         requestAnimationFrame( () => {
 
             const contentWidth = marqueeContents[ 0 ].offsetWidth;
-            const gap = 20; // Adjust the gap between the contents as needed
+            const gap          = 20; // Adjust the gap between the contents as needed
 
             // Set the width of the content blocks explicitly
             marqueeContents[ 0 ].style.width = `${contentWidth}px`;
