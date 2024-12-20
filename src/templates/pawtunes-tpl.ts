@@ -15,7 +15,7 @@ import PawTunes from "../player/ts/pawtunes";
 export default class PawTunesTpl {
 
     protected pawtunes: PawTunes;
-    private currentPage                             = 'main';
+    private currentPage: string                     = 'main';
     private statusTimeout: any;
     private audioMotion: AudioMotionAnalyzer | null = null;
 
@@ -101,10 +101,10 @@ export default class PawTunesTpl {
     bindPawEvents() {
 
         // Paw Events
-        this.pawtunes.on( 'channel.change', ( channel ) => this.updateChannelName( channel ) )
+        this.pawtunes.on( 'channel.change', ( channel: any ) => this.updateChannelName( channel ) )
         this.pawtunes.on( 'channel.change', () => this.switchPage( 'main' ) )
-        this.pawtunes.on( 'track.change', ( track ) => this.updateTrackInfo( track ) )
-        this.pawtunes.on( 'status.change', ( status ) => this.updateStatusInfo( status ) )
+        this.pawtunes.on( 'track.change', ( track: { artist: string; title: string } ) => this.updateTrackInfo( track ) )
+        this.pawtunes.on( 'status.change', ( status: string ) => this.updateStatusInfo( status ) )
 
         /**
          * When Artwork is loaded, also replace background blur image
@@ -144,7 +144,7 @@ export default class PawTunesTpl {
 
 
     /**
-     * Just bind various events to buttons
+     * Bind various events to buttons
      */
     bindButtons() {
 
@@ -218,7 +218,7 @@ export default class PawTunesTpl {
      *
      * @param track
      */
-    updateTrackInfo( track: any ) {
+    updateTrackInfo( track: { artist: string; title: string } ) {
 
         this.pawtunes._( '.onair .current-track', ( el: HTMLElement ) => el.textContent = `${track.artist} - ${track.title}` );
 
@@ -230,7 +230,7 @@ export default class PawTunesTpl {
      *
      * @param status
      */
-    updateStatusInfo( status: any ) {
+    updateStatusInfo( status: string ) {
 
         if ( !status || status === "" ) return;
         this.pawtunes._( '.player-message', ( el: HTMLElement ) => {
@@ -355,7 +355,7 @@ export default class PawTunesTpl {
             // Set transition to none
             innerContainer[ 0 ].style.transition = 'none';
 
-            // After render delay add back animation
+            // After render delay adds back animation
             setTimeout( function() {
                 innerContainer[ 0 ].style.transition = '';
             }, 0 );
