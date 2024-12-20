@@ -18,6 +18,7 @@ export default class PawtunesWS {
 
     // Used to track retries
     private retryTimes: number = 1;
+    private retryTimer: NodeJS.Timeout | undefined;
 
     constructor( pawtunes: PawTunes ) {
 
@@ -41,11 +42,19 @@ export default class PawtunesWS {
      */
     close(): Promise<boolean> {
         return new Promise( ( resolve ) => {
+
+            // On explicit call, stop retry timer
+            if ( this.retryTimer )
+                clearTimeout( this.retryTimer );
+
             if ( this.isWebSocketActive() ) {
 
                 const socket   = this.socket as WebSocket;
                 socket.onclose = () => {
-                    console.log( "Websocket connection closed" );
+
+                    if ( this.pawtunes.debug )
+                        console.log( "Websocket connection closed" );
+
                     this.socket = null;
                     resolve( true );
                 }
@@ -136,17 +145,20 @@ export default class PawtunesWS {
 
         socket.onclose = () => {
 
-            console.log( "Websocket connection closed" );
             this.pawtunes.hideLoading();
+
+            if ( this.pawtunes.debug ) {
+                console.log( "Websocket connection closed" );
+            }
 
             // Retry connection
             if ( this.pawtunes.state === 'online' ) {
-                setTimeout( () => {
+                this.retryTimer = setTimeout( () => {
 
                     this.connectToSocket();
                     this.retryTimes++;
 
-                }, 2500 * this.retryTimes )
+                }, 2500 * this.retryTimes );
             }
 
         }
