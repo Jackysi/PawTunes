@@ -128,7 +128,8 @@ export default class PawtunesWS {
         socket.onerror = ( event ) => {
 
             this.pawtunes.hideLoading();
-            console.log( "Websocket connection error: ", event );
+            this.pawtunes.handleOnAirError( event );
+
             console.log( this.retryTimes * 2500 );
 
         }
