@@ -420,7 +420,7 @@ export default class PawTunes extends HTML5Audio {
                 } )
                 .catch( error => {
 
-                    console.error( 'There was a problem with the fetch operation:', error );
+                    this.handleOnAirError( error );
 
                 } );
 
@@ -449,24 +449,6 @@ export default class PawTunes extends HTML5Audio {
             return;
         }
 
-        this.writeHTML(
-            '.onair .artist',
-            `<span class="pointer css-hint" data-title="${data.artist}">${this.shorten( data.artist, this.settings.trackInfo.artistMaxLen )}</span>`
-        );
-
-        this.writeHTML(
-            '.onair .title',
-            `<span class="pointer css-hint" data-title="${data.title}">${this.shorten( data.title, this.settings.trackInfo.titleMaxLen )}</span>`
-        );
-
-        // If enabled, we will also update window title on each song change
-        if ( this.settings.dynamicTitle ) {
-
-            if ( this.temp.title == null ) this.temp.title = document.title;
-            document.title = `${data.artist} - ${data.title} | ${this.temp.title}`;
-
-        }
-
         // Set ON AIR
         this.onAir = {
             artist : data.artist,
@@ -475,9 +457,27 @@ export default class PawTunes extends HTML5Audio {
             time   : new Date().getTime()
         };
 
-        this.loadArtwork( data.artwork );
-        this.handleMetaChange();
+        this.writeHTML(
+            '.onair .artist',
+            `<span class="pointer css-hint" data-title="${this.onAir.artist}">${this.shorten( this.onAir.artist, this.settings.trackInfo.artistMaxLen )}</span>`
+        );
+
+        this.writeHTML(
+            '.onair .title',
+            `<span class="pointer css-hint" data-title="${this.onAir.title}">${this.shorten( this.onAir.title, this.settings.trackInfo.titleMaxLen )}</span>`
+        );
+
+        // If enabled, we will also update window title on each song change
+        if ( this.settings.dynamicTitle ) {
+
+            if ( this.temp.title == null ) this.temp.title = document.title;
+            document.title = `${this.onAir.artist} - ${this.onAir.title} | ${this.temp.title}`;
+
+        }
+
+        this.loadArtwork( this.onAir.artwork );
         this.emit( 'track.change', this.onAir );
+        this.handleMetaChange();
 
         // History - full history from API
         if ( data.history && data.history.length >= 1 ) {
@@ -504,6 +504,27 @@ export default class PawTunes extends HTML5Audio {
             this.updateHistoryDOM();
 
         }
+
+    }
+
+    public handleOnAirError( error: any ): void {
+
+        // Set default on air
+        this.onAir = {
+            artist : this.settings.trackInfo.default.artist,
+            title  : this.settings.trackInfo.default.title,
+            artwork: this.settings.trackInfo.default.artwork,
+            time   : new Date().getTime()
+        };
+
+        this.writeText( '.onair .artist', this.onAir.artist );
+        this.writeText( '.onair .title', this.onAir.title );
+        this.emit( 'track.change', this.onAir );
+
+        this.loadArtwork( this.onAir.artwork );
+        this.handleMetaChange();
+
+        console.log( "Error fetching track info: ", error );
 
     }
 
