@@ -64,6 +64,11 @@ pre .text-label {
         background-color: $primary-bg-color;
         box-shadow: .07rem .07rem 0 rgba(0, 0, 0, 0.1);
     }
+
+    &.history {
+        overflow-y: scroll;
+        max-height: 80vh;
+    }
 }
 
 .text-label.fixed {
