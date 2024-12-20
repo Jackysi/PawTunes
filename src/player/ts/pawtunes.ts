@@ -1102,7 +1102,7 @@ export default class PawTunes extends HTML5Audio {
     protected setChannel( specific: string = '' ) {
 
         this.showLoading();
-        this.findChannel( specific );
+        this.findAndSetChannel( specific );
         this.storage!.set( 'last-channel', this.channel.name );
         this.emit( 'channel.change', this.channel );
         this.channelDOMChange( this.channel.skin );
@@ -1712,28 +1712,25 @@ export default class PawTunes extends HTML5Audio {
     /**
      * Find specific channel used to play on air
      */
-    private findChannel( specific: string = '' ) {
+    private findAndSetChannel( specific: string = '' ): Channel {
 
         if ( specific !== '' && this.findObjectByKey( this.channels, 'name', specific ) ) {
-            this.channel = this.findObjectByKey( this.channels, 'name', specific );
-            return;
+            return this.channel = this.findObjectByKey( this.channels, 'name', specific );
         }
 
         // Use storage
         let defaultChannel = this.storage!.get( 'last-channel' );
         if ( defaultChannel && this.findObjectByKey( this.channels, 'name', defaultChannel ) ) {
-            this.channel = this.findObjectByKey( this.channels, 'name', defaultChannel );
-            return;
+            return this.channel = this.findObjectByKey( this.channels, 'name', defaultChannel );
         }
 
         // Use settings
         if ( this.settings.defaults.channel !== "" && this.findObjectByKey( this.channels, 'name', this.settings.defaults.channel ) ) {
-            this.channel = this.findObjectByKey( this.channels, 'name', this.settings.defaults.channel );
-            return;
+            return this.channel = this.findObjectByKey( this.channels, 'name', this.settings.defaults.channel );
         }
 
         // No default found, use the first channel
-        this.channel = this.channels[ 0 ];
+        return this.channel = this.channels[ 0 ];
 
     }
 
