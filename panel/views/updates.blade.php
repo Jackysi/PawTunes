@@ -180,7 +180,7 @@
 
                 const lastRelease        = data.releases[ 0 ];
                 const lastReleaseVersion = lastRelease.tag_name.replace( 'v', '' )
-                if ( shouldUpdate( version, lastReleaseVersion ) ) {
+                if ( !shouldUpdate( lastReleaseVersion, version ) ) {
 
                     $( '.update-content' ).html( '{!!$panel->alert( 'Great news! You are running the latest version!', 'success' )!!}' );
 
