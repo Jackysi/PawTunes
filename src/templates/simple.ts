@@ -25,8 +25,9 @@ export default class PawTunesTpl {
         this.pawtunes.on( 'ready', () => {
 
             this.pawtunes._( '.preloader', ( el: HTMLElement ) => el.classList.add( 'hidden' ) )
-            if ( this.pawtunes._( '.channel-list li' ).length <= 1 )
+            if ( this.pawtunes.channels.length <= 1 ) {
                 this.pawtunes._( '.btn-channels-list', ( el: HTMLElement ) => el.classList.add( 'hidden' ) );
+            }
 
         } );
 
@@ -62,7 +63,13 @@ export default class PawTunesTpl {
     bindEvents() {
 
         this.pawtunes.on( 'channel.change', () => {
+
             this.pawtunes.pagination( 'main' );
+
+            // Reset currently playing track
+            this.pawtunes._( '.onair .track-artist', ( el: HTMLElement ) => el.textContent = this.pawtunes.settings.trackInfo.default.artist );
+            this.pawtunes._( '.onair .track-title', ( el: HTMLElement ) => el.textContent = this.pawtunes.settings.trackInfo.default.title );
+
         } )
 
         // Facebook
