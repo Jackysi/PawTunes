@@ -47,7 +47,7 @@ export default class PawTunesTpl {
         }
 
         // Maybe we already have On Air info?
-        if ( this.pawtunes.onAir ) {
+        if ( this.pawtunes.onAir.artist && this.pawtunes.onAir.title ) {
             this.updateTrackInfo( this.pawtunes.onAir );
         }
 
