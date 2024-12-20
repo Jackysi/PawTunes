@@ -298,8 +298,8 @@ export default class PawTunes extends HTML5Audio {
         // HTML Audio
         this.setup();
         this.bindPlayerControls();
-        this.bindPlayerEvents();
-        this.bindEvents();
+        await this.bindPlayerEvents();
+        await this.bindEvents();
 
         // History
         this.setupHistory();
@@ -326,6 +326,7 @@ export default class PawTunes extends HTML5Audio {
 
         // Analytics
         this.createGoogleAnalytics();
+
     }
 
     /**
@@ -677,7 +678,7 @@ export default class PawTunes extends HTML5Audio {
                 this.play();
             }
 
-            console.log( "We are online..." )
+            console.log( "Network is back online..." )
 
         } );
 
@@ -687,7 +688,7 @@ export default class PawTunes extends HTML5Audio {
             this.state = 'offline'
             this.emit( 'status', 'offline' );
             this.temp.lastState = this.status();
-            console.warn( "We are offline!" );
+            console.warn( "Network is offline!" );
 
         } );
 
@@ -703,7 +704,7 @@ export default class PawTunes extends HTML5Audio {
     /**
      * Bind various player events, PawTunes specific
      */
-    protected bindPlayerEvents(): void {
+    protected async bindPlayerEvents(): Promise<void> {
 
         // PLAY: This is called when "play" button is clicked
         this.on( 'play', () => {
@@ -750,7 +751,7 @@ export default class PawTunes extends HTML5Audio {
         } )
 
         // ERROR: An error occurred
-        this.on( 'error', ( err ) => {
+        this.on( 'error', ( err: MediaError ) => {
 
             // Ignore autoplay errors
             if ( err.code && err.code === 4 && ( this.status()?.networkState ?? 0 ) >= HTMLMediaElement.HAVE_CURRENT_DATA ) {
@@ -796,13 +797,13 @@ export default class PawTunes extends HTML5Audio {
         if ( 'mediaSession' in navigator ) {
 
             navigator.mediaSession.setActionHandler( 'play', () => this.play() );
-            navigator.mediaSession.setActionHandler( 'pause', () => {
+            navigator.mediaSession.setActionHandler( 'pause', async() => {
 
                 if ( 'mediaSession' in navigator ) {
                     navigator.mediaSession.playbackState = 'paused';
                 }
 
-                this.stop();
+                await this.stop();
                 this.toast( this.translate( 'status_stopped' ), true );
 
             } );
@@ -1668,7 +1669,7 @@ export default class PawTunes extends HTML5Audio {
 
         try {
 
-            this.setMedia( streams );
+            await this.setMedia( streams );
             if ( this.autoplay ) {
 
                 await this.play();
