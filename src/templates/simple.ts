@@ -62,15 +62,8 @@ export default class PawTunesTpl {
 
     bindEvents() {
 
-        this.pawtunes.on( 'channel.change', () => {
-
-            this.pawtunes.pagination( 'main' );
-
-            // Reset currently playing track
-            this.pawtunes._( '.onair .track-artist', ( el: HTMLElement ) => el.textContent = this.pawtunes.settings.trackInfo.default.artist );
-            this.pawtunes._( '.onair .track-title', ( el: HTMLElement ) => el.textContent = this.pawtunes.settings.trackInfo.default.title );
-
-        } )
+        // Open the main tab
+        this.pawtunes.on( 'channel.change', () => this.pawtunes.pagination( 'main' ) )
 
         // Facebook
         this.pawtunes._( '.share-area .facebook-share', ( el: HTMLElement ) => {
