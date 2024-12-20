@@ -21,6 +21,8 @@ function shouldUpdate( serverVersion, localVersion, segments = 3 ) {
     const normalizedServer = normalize( serverVersion );
     const normalizedLocal  = normalize( localVersion );
 
+    console.warn( normalizedServer, normalizedLocal );
+
     return normalizedServer > normalizedLocal;
 }
 
@@ -183,7 +185,7 @@ function shouldUpdate( serverVersion, localVersion, segments = 3 ) {
                 // Check if an update is available
                 const lastRelease        = data.releases[ 0 ];
                 const lastReleaseVersion = lastRelease.tag_name.replace( 'v', '' )
-                if ( shouldUpdate( version, lastReleaseVersion ) ) {
+                if ( shouldUpdate( lastReleaseVersion, version ) ) {
 
                     // Indicate that an update is available
                     $( '#tab-updates' ).append( `&nbsp;&nbsp;<span class="label label-important">v${lastReleaseVersion}</span>` );
