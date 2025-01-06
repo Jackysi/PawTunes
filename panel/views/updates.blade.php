@@ -89,7 +89,6 @@
             function parseChangelog( data, noHeader = false ) {
 
                 let changeLog = markdown( data );
-                console.warn( changeLog );
 
                 // Remove title
                 changeLog = changeLog.replace( /<h2>[^<\/]+<\/h2>/g, '' );
@@ -98,7 +97,6 @@
                 changeLog = changeLog.replace(
                     /<h3>(.*?)<\/h3>/gi,
                     function( a, b, c ) {
-                        console.warn( b );
                         if ( noHeader ) return '';
                         return '<h3>Release ' + b + '</h3><div class="divider"></div>';
                     }
