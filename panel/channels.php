@@ -138,6 +138,9 @@
 
     } else if ( isset( $_GET[ 'cache' ] ) && $_GET[ 'cache' ] === 'flush' ) {
 
+        // Use cache delete first
+        $pawtunes->cache->deleteAll();
+
         // Cache directory
         $cachePath = realpath( $pawtunes->config( 'cache' )[ 'path' ] );
 

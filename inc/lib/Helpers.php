@@ -110,8 +110,8 @@
          */
         public function get(
             string $url,
-            array  $post = null,
-            string $auth = null,
+            ?array  $post = null,
+            ?string $auth = null,
                    $progress = false,
             int    $timeout = 5,
                    &$error = false,
