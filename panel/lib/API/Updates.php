@@ -77,6 +77,8 @@
 
                 $this->downloadUpdate();
                 $this->extractUpdate();
+
+                $this->sendSSE( "<div>Processing installation...</div>" );
                 $this->postUpdate( $this->path );
 
                 // Delete zip file & temp file
