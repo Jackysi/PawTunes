@@ -59,6 +59,7 @@
         header( 'X-Accel-Redirect: ' . $art );
         header( 'X-LiteSpeed-Location: ' . $art );
         flush();
+        exit;
 
     }
 
