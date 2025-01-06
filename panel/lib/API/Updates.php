@@ -28,6 +28,17 @@
          */
         protected string $sseName = 'update';
 
+        /**
+         * Files to skip when extracting the release
+         *
+         * @var string[]
+         */
+        private array $skipFiles = [
+            'inc/config/general.php'  => true,
+            'inc/config/channels.php' => true,
+            'data/images/default.png' => true,
+        ];
+
 
         /**
          * @param $pawtunes
@@ -156,7 +167,7 @@
 
 
         /**
-         * @throws \splitbrain\PHPArchive\ArchiveIOException
+         * @return void
          */
         private function extractUpdate(): void {
 
@@ -188,6 +199,15 @@
                 for ( $i = 0; $i < $total; $i++ ) {
 
                     $tmp = $zip->getNameIndex( $i );
+
+                    // Skip specific files
+                    if ( isset( $this->skipFiles[ $tmp ] ) ) {
+
+                        unset( $this->skipFiles[ $tmp ] );
+                        continue;
+
+                    }
+
                     $zip->extractTo( $this->path, [ $tmp ] );
 
                     $file = $i + 1;
@@ -211,8 +231,6 @@
 
 
         public function postUpdate( $path ): void {
-
-            $this->sendSSE( "<div>Processing installation...</div>" );
 
             // Trigger post update script
             if ( file_exists( $path . '/post-update.php' ) ) {
