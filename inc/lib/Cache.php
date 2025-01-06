@@ -54,11 +54,12 @@
             // Default Cache class options
             $this->options = $options + [
                     'path'    => realpath( getcwd() ) . '/cache', // Location where to cache items
-                    'ext'     => '.cache',    // Disk cache file extension
-                    'encrypt' => false,       // Disk cache basic file encryption
-                    'mode'    => 'disk',      // Modes: disk, apc, apcu, redis, memcache, memcached
-                    'extra'   => [],          // Additional options (only redis, memcached and memcache supports at the moment)
-                    'prefix'  => '',          // Key prefix (all modes)
+                    'host'    => '127.0.0.1:11211', // Memcached/Redis host (memcached default)
+                    'ext'     => '.cache',          // Disk cache file extension
+                    'encrypt' => false,             // Disk cache basic file encryption
+                    'mode'    => 'disk',            // Modes: disk, apc, apcu, redis, memcache, memcached
+                    'extra'   => [],                // Additional options (only redis, memcached and memcache supports at the moment)
+                    'prefix'  => '',                // Key prefix (all modes)
                 ];
 
 
@@ -122,9 +123,9 @@
                         $this->object = new \Redis();
 
                         // Use socket
-                        if ( !preg_match( '/(.*):(\d+)/', $this->options[ 'path' ], $host ) ) {
+                        if ( !preg_match( '/(.*):(\d+)/', $this->options[ 'host' ], $host ) ) {
 
-                            if ( $this->object->pconnect( $this->options[ 'path' ], 0, 2 ) ) {
+                            if ( $this->object->pconnect( $this->options[ 'host' ], 0, 2 ) ) {
 
                                 return true;
 
@@ -165,9 +166,9 @@
                         $this->object = new \Memcache;
 
                         // Use socket
-                        if ( !preg_match( '/(.*):(\d+)/', $this->options[ 'path' ], $host ) ) {
+                        if ( !preg_match( '/(.*):(\d+)/', $this->options[ 'host' ], $host ) ) {
 
-                            if ( $this->object->addServer( $this->options[ 'path' ], 0 ) ) {
+                            if ( $this->object->addServer( $this->options[ 'host' ], 0 ) ) {
                                 return true;
                             }
 
@@ -194,9 +195,9 @@
                             return true;
                         }
 
-                        if ( !preg_match( '/(.*):(\d+)/', $this->options[ 'path' ], $host ) ) { // Use socket, faster
+                        if ( !preg_match( '/(.*):(\d+)/', $this->options[ 'host' ], $host ) ) { // Use socket, faster
 
-                            if ( $this->object->addServer( $this->options[ 'path' ], 0, true ) ) {
+                            if ( $this->object->addServer( $this->options[ 'host' ], 0, true ) ) {
 
                                 return true;
 
