@@ -14,8 +14,6 @@
     namespace API;
 
     use Exception;
-    use splitbrain\PHPArchive\ArchiveIOException;
-    use splitbrain\PHPArchive\Zip;
     use ZipArchive;
 
     class Updates extends Base {
@@ -87,7 +85,7 @@
 
                 $this->closeSSE();
 
-            } catch ( Exception|ArchiveIOException $e ) {
+            } catch ( Exception $e ) {
 
                 $this->sendSSE( '<div class="text-red"><b>ERROR</b>: ' . $e->getMessage() . '</div>' );
                 $this->sendSSE( '<div class="text-red">UPDATE FAILED!</div>' );
@@ -165,11 +163,8 @@
             // If ZipArchive is missing in the system, use splitbrains pure Zip implementation
             if ( !class_exists( 'ZipArchive' ) ) {
 
-                $this->sendSSE( "<div>Extracting update...</div>" );
-
-                $zip = new Zip();
-                $zip->open( $this->path . '/data/updates/update.zip' );
-                $zip->extract( $this->path );
+                $this->sendSSE( "<div>Failed to extract update, PHP ZIP Extension is missing!</div>" );
+                $this->closeSSE();
                 return;
 
             }
