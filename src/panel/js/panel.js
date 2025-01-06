@@ -220,7 +220,7 @@ function shouldUpdate( serverVersion, localVersion, segments = 3 ) {
                         `<div class="alert alert-warning alert-icon">
                             <div class="content">
                                 Running a post-update script, please do not interrupt this process...
-                                <pre class="post-update">Loading, please wait...</pre>
+                                <pre class="post-update">Processing...</pre>
                             </div>
                         </div>`
                     );

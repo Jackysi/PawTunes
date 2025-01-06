@@ -348,7 +348,6 @@
             $name = $this->parseKey( $key );
             $data = false;
 
-
             // Various Modes / Actions
             switch ( $this->options[ 'mode' ] ) {
 
@@ -568,12 +567,10 @@
                     $deleted = apc_delete( $name );
                     break;
 
-
                 // APCu extension uses its own calls
                 case 'apcu':
                     $deleted = apcu_delete( $name );
                     break;
-
 
                 // Redis method
                 case 'memcache':
@@ -581,7 +578,6 @@
                 case 'redis':
                     $deleted = $this->object->delete( $name );
                     break;
-
 
                 // Default is always disk cache
                 default:
@@ -598,16 +594,12 @@
             }
 
             // If cache key was successfully deleted, also clean it from cache_store
-            if ( $deleted === true ) {
-
-                // Ignore cache_store, should never be deleted
-                if ( $key !== 'cache_store' ) {
-                    $this->stack( 'delete', $key );
-                }
-
+            // Ignore cache_store, should never be deleted
+            if ( ( $deleted === true ) && $key !== 'cache_store' ) {
+                $this->stack( 'delete', $key );
             }
 
-            return false;
+            return $deleted;
 
         }
 
