@@ -85,6 +85,19 @@ If you encounter any issues during installation, please refer to the [Installati
 
 I also offer installation and customization services. For more details, feel free to reach out via the [Prahec - Contact Me](https://prahec.com/contact) page.
 
+### 📦 Docker
+For system insulation and ease of start I would suggest Docker image. It's super easy to start with single command:
+```
+docker run -d -p 80:80 jackyprahec/pawtunes:latest
+```
+
+To persist data and configuration files through different docker images, you can mount/copy these folders:
+```
+/var/www/html/inc/config
+/var/www/html/inc/locale
+/var/www/html/data
+```
+
 ---
 
 ### 🤝Developers Friendly
@@ -127,7 +140,7 @@ I will also be extremely grateful for any help solving issues and/or improving m
 **PawTunes** would have taken even more time to develop without the incredible open-source projects that made it possible. Here’s the list of libraries and projects used in the **Control Panel**:
 
 - **FontAwesome 6 Free**: [https://fontawesome.com/](https://fontawesome.com/)
-- **Bootstrap Modals**: (Not the entire framework, just the modals) [https://getbootstrap.com/docs/5.3/components/modal/](https://getbootstrap.com/docs/5.3/components/modal/)
+- **Bootstrap Modals**: [https://getbootstrap.com/docs/5.3/components/modal/](https://getbootstrap.com/docs/5.3/components/modal/)
 - **SCSS PHP Compiler**: For custom color schemes [https://scssphp.github.io/scssphp/](https://scssphp.github.io/scssphp/)
 - **Spectrum**: For color picking of templates [https://bgrins.github.io/spectrum/](https://bgrins.github.io/spectrum/)
 - **jQuery**: [https://jquery.com/](https://jquery.com/)
