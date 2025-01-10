@@ -98,7 +98,11 @@
                 }
             }
 
-            $this->cache = new Cache( [ 'prefix' => $this->prefix, 'path' => $cachePath ?? null ] + $this->settings[ 'cache' ] );
+            $this->cache = new Cache(
+                [
+                    'prefix' => $this->settings[ 'cache' ][ 'prefix' ] ?? $this->prefix,
+                    'path'   => $cachePath ?? null ] + $this->settings[ 'cache' ]
+            );
 
         }
 
