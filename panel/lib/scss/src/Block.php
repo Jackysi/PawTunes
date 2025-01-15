@@ -4,10 +4,8 @@
  * SCSSPHP
  *
  * @copyright 2012-2020 Leaf Corcoran
- *
- * @license http://opensource.org/licenses/MIT MIT
- *
- * @link http://scssphp.github.io/scssphp
+ * @license   http://opensource.org/licenses/MIT MIT
+ * @link      http://scssphp.github.io/scssphp
  */
 
 namespace ScssPhp\ScssPhp;
@@ -16,11 +14,10 @@ namespace ScssPhp\ScssPhp;
  * Block
  *
  * @author Anthon Pang <anthon.pang@gmail.com>
- *
  * @internal
  */
-class Block
-{
+class Block {
+
     /**
      * @var string|null
      */
@@ -70,4 +67,5 @@ class Block
      * @var Block|null
      */
     public $selfParent;
+
 }

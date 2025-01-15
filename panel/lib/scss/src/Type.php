@@ -4,10 +4,8 @@
  * SCSSPHP
  *
  * @copyright 2012-2020 Leaf Corcoran
- *
- * @license http://opensource.org/licenses/MIT MIT
- *
- * @link http://scssphp.github.io/scssphp
+ * @license   http://opensource.org/licenses/MIT MIT
+ * @link      http://scssphp.github.io/scssphp
  */
 
 namespace ScssPhp\ScssPhp;
@@ -17,8 +15,8 @@ namespace ScssPhp\ScssPhp;
  *
  * @author Anthon Pang <anthon.pang@gmail.com>
  */
-class Type
-{
+class Type {
+
     /**
      * @internal
      */
@@ -40,7 +38,7 @@ class Type
      * @internal
      */
     const T_CHARSET = 'charset';
-    const T_COLOR = 'color';
+    const T_COLOR   = 'color';
     /**
      * @internal
      */
@@ -139,8 +137,8 @@ class Type
      * @internal
      */
     const T_KEYWORD = 'keyword';
-    const T_LIST = 'list';
-    const T_MAP = 'map';
+    const T_LIST    = 'list';
+    const T_MAP     = 'map';
     /**
      * @internal
      */
@@ -172,8 +170,8 @@ class Type
     /**
      * @internal
      */
-    const T_NOT = 'not';
-    const T_NULL = 'null';
+    const T_NOT    = 'not';
+    const T_NULL   = 'null';
     const T_NUMBER = 'number';
     /**
      * @internal
@@ -190,7 +188,7 @@ class Type
     /**
      * @internal
      */
-    const T_SELF = 'self';
+    const T_SELF   = 'self';
     const T_STRING = 'string';
     /**
      * @internal
@@ -208,4 +206,5 @@ class Type
      * @internal
      */
     const T_WHILE = 'while';
+
 }

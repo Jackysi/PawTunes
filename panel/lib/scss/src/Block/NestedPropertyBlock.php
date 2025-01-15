@@ -4,10 +4,8 @@
  * SCSSPHP
  *
  * @copyright 2012-2020 Leaf Corcoran
- *
- * @license http://opensource.org/licenses/MIT MIT
- *
- * @link http://scssphp.github.io/scssphp
+ * @license   http://opensource.org/licenses/MIT MIT
+ * @link      http://scssphp.github.io/scssphp
  */
 
 namespace ScssPhp\ScssPhp\Block;
@@ -18,8 +16,8 @@ use ScssPhp\ScssPhp\Type;
 /**
  * @internal
  */
-class NestedPropertyBlock extends Block
-{
+class NestedPropertyBlock extends Block {
+
     /**
      * @var bool
      */
@@ -30,8 +28,9 @@ class NestedPropertyBlock extends Block
      */
     public $prefix;
 
-    public function __construct()
-    {
+
+    public function __construct() {
         $this->type = Type::T_NESTED_PROPERTY;
     }
+
 }

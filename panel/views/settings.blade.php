@@ -1,4 +1,4 @@
-<?php
+@php
 
     /**
      * @var $languages
@@ -227,7 +227,7 @@
         ],
 
     ];
-?>
+@endphp
 @section('content')
     <form method="POST" action="index.php?page=settings" enctype="multipart/form-data">
 

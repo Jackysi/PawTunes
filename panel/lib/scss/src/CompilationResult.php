@@ -4,16 +4,14 @@
  * SCSSPHP
  *
  * @copyright 2012-2020 Leaf Corcoran
- *
- * @license http://opensource.org/licenses/MIT MIT
- *
- * @link http://scssphp.github.io/scssphp
+ * @license   http://opensource.org/licenses/MIT MIT
+ * @link      http://scssphp.github.io/scssphp
  */
 
 namespace ScssPhp\ScssPhp;
 
-class CompilationResult
-{
+class CompilationResult {
+
     /**
      * @var string
      */
@@ -29,41 +27,42 @@ class CompilationResult
      */
     private $includedFiles;
 
+
     /**
-     * @param string $css
+     * @param string      $css
      * @param string|null $sourceMap
-     * @param string[] $includedFiles
+     * @param string[]    $includedFiles
      */
-    public function __construct($css, $sourceMap, array $includedFiles)
-    {
+    public function __construct( $css, $sourceMap, array $includedFiles ) {
         $this->css = $css;
         $this->sourceMap = $sourceMap;
         $this->includedFiles = $includedFiles;
     }
 
+
     /**
      * @return string
      */
-    public function getCss()
-    {
+    public function getCss() {
         return $this->css;
     }
+
 
     /**
      * @return string[]
      */
-    public function getIncludedFiles()
-    {
+    public function getIncludedFiles() {
         return $this->includedFiles;
     }
+
 
     /**
      * The sourceMap content, if it was generated
      *
      * @return null|string
      */
-    public function getSourceMap()
-    {
+    public function getSourceMap() {
         return $this->sourceMap;
     }
+
 }

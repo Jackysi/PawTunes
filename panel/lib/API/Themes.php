@@ -1,82 +1,82 @@
 <?php
 
-    /**
-     * PawTunes Project - Open Source Radio Player
-     *
-     * @author       Jacky (Jaka Prasnikar)
-     * @email        jacky@prahec.com
-     * @website      https://prahec.com
-     * @repository   https://github.com/Jackysi/pawtunes
-     * This file is part of the PawTunes open-source project.
-     * Contributions and feedback are welcome! Visit the repository or website for more details.
-     */
+/**
+ * PawTunes Project - Open Source Radio Player
+ *
+ * @author       Jacky (Jaka Prasnikar)
+ * @email        jacky@prahec.com
+ * @website      https://prahec.com
+ * @repository   https://github.com/Jackysi/pawtunes
+ * This file is part of the PawTunes open-source project.
+ * Contributions and feedback are welcome! Visit the repository or website for more details.
+ */
 
-    namespace API;
+namespace API;
 
-    class Themes extends Base {
+class Themes extends Base {
 
-        public function getThemes() {
+    public function getThemes() {
 
-            $this->sendJSON( $this->readThemes() );
+        $this->sendJSON( $this->readThemes() );
 
-        }
+    }
 
 
-        public function deleteTheme() {
+    private function readThemes() {
 
-            $name = $_GET[ 'path' ];
-            if ( $name ) {
-                $schemes = $this->readThemes();
+        // List of templates
+        $templates = $this->pawtunes->getTemplates();
+        $schemes = [];
 
-                $valid = false;
-                foreach ( $schemes as $scheme ) {
-                    if ( $scheme[ 'path' ] === $name ) {
-                        $valid = true;
-                        break;
-                    }
+        // Read all custom folders
+        foreach ( $templates as $template ) {
+            if ( is_dir( $template[ 'path' ] . '/custom' ) ) {
+
+                $list = $this->pawtunes->browse( $template[ 'path' ] . '/custom' );
+                foreach ( $list as $custom ) {
+                    $schemes[] = [
+                        'name'     => $custom,
+                        'template' => $template[ 'name' ],
+                        'path'     => $template[ 'path' ] . '/custom/' . $custom,
+                        'size'     => $this->pawtunes->formatBytes( filesize( $template[ 'path' ] . '/custom/' . $custom ) ),
+                    ];
                 }
-
-                if ( $valid ) {
-                    $this->sendJSON( [ 'success' => @unlink( $_GET[ 'path' ] ) ] );
-                }
-
-                $this->sendJSON( [ 'success' => false ] );
 
             }
-
         }
 
+        // Sort by template
+        usort( $schemes, static function( $a, $b ) {
+            return $a[ 'template' ] <=> $b[ 'template' ];
+        } );
 
-        private function readThemes() {
+        return $schemes;
 
-            // List of templates
-            $templates = $this->pawtunes->getTemplates();
-            $schemes = [];
+    }
 
-            // Read all custom folders
-            foreach ( $templates as $template ) {
-                if ( is_dir( $template[ 'path' ] . '/custom' ) ) {
 
-                    $list = $this->pawtunes->browse( $template[ 'path' ] . '/custom' );
-                    foreach ( $list as $custom ) {
-                        $schemes[] = [
-                            'name'     => $custom,
-                            'template' => $template[ 'name' ],
-                            'path'     => $template[ 'path' ] . '/custom/' . $custom,
-                            'size'     => $this->pawtunes->formatBytes( filesize( $template[ 'path' ] . '/custom/' . $custom ) ),
-                        ];
-                    }
+    public function deleteTheme() {
 
+        $name = $_GET[ 'path' ];
+        if ( $name ) {
+            $schemes = $this->readThemes();
+
+            $valid = false;
+            foreach ( $schemes as $scheme ) {
+                if ( $scheme[ 'path' ] === $name ) {
+                    $valid = true;
+                    break;
                 }
             }
 
-            // Sort by template
-            usort( $schemes, static function( $a, $b ) {
-                return $a[ 'template' ] <=> $b[ 'template' ];
-            } );
+            if ( $valid ) {
+                $this->sendJSON( [ 'success' => @unlink( $_GET[ 'path' ] ) ] );
+            }
 
-            return $schemes;
+            $this->sendJSON( [ 'success' => false ] );
 
         }
 
     }
+
+}
