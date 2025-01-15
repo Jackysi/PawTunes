@@ -4,10 +4,8 @@
  * SCSSPHP
  *
  * @copyright 2012-2020 Leaf Corcoran
- *
- * @license http://opensource.org/licenses/MIT MIT
- *
- * @link http://scssphp.github.io/scssphp
+ * @license   http://opensource.org/licenses/MIT MIT
+ * @link      http://scssphp.github.io/scssphp
  */
 
 namespace ScssPhp\ScssPhp\Formatter;
@@ -16,11 +14,10 @@ namespace ScssPhp\ScssPhp\Formatter;
  * Output block
  *
  * @author Anthon Pang <anthon.pang@gmail.com>
- *
  * @internal
  */
-class OutputBlock
-{
+class OutputBlock {
+
     /**
      * @var string|null
      */
@@ -65,4 +62,5 @@ class OutputBlock
      * @var int|null
      */
     public $sourceColumn;
+
 }

@@ -1,4 +1,4 @@
-<?php
+@php
     /**
      * Hint IDE already defined variables from parent (this file is part of bigger whole)
      *
@@ -6,7 +6,7 @@
      * @var string $language
      * @var array  $languages
      */
-?>
+@endphp
 @section('content')
     <form action="index.php?page=language&{{( ( isset( $_GET[ 'add' ] ) ) ? 'add' : 'edit=' . $_GET[ 'edit' ] )}}" method="POST" accept-charset="UTF-8">
         <div class="panel">

@@ -2,6 +2,6 @@
 
 namespace ScssPhp\ScssPhp\Exception;
 
-interface SassException
-{
+interface SassException {
+
 }

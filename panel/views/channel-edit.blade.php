@@ -215,15 +215,15 @@
 
             // ### Initial Focus on Channel Name Field
             // When the page loads, focus on the input field with the name "name".
-            $('input[name="name"]').focus();
+            $( 'input[name="name"]' ).focus();
 
             // ### Handle Stat Input Changes
             // When the stat selection changes, update the stat configuration fields accordingly.
-            $('select#stats').on('change', function() {
+            $( 'select#stats' ).on( 'change', function() {
 
-                let $this = $(this);
-                let $statsConf = $('.stats-conf');
-                switch ($this.val()) {
+                let $this      = $( this );
+                let $statsConf = $( '.stats-conf' );
+                switch ( $this.val() ) {
 
                     // ### Dynamic Cases Generated via PHP
                     // For each tracking method, generate corresponding fields.
@@ -234,7 +234,7 @@
                     }
                     @endphp
                     case '<?= $key ?>':
-                        $statsConf.html('<?= $fields ?>');
+                        $statsConf.html( '<?= $fields ?>' );
                         break;
                     @php endforeach @endphp
 
@@ -246,15 +246,15 @@
 
                 return false;
 
-            });
+            } );
 
             // ### Add a New Stream Group
             // When the "Add Group" button is clicked, add a new quality group.
-            $('.add-group').on('click', function() {
+            $( '.add-group' ).on( 'click', function() {
 
                 // Calculate the new group's index.
-                let xid = parseInt($('.quality-group').index($('.quality-group').last())) + 1 || 0;
-                let quality = 'Default Quality' + (xid >= 1 ? ' (' + (xid + 1) + ')' : '');
+                let xid     = parseInt( $( '.quality-group' ).index( $( '.quality-group' ).last() ) ) + 1 || 0;
+                let quality = 'Default Quality' + ( xid >= 1 ? ' (' + ( xid + 1 ) + ')' : '' );
 
                 // Create the HTML structure for the new quality group.
                 let $html = $(
@@ -271,74 +271,74 @@
                 );
 
                 // Append the new group to the streams list.
-                $('.streams-list').append($html);
+                $( '.streams-list' ).append( $html );
 
                 // Automatically add a stream row to the new group.
-                $html.find('.add-row').trigger('click');
+                $html.find( '.add-row' ).trigger( 'click' );
 
                 return false;
 
-            });
+            } );
 
             // ### Delete a Stream Group
             // Handle the deletion of a quality group.
-            $('.streams-list').on('click', '.delete-group', function() {
-                if (confirm('Are you sure you wish to delete the whole group?')) {
+            $( '.streams-list' ).on( 'click', '.delete-group', function() {
+                if ( confirm( 'Are you sure you wish to delete the whole group?' ) ) {
 
                     // Remove the quality group.
-                    $(this).closest('.quality-group').remove();
+                    $( this ).closest( '.quality-group' ).remove();
 
                     // ### Reindex the Remaining Groups
                     // Update the name attributes to maintain correct indices.
                     let xid = 0;
-                    $('.quality-group').each(function() {
-                        $(this).find('select, input').each(function() {
+                    $( '.quality-group' ).each( function() {
+                        $( this ).find( 'select, input' ).each( function() {
 
-                            let $input = $(this);
-                            let currentName = $input.attr('name');
+                            let $input      = $( this );
+                            let currentName = $input.attr( 'name' );
 
-                            if (currentName != null) {
+                            if ( currentName != null ) {
                                 // Use regex to replace the index number in the name attribute.
-                                $input.attr('name', currentName.replace(/_([0-9]+)\[\]/, '_' + xid + '[]'));
+                                $input.attr( 'name', currentName.replace( /_([0-9]+)\[\]/, '_' + xid + '[]' ) );
                             }
 
-                        });
+                        } );
 
                         xid++; // Increment the group index.
 
-                    });
+                    } );
                 }
 
                 return false;
 
-            });
+            } );
 
             // ### Delete a Stream Row
             // Handle the deletion of individual stream rows.
-            $('.streams-list').on('click', '.remove-row', function() {
+            $( '.streams-list' ).on( 'click', '.remove-row', function() {
 
-                if (confirm('Are you sure you wish to delete this stream?')) {
+                if ( confirm( 'Are you sure you wish to delete this stream?' ) ) {
 
                     // Remove the entire table row containing the stream.
-                    $(this).closest('tr').remove();
+                    $( this ).closest( 'tr' ).remove();
 
                 }
 
                 return false;
 
-            });
+            } );
 
             // ### Add a Stream Row
             // Add a new stream input row within a quality group.
-            $('.streams-list').on('click', '.add-row', function() {
+            $( '.streams-list' ).on( 'click', '.add-row', function() {
 
                 // Get the index of the current quality group.
-                let xid = parseInt($('.quality-group').index($(this).closest('.quality-group'))) || 0;
+                let xid = parseInt( $( '.quality-group' ).index( $( this ).closest( '.quality-group' ) ) ) || 0;
 
                 // Append a new stream row to the group's table body.
-                $(this)
-                    .closest('.quality-group')
-                    .find('tbody')
+                $( this )
+                    .closest( '.quality-group' )
+                    .find( 'tbody' )
                     .append(
                         '<tr class="stream-row">' +
                         '<td class="col-sm-9">' +
@@ -360,51 +360,51 @@
                     );
 
                 // Re-initialize custom select boxes (if using a plugin).
-                $('select').selectbox();
+                $( 'select' ).selectbox();
                 return false;
 
-            });
+            } );
 
             // ### Update File Input Display
             // Display the selected file name in a custom input field.
-            $('input[type="file"]').on('change', function() {
+            $( 'input[type="file"]' ).on( 'change', function() {
 
-                let fileName = $(this).val().replace(/.*\\fakepath\\/, '');
-                $(this).parent('.file-input').find('input.file-name').val(fileName);
+                let fileName = $( this ).val().replace( /.*\\fakepath\\/, '' );
+                $( this ).parent( '.file-input' ).find( 'input.file-name' ).val( fileName );
 
-            });
+            } );
 
             // ### Delete Existing Logo (Edit Mode Only)
             // Allow users to delete the existing logo when editing.
             @if (isset($_GET['action']) && $_GET['action'] === 'edit')
-            $('.delete-logo').on('click', function() {
+            $( '.delete-logo' ).on( 'click', function() {
 
-                let $this = $(this);
+                let $this = $( this );
 
                 // Send a request to delete the logo.
-                $.get('index.php?page=channels&action=edit&channel={{$_GET['channel']}}&logo=delete', function() {
+                $.get( 'index.php?page=channels&action=edit&channel={{$_GET['channel']}}&logo=delete', function() {
 
                     // Remove the logo container from the DOM.
-                    $this.closest('.logo-container').remove();
+                    $this.closest( '.logo-container' ).remove();
 
-                });
+                } );
 
                 return false;
 
-            });
+            } );
             @endif
 
             // ### Trigger Stats Change on Page Load
             // If the form has been submitted or the action is not 'add', trigger the stat change event to populate fields.
             @if (isset($_POST['submit']) || $_GET['action'] !== 'add')
-            $('select#stats').trigger('change');
+            $( 'select#stats' ).trigger( 'change' );
             @endif
 
             // ### Ensure at Least One Quality Group Exists
             // If no quality groups are present, automatically add one.
-            if ($('.streams-list .quality-group').length === 0) {
+            if ( $( '.streams-list .quality-group' ).length === 0 ) {
 
-                $('.add-group').trigger('click');
+                $( '.add-group' ).trigger( 'click' );
 
             }
         };

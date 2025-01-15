@@ -4,10 +4,8 @@
  * SCSSPHP
  *
  * @copyright 2012-2020 Leaf Corcoran
- *
- * @license http://opensource.org/licenses/MIT MIT
- *
- * @link http://scssphp.github.io/scssphp
+ * @license   http://opensource.org/licenses/MIT MIT
+ * @link      http://scssphp.github.io/scssphp
  */
 
 namespace ScssPhp\ScssPhp\Compiler;
@@ -16,11 +14,10 @@ namespace ScssPhp\ScssPhp\Compiler;
  * Compiler environment
  *
  * @author Anthon Pang <anthon.pang@gmail.com>
- *
  * @internal
  */
-class Environment
-{
+class Environment {
+
     /**
      * @var \ScssPhp\ScssPhp\Block|null
      */
@@ -65,4 +62,5 @@ class Environment
      * @var int
      */
     public $depth;
+
 }

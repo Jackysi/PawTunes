@@ -7,7 +7,7 @@
             if ( typeof ( window.loadInit ) == "function" ) { window.loadInit(); }
             $( "select" ).selectbox();
 
-            let genTime = '<?= round( ( ( microtime( true ) - ( $_SERVER[ 'REQUEST_TIME_FLOAT' ] ?? 0.0 ) ) * 1000 ), 2 ) ?>';
+            let genTime = '<?=round( ( ( microtime( true ) - ( $_SERVER[ 'REQUEST_TIME_FLOAT' ] ?? 0.0 ) ) * 1000 ), 2 )?>';
             console.log( `Page generated in ${genTime}ms` );
         </script>
         <link href="./assets/css/inter.css" rel="stylesheet">
