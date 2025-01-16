@@ -1129,7 +1129,7 @@ export default class PawTunes extends HTML5Audio {
         let script    = document.createElement( 'script' );
         script.src    = 'https://www.googletagmanager.com/gtag/js?id=' + this.settings.analytics;
         script.async  = true;
-        script.onload = function() {
+        script.onload = () => {
 
             function gtag() {
                 // @ts-ignore
@@ -1139,7 +1139,7 @@ export default class PawTunes extends HTML5Audio {
             // @ts-ignore
             gtag( 'js', new Date() );
             // @ts-ignore
-            gtag( 'config', s.analytics );
+            gtag( 'config', this.settings.analytics );
 
         }
 
