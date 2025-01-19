@@ -207,7 +207,7 @@ if ( !empty( $_POST ) ) {
                 // Shoutcast Public Method
                 case 'shoutcast-public':
 
-                    // Check if Shoutcast admin URL can be parsed
+                    // Check if Shoutcast public URL can be parsed
                     if ( $pawtunes->parseURL( $_POST[ 'shoutcast-public-url' ] ) === null ) {
                         $error = $panel->alert( 'Shoutcast Stats URL could not be detected. Please use <b>http://url-to-server:port</b> format.', 'error' );
                     }
@@ -236,6 +236,22 @@ if ( !empty( $_POST ) ) {
                         'auth-pass' => $_POST[ 'icecast-pass' ],
                         'mount'     => $_POST[ 'icecast-mount' ],
                         'fallback'  => $_POST[ 'icecast-fallback-mount' ] ];
+                    break;
+
+                // Icecast Method
+                case 'icecast-public':
+
+                    // Check if Icecast public URL can be parsed
+                    if ( $pawtunes->parseURL( $_POST[ 'icecast-public-url' ] ) === null ) {
+                        $error = $panel->alert( 'Icecast Stats URL could not be detected. Please use <b>http://url-to-server:port</b> format.', 'error' );
+                    }
+
+                    // normalize array
+                    $stats = [
+                        'method' => 'icecast-public',
+                        'url'    => $_POST[ 'icecast-public-url' ],
+                        'mount'  => $_POST[ 'icecast-public-mount' ],
+                    ];
                     break;
 
                 // SAM Broadcaster Method
