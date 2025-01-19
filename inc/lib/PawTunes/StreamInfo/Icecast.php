@@ -65,17 +65,17 @@
 
                 foreach ( $parsed[ 'source' ] as $mount ) {
 
-                    // Parse mount name
+                    // Get the mount name
                     $mountName = $mount[ '@attributes' ][ 'mount' ];
                     unset( $mount[ '@attributes' ] );
-                    
+
                     $ice[ $mountName ] = $mount;
 
                 }
 
             } else { // Handle single mount setup
 
-                // Parse mount name
+                // Get the mount name
                 $mountName = $parsed[ 'source' ][ '@attributes' ][ 'mount' ];
                 unset( $parsed[ 'source' ][ '@attributes' ] );
 
