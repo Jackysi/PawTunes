@@ -128,6 +128,7 @@ switch ( $channel[ 'stats' ][ 'method' ] ) {
     case 'custom':
     case 'direct':
     case 'icecast':
+    case 'icecast-public':
     case 'sam':
     case 'shoutcast':
     case 'shoutcast-public':
