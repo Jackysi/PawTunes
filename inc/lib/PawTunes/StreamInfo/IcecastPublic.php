@@ -17,7 +17,6 @@ use lib\PawException;
 
 class IcecastPublic extends TrackInfo {
 
-
     /**
      * Make sure requirements are meet and then get info, parse it and return
      *
