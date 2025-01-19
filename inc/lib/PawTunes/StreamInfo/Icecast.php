@@ -61,15 +61,14 @@
             }
 
             // Handle multi-mount setup
-            if ( is_array( $parsed[ 'source' ][ 0 ] ) ) {
+            if ( isset( $parsed[ 'source' ][ 0 ] ) && is_array( $parsed[ 'source' ][ 0 ] ) ) {
 
                 foreach ( $parsed[ 'source' ] as $mount ) {
 
                     // Parse mount name
                     $mountName = $mount[ '@attributes' ][ 'mount' ];
                     unset( $mount[ '@attributes' ] );
-
-                    // Make nice array with mount name as key (for fall-back <3)
+                    
                     $ice[ $mountName ] = $mount;
 
                 }
@@ -80,7 +79,6 @@
                 $mountName = $parsed[ 'source' ][ '@attributes' ][ 'mount' ];
                 unset( $parsed[ 'source' ][ '@attributes' ] );
 
-                // Make nice array with mount name as key (for fall-back <3)
                 $ice[ $mountName ] = $parsed[ 'source' ];
 
             }
