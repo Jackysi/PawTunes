@@ -304,16 +304,9 @@ export default class PawTunes extends HTML5Audio {
         // History
         this.setupHistory();
 
-        // Media Source, also listen to the hash change
-        let hashChannel = decodeURIComponent( window.location.href.split( "#" )[ 1 ] || '' );
-        window.addEventListener( 'hashchange', () => {
-
-            hashChannel = decodeURIComponent( window.location.href.split( "#" )[ 1 ] || '' );
-            this.setChannel( hashChannel );
-            this.setStream();
-            this.play();
-
-        } )
+        // Initial hash and/or on channel hash change
+        let hashChannel = this.getDecodedHash();
+        window.addEventListener( 'hashchange', () => this.hashChange() );
 
         // Channel, if hash detected use that as priority
         this.setChannel( hashChannel );
@@ -872,13 +865,8 @@ export default class PawTunes extends HTML5Audio {
 
                 this._( '.channel', ( elm: HTMLElement ) => elm.classList.remove( 'active' ), channelsList );
 
-                li.classList.add( 'active' );
                 channelsContainer.classList.remove( 'active' );
-
-                this.setChannel( channel.name )
-                this.setStream();
-                this.generateStreamsDOM();
-                await this.play();
+                window.location.hash = channel.name;
 
             } )
 
@@ -944,6 +932,68 @@ export default class PawTunes extends HTML5Audio {
 
         streamsContainer.classList.remove( 'hidden' );
 
+    }
+
+    /**
+     * Generates streams in a dropdown menu
+     *
+     * @return {void}
+     * @private
+     */
+    getDecodedHash(): string {
+
+        try {
+
+            let rawHash = window.location.hash || '';
+            if ( rawHash.startsWith( '#' ) ) {
+                rawHash = rawHash.substring( 1 );
+            }
+
+            return decodeURIComponent( rawHash );
+
+        } catch ( e ) {
+
+            console.error( 'Error decoding channel name:', e );
+            return '';
+
+        }
+
+    }
+
+    /**
+     * Handles changes in the hash part of the URL to switch channels.
+     *
+     * Decodes the channel name from the URL hash, sets the current channel,
+     * updates the stream list, and starts playing the selected channel.
+     */
+    async hashChange() {
+
+        let hashChannel = this.getDecodedHash();
+        this.setChannel( hashChannel );
+        this.setStream();
+        this.generateStreamsDOM();
+        await this.play();
+
+        let channelsContainer = this.getElm( ' .channels' )
+        let channelsList      = channelsContainer.querySelectorAll( '.channel-list li' ) as NodeListOf<Element>;
+        if ( !channelsContainer || !channelsList ) {
+            return;
+        }
+
+        for ( let li of channelsList ) {
+
+            if ( li.classList.contains( 'active' ) ) {
+                li.classList.remove( 'active' );
+            }
+
+            let hrefElm = li.querySelector( 'a' );
+            if ( hrefElm ) {
+                if ( this.channel && this.channel.name === hrefElm.getAttribute( 'data-channel' ) ) {
+                    li.classList.add( 'active' );
+                }
+            }
+
+        }
     }
 
     /**
