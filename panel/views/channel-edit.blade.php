@@ -365,8 +365,8 @@
 
             } );
 
-            // ### Update File Input Display
-            // Display the selected file name in a custom input field.
+            // ### Update File Input
+            //  the selected file name in a custom input field.
             $( 'input[type="file"]' ).on( 'change', function() {
 
                 let fileName = $( this ).val().replace( /.*\\fakepath\\/, '' );
@@ -396,7 +396,7 @@
 
             // ### Trigger Stats Change on Page Load
             // If the form has been submitted or the action is not 'add', trigger the stat change event to populate fields.
-            @if (isset($_POST['submit']) || $_GET['action'] !== 'add')
+            @if (!empty( $_POST ) || $_GET['action'] !== 'add')
             $( 'select#stats' ).trigger( 'change' );
             @endif
 
