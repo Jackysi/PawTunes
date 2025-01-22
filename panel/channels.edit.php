@@ -158,8 +158,8 @@ if ( !empty( $_POST ) ) {
                     // normalize array
                     $stats = [
                         'method'   => 'direct',
-                        'url'      => $_POST[ 'direct-url' ],
-                        'fallback' => $_POST[ 'direct-url-fallback' ],
+                        'url'      => $_POST[ 'direct-url' ] ?? null,
+                        'fallback' => $_POST[ 'direct-url-fallback' ] ?? null,
                     ];
                     break;
 
@@ -167,7 +167,7 @@ if ( !empty( $_POST ) ) {
                 case 'azuracast':
 
                     // Check if Shoutcast admin URL can be parsed
-                    if ( $pawtunes->parseURL( $_POST[ 'azura-url' ] ) === null ) {
+                    if ( $pawtunes->parseURL( $_POST[ 'azura-url' ] ?? null ) === null ) {
                         $error = $panel->alert( 'Azuracast API/Websocket URL could not be detected. Please use <b>http(s)://url-to-server:port/</b> or <b>wss://url-to-server:port/</b>  format.', 'error' );
                     }
 
@@ -179,8 +179,8 @@ if ( !empty( $_POST ) ) {
                     // normalize array
                     $stats = [
                         'method'        => 'azuracast',
-                        'url'           => $_POST[ 'azura-url' ],
-                        'station'       => $_POST[ 'azura-station' ],
+                        'url'           => $_POST[ 'azura-url' ] ?? null,
+                        'station'       => $_POST[ 'azura-station' ] ?? null,
                         'use-cover'     => !empty( $_POST[ 'azura-use-cover' ] ) && (bool) $_POST[ 'azura-use-cover' ] === true,
                         'azura-history' => !empty( $_POST[ 'azura-history' ] ) && (bool) $_POST[ 'azura-history' ] === true,
                     ];
@@ -190,16 +190,16 @@ if ( !empty( $_POST ) ) {
                 case 'shoutcast':
 
                     // Check if Shoutcast admin URL can be parsed
-                    if ( $pawtunes->parseURL( $_POST[ 'shoutcast-url' ] ) === null ) {
+                    if ( $pawtunes->parseURL( $_POST[ 'shoutcast-url' ] ?? null ) === null ) {
                         $error = $panel->alert( 'Shoutcast Stats URL could not be detected. Please use <b>http://url-to-server:port</b> format.', 'error' );
                     }
 
                     // normalize array
                     $stats = [
                         'method'     => 'shoutcast',
-                        'url'        => $_POST[ 'shoutcast-url' ],
-                        'auth'       => $_POST[ 'shoutcast-pass' ],
-                        'sid'        => $_POST[ 'shoutcast-sid' ],
+                        'url'        => $_POST[ 'shoutcast-url' ] ?? null,
+                        'auth'       => $_POST[ 'shoutcast-pass' ] ?? null,
+                        'sid'        => $_POST[ 'shoutcast-sid' ] ?? null,
                         'sc-history' => !empty( $_POST[ 'sc-history' ] ) && (bool) $_POST[ 'sc-history' ] === true,
                     ];
                     break;
@@ -208,15 +208,15 @@ if ( !empty( $_POST ) ) {
                 case 'shoutcast-public':
 
                     // Check if Shoutcast public URL can be parsed
-                    if ( $pawtunes->parseURL( $_POST[ 'shoutcast-public-url' ] ) === null ) {
+                    if ( $pawtunes->parseURL( $_POST[ 'shoutcast-public-url' ] ?? null ) === null ) {
                         $error = $panel->alert( 'Shoutcast Stats URL could not be detected. Please use <b>http://url-to-server:port</b> format.', 'error' );
                     }
 
                     // normalize array
                     $stats = [
                         'method' => 'shoutcast-public',
-                        'url'    => $_POST[ 'shoutcast-public-url' ],
-                        'sid'    => $_POST[ 'shoutcast-public-sid' ],
+                        'url'    => $_POST[ 'shoutcast-public-url' ] ?? null,
+                        'sid'    => $_POST[ 'shoutcast-public-sid' ] ?? null,
                     ];
                     break;
 
@@ -231,37 +231,38 @@ if ( !empty( $_POST ) ) {
                     // normalize array
                     $stats = [
                         'method'    => 'icecast',
-                        'url'       => $_POST[ 'icecast-url' ],
-                        'auth-user' => $_POST[ 'icecast-user' ],
-                        'auth-pass' => $_POST[ 'icecast-pass' ],
-                        'mount'     => $_POST[ 'icecast-mount' ],
-                        'fallback'  => $_POST[ 'icecast-fallback-mount' ] ];
+                        'url'       => $_POST[ 'icecast-url' ] ?? null,
+                        'auth-user' => $_POST[ 'icecast-user' ] ?? null,
+                        'auth-pass' => $_POST[ 'icecast-pass' ] ?? null,
+                        'mount'     => $_POST[ 'icecast-mount' ] ?? null,
+                        'fallback'  => $_POST[ 'icecast-fallback-mount' ] ?? null,
+                    ];
                     break;
 
                 // Icecast Method
                 case 'icecast-public':
 
                     // Check if Icecast public URL can be parsed
-                    if ( $pawtunes->parseURL( $_POST[ 'icecast-public-url' ] ) === null ) {
+                    if ( $pawtunes->parseURL( $_POST[ 'icecast-public-url' ] ?? null ) === null ) {
                         $error = $panel->alert( 'Icecast Stats URL could not be detected. Please use <b>http://url-to-server:port</b> format.', 'error' );
                     }
 
                     // normalize array
                     $stats = [
                         'method' => 'icecast-public',
-                        'url'    => $_POST[ 'icecast-public-url' ],
-                        'mount'  => $_POST[ 'icecast-public-mount' ],
+                        'url'    => $_POST[ 'icecast-public-url' ] ?? null,
+                        'mount'  => $_POST[ 'icecast-public-mount' ] ?? null,
                     ];
                     break;
 
                 // SAM Broadcaster Method
                 case 'sam': // normalize array
                     $stats = [
-                        'method'    => 'sam',
-                        'host'      => $_POST[ 'sam-host' ],
-                        'auth-user' => $_POST[ 'sam-user' ],
-                        'auth-pass' => $_POST[ 'sam-pass' ],
-                        'db'        => $_POST[ 'sam-db' ] ];
+                                 'method'    => 'sam',
+                                 'host'      => $_POST[ 'sam-host' ] ?? null,
+                                 'auth-user' => $_POST[ 'sam-user' ] ?? null,
+                                 'auth-pass' => $_POST[ 'sam-pass' ] ?? null,
+                                 'db'        => $_POST[ 'sam-db' ] ] ?? null;
                     break;
 
                 // Centovacast Method
@@ -309,7 +310,7 @@ if ( !empty( $_POST ) ) {
         // Prepare output config array
         $conf[] = [
             'name'    => $pawtunes->strToUTF8( $_POST[ 'name' ] ),
-            'logo'    => ( ( empty( $logoPath ) ) ? ( $channels[ $_GET[ 'e' ] ][ 'logo' ] ?? null ) : $logoPath ),
+            'logo'    => ( ( empty( $logoPath ) ) ? ( $channels[ $_GET[ 'e' ] ?? null ][ 'logo' ] ?? null ) : $logoPath ),
             'skin'    => ( !empty( $_POST[ 'skin' ] ) ) ? $_POST[ 'skin' ] : null,
             'streams' => $quality_groups,
             'stats'   => $stats ?? [],
