@@ -20,7 +20,7 @@ export default class PawtunesWS {
     private retryTimes: number = 1;
     private retryTimer: NodeJS.Timeout | undefined;
 
-    constructor( pawtunes: PawTunes ) {
+    constructor(pawtunes: PawTunes) {
 
         this.pawtunes = pawtunes;
 
@@ -32,7 +32,7 @@ export default class PawtunesWS {
      * @returns {boolean}
      */
     isWebSocketActive(): boolean {
-        return <boolean>( this.socket && this.socket.readyState !== WebSocket.CLOSED );
+        return <boolean>(this.socket && this.socket.readyState !== WebSocket.CLOSED);
     }
 
 
@@ -41,27 +41,27 @@ export default class PawtunesWS {
      * @returns {Promise.<boolean>}
      */
     close(): Promise<boolean> {
-        return new Promise( ( resolve ) => {
+        return new Promise((resolve) => {
 
             // On explicit call, stop retry timer
-            if ( this.retryTimer )
-                clearTimeout( this.retryTimer );
+            if (this.retryTimer)
+                clearTimeout(this.retryTimer);
 
-            if ( this.isWebSocketActive() ) {
+            if (this.isWebSocketActive()) {
 
-                const socket   = this.socket as WebSocket;
+                const socket = this.socket as WebSocket;
                 socket.onclose = () => {
 
-                    if ( this.pawtunes.debug )
-                        console.log( "Websocket connection closed" );
+                    if (this.pawtunes.debug)
+                        console.log("Websocket connection closed");
 
                     this.socket = null;
-                    resolve( true );
+                    resolve(true);
                 }
 
                 socket.onerror = () => {
                     this.socket = null;
-                    resolve( true );
+                    resolve(true);
                 }
 
                 socket.close();
@@ -69,9 +69,9 @@ export default class PawtunesWS {
 
             }
 
-            resolve( true );
+            resolve(true);
 
-        } );
+        });
     }
 
 
@@ -81,7 +81,7 @@ export default class PawtunesWS {
     connectToSocket() {
 
         this.pawtunes.showLoading();
-        this.socket = new WebSocket( this.pawtunes.channel.ws.url );
+        this.socket = new WebSocket(this.pawtunes.channel.ws.url);
         this.bindSocketEvents();
 
     }
@@ -91,7 +91,7 @@ export default class PawtunesWS {
      */
     bindSocketEvents() {
 
-        if ( this.socket === null ) {
+        if (this.socket === null) {
             return;
         }
 
@@ -103,43 +103,43 @@ export default class PawtunesWS {
 
             this.retryTimes = 1;
             this.pawtunes.hideLoading();
-            console.log( "Websocket connection established" );
+            console.log("Websocket connection established");
 
             // Azura cast requires sending "subscribe" message on open
-            if ( this.pawtunes.channel.ws.method === 'azuracast' ) {
+            if (this.pawtunes.channel.ws.method === 'azuracast') {
 
                 const stationName = `station:${this.pawtunes.channel.ws.station}`;
-                socket.send( JSON.stringify( { "subs": { [ stationName ]: { "recover": true } } } ) );
+                socket.send(JSON.stringify({"subs": {[stationName]: {"recover": true}}}));
 
             }
 
         };
 
         // Messages are expected in JSON
-        socket.onmessage = ( event ) => {
+        socket.onmessage = (event) => {
 
-            let data = JSON.parse( event.data );
-            if ( !data ) {
+            let data = JSON.parse(event.data);
+            if (!data) {
                 return;
             }
 
-            if ( this.pawtunes.channel.ws.method === 'azuracast' ) {
+            if (this.pawtunes.channel.ws.method === 'azuracast') {
 
-                this.azuraSocketHandler( data );
+                this.azuraSocketHandler(data);
                 return;
 
             }
 
-            this.customSocketHandler( data );
+            this.customSocketHandler(data);
 
         }
 
-        socket.onerror = ( event ) => {
+        socket.onerror = (event) => {
 
             this.pawtunes.hideLoading();
-            this.pawtunes.handleOnAirError( event );
+            this.pawtunes.handleOnAirError(event);
 
-            console.log( this.retryTimes * 2500 );
+            console.log(this.retryTimes * 2500);
 
         }
 
@@ -147,18 +147,18 @@ export default class PawtunesWS {
 
             this.pawtunes.hideLoading();
 
-            if ( this.pawtunes.debug ) {
-                console.log( "Websocket connection closed" );
+            if (this.pawtunes.debug) {
+                console.log("Websocket connection closed");
             }
 
             // Retry connection
-            if ( this.pawtunes.state === 'online' ) {
-                this.retryTimer = setTimeout( () => {
+            if (this.pawtunes.state === 'online') {
+                this.retryTimer = setTimeout(() => {
 
                     this.connectToSocket();
                     this.retryTimes++;
 
-                }, 2500 * this.retryTimes );
+                }, 2500 * this.retryTimes);
             }
 
         }
@@ -170,11 +170,11 @@ export default class PawtunesWS {
      * Handles custom Web Socket data
      * @param {any} data - incoming data from Web Socket
      */
-    customSocketHandler( data: any ) {
+    customSocketHandler(data: any) {
 
         // Take care of artworks
-        if ( !data.artwork ) {
-            data.artwork = this.pawtunes.pawArtworkURL( data.artist, data.title );
+        if (!data.artwork) {
+            data.artwork = this.pawtunes.pawArtworkURL(data.artist, data.title);
         }
 
         /**
@@ -182,45 +182,45 @@ export default class PawtunesWS {
          * Some providers may use played_at instead of time, so let's try both
          * Notes: we also convert to milliseconds here
          */
-        if ( data.history ) {
-            for ( let history of data.history ) {
+        if (data.history) {
+            for (let history of data.history) {
 
                 // Take care of artworks
-                if ( !history.artwork ) {
-                    history.artwork = this.pawtunes.pawArtworkURL( history.artist, history.title );
+                if (!history.artwork) {
+                    history.artwork = this.pawtunes.pawArtworkURL(history.artist, history.title);
                 }
 
-                if ( history.played_at ) {
-                    history.time = new Date( history.played_at ).getTime() || history.played_at;
+                if (history.played_at) {
+                    history.time = new Date(history.played_at).getTime() || history.played_at;
                 }
 
             }
         }
 
-        this.pawtunes.handleOnAirResponse( data );
+        this.pawtunes.handleOnAirResponse(data);
 
     }
 
     /**
      * Azura Cast sends initial data differently than other messages
      */
-    azuraSocketHandler( data: any ) {
+    azuraSocketHandler(data: any) {
 
         const stationName = `station:${this.pawtunes.channel.ws.station}`;
 
         // Handle initial push
-        if ( data.connect && data.connect.subs[ stationName ] ) {
+        if (data.connect && data.connect.subs[stationName]) {
 
-            let initialStation = data.connect.subs[ stationName ];
-            if ( initialStation.publications && initialStation.publications.length >= 1 && initialStation.publications[ 0 ]?.data?.np ) {
-                this.handleAzuraData( initialStation.publications[ 0 ].data.np );
+            let initialStation = data.connect.subs[stationName];
+            if (initialStation.publications && initialStation.publications.length >= 1 && initialStation.publications[0]?.data?.np) {
+                this.handleAzuraData(initialStation.publications[0].data.np);
             }
 
         }
 
         // Regular data
-        if ( data.channel === stationName && data.pub?.data?.np?.now_playing ) {
-            this.handleAzuraData( data.pub.data.np );
+        if (data.channel === stationName && data.pub?.data?.np?.now_playing) {
+            this.handleAzuraData(data.pub.data.np);
         }
 
 
@@ -231,11 +231,11 @@ export default class PawtunesWS {
      *
      * @param {object} data JSON object received from AzuraCast websocket
      */
-    handleAzuraData( data: any ) {
+    handleAzuraData(data: any) {
 
         let pass = {
-            artist : null,
-            title  : null,
+            artist: null,
+            title: null,
             artwork: null,
             history: [] as any[]
         };
@@ -243,24 +243,24 @@ export default class PawtunesWS {
         let song = data.now_playing.song;
 
         // Since currently only AzuraCast is supported, we modify the response a little
-        pass.artist  = song.artist;
-        pass.title   = song.title;
-        pass.artwork = ( !this.pawtunes.channel.ws.useRemoteCovers || !song.art ) ? this.pawtunes.pawArtworkURL( song.artist, song.title ) : song.art;
+        pass.artist = song.artist;
+        pass.title = song.title;
+        pass.artwork = (!this.pawtunes.channel.ws.useRemoteCovers || !song.art) ? this.pawtunes.pawArtworkURL(song.artist, song.title) : song.art;
 
         // History
-        if ( this.pawtunes.channel.ws.history && data.song_history ) {
-            data.song_history.forEach( ( track: any ) => {
-                pass.history.push( {
-                    artist : track.song.artist,
-                    title  : track.song.title,
-                    artwork: ( !this.pawtunes.channel.ws.useRemoteCovers || !track.song.art ) ? this.pawtunes.pawArtworkURL( track.song.artist, track.song.title ) : track.song.art,
-                    time   : track.played_at * 1000
-                } );
-            } );
+        if (this.pawtunes.channel.ws.history && data.song_history) {
+            data.song_history.forEach((track: any) => {
+                pass.history.push({
+                    artist: track.song.artist,
+                    title: track.song.title,
+                    artwork: (!this.pawtunes.channel.ws.useRemoteCovers || !track.song.art) ? this.pawtunes.pawArtworkURL(track.song.artist, track.song.title) : track.song.art,
+                    time: track.played_at * 1000
+                });
+            });
         }
 
         // Handle playing data
-        this.pawtunes.handleOnAirResponse( pass );
+        this.pawtunes.handleOnAirResponse(pass);
 
     }
 

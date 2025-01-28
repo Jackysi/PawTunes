@@ -9,7 +9,7 @@
  * Contributions and feedback are welcome! Visit the repository or website for more details.
  */
 
-import { OnAir, PawMediaSource, Channel } from "./types";
+import {OnAir, PawMediaSource, Channel} from "./types";
 import PawTunesWS from "./pawtunes-ws";
 import HTML5Audio from "./html5-audio";
 import Storage from "./storage";
@@ -20,10 +20,10 @@ export default class PawTunes extends HTML5Audio {
      * @var {object} onAir
      */
     onAir: OnAir = {
-        artist : "",
-        title  : "",
+        artist: "",
+        title: "",
         artwork: null,
-        time   : 0
+        time: 0
     };
 
     /**
@@ -33,11 +33,11 @@ export default class PawTunes extends HTML5Audio {
      */
     artworkTypes = {
         'jpeg': 'image/jpeg',
-        'jpg' : 'image/jpeg',
-        'png' : 'image/png',
-        'gif' : 'image/gif',
+        'jpg': 'image/jpeg',
+        'png': 'image/png',
+        'gif': 'image/gif',
         'webp': 'image/webp',
-        'svg' : 'image/svg+xml'
+        'svg': 'image/svg+xml'
     };
 
     /**
@@ -71,7 +71,7 @@ export default class PawTunes extends HTML5Audio {
      *
      * @var {object} channel
      */
-    channel: Channel = { name: "", logo: null, skin: "", ws: {}, streams: {} };
+    channel: Channel = {name: "", logo: null, skin: "", ws: {}, streams: {}};
 
     /**
      * @var {array} history
@@ -90,7 +90,7 @@ export default class PawTunes extends HTML5Audio {
      *
      * @var {string} prefix
      */
-    prefix: string = btoa( window.location.pathname ).replace( /=/g, '' ) + "_";
+    prefix: string = btoa(window.location.pathname).replace(/=/g, '') + "_";
 
     /**
      * Current picked stream (can be one of multiple qualities)
@@ -125,14 +125,14 @@ export default class PawTunes extends HTML5Audio {
      *
      * @var {object} timers
      */
-    timers: { [ key: string ]: any } = {};
+    timers: { [key: string]: any } = {};
 
     /**
      * URL of the player without channel hash
      *
      * @var {string} url
      */
-    url = window.location.href.split( '#' )[ 0 ];
+    url = window.location.href.split('#')[0];
 
     /**
      * Websocket class, used as reference for open web socket session
@@ -147,38 +147,38 @@ export default class PawTunes extends HTML5Audio {
      *
      * @var {object} language
      */
-    language: { [ key: string ]: string } = {
-        error               : "ERROR",
-        error_create        : "Unable to find channels, please create one!",
-        error_defined       : "NO CHANNELS DEFINED",
-        error_invalid       : "Invalid Channel!",
-        error_network       : "ERROR: Network error occurred!",
-        error_playback      : "ERROR: Playback failed, loading stream failed!",
-        error_stream        : "ERROR: The specified or selected stream does not exist!",
-        history_added       : "Added",
+    language: { [key: string]: string } = {
+        error: "ERROR",
+        error_create: "Unable to find channels, please create one!",
+        error_defined: "NO CHANNELS DEFINED",
+        error_invalid: "Invalid Channel!",
+        error_network: "ERROR: Network error occurred!",
+        error_playback: "ERROR: Playback failed, loading stream failed!",
+        error_stream: "ERROR: The specified or selected stream does not exist!",
+        history_added: "Added",
         history_artist_title: "Artist/Title",
-        history_hour_ago    : "hr ago",
-        history_just_now    : "just now",
-        history_min_ago     : "min ago",
-        history_sec_ago     : "sec ago",
-        loading_message     : "Loading, please wait...",
-        history_no_history  : "No history available at this time.",
-        share               : "Share",
-        song_history        : "Song History",
-        status_init         : "Loading {STREAM}...",
-        status_muted        : "Player muted.",
-        status_playing      : "Playing {STREAM}...",
-        status_stopped      : "Player stopped.",
-        status_volume       : "Volume: {LEVEL}",
-        twitter_share       : "I am listening to {TRACK}!",
-        ui_back             : "Back",
-        ui_channels         : "Channels list",
-        ui_history          : "Show Track History",
-        ui_play             : "Start playing",
-        ui_playlists        : "Listen in your favorite player",
-        ui_settings         : "Select stream quality",
-        ui_stop             : "Stop playing",
-        ui_volume_circle    : "Drag to change volume"
+        history_hour_ago: "hr ago",
+        history_just_now: "just now",
+        history_min_ago: "min ago",
+        history_sec_ago: "sec ago",
+        loading_message: "Loading, please wait...",
+        history_no_history: "No history available at this time.",
+        share: "Share",
+        song_history: "Song History",
+        status_init: "Loading {STREAM}...",
+        status_muted: "Player muted.",
+        status_playing: "Playing {STREAM}...",
+        status_stopped: "Player stopped.",
+        status_volume: "Volume: {LEVEL}",
+        twitter_share: "I am listening to {TRACK}!",
+        ui_back: "Back",
+        ui_channels: "Channels list",
+        ui_history: "Show Track History",
+        ui_play: "Start playing",
+        ui_playlists: "Listen in your favorite player",
+        ui_settings: "Select stream quality",
+        ui_stop: "Stop playing",
+        ui_volume_circle: "Drag to change volume"
     };
 
     /**
@@ -186,33 +186,33 @@ export default class PawTunes extends HTML5Audio {
      *
      * @var {object} settings
      */
-    settings: { [ p: string ]: any } = {
-        api          : '',
-        analytics    : false,
-        defaults     : {
-            autoplay      : false,
-            channel       : "",
+    settings: { [p: string]: any } = {
+        api: '',
+        analytics: false,
+        defaults: {
+            autoplay: false,
+            channel: "",
             default_volume: 50,
         },
-        dynamicTitle : true,
-        history      : true,
+        dynamicTitle: true,
+        history: true,
         historyMaxLen: 20,
-        refreshRate  : 10,
-        template     : 'pawtunes',
-        tpl          : {},
-        title        : "PawTunes",
-        trackInfo    : {
-            artistMaxLen    : 24,
-            titleMaxLen     : 28,
+        refreshRate: 10,
+        template: 'pawtunes',
+        tpl: {},
+        title: "PawTunes",
+        trackInfo: {
+            artistMaxLen: 24,
+            titleMaxLen: 28,
             lazyLoadArtworks: false,
-            lazyLoadURL     : './index.php?artwork&artist={ARTIST}&title={TITLE}',
-            default         : {
-                artist : "Various Artists",
-                title  : "Unknown Track",
+            lazyLoadURL: './index.php?artwork&artist={ARTIST}&title={TITLE}',
+            default: {
+                artist: "Various Artists",
+                title: "Unknown Track",
                 artwork: "./data/images/default.png",
             },
         },
-        showTimer    : true,
+        showTimer: true,
     };
 
 
@@ -222,62 +222,62 @@ export default class PawTunes extends HTML5Audio {
      * @param container HTMLElement
      * @param settings any
      */
-    constructor( container: string, settings: any ) {
+    constructor(container: string, settings: any) {
 
-        super( container );
+        super(container);
 
         // Storage requires unified prefix
-        this.prefix  = settings.prefix ?? this.prefix;
-        this.storage = new Storage( this.prefix );
+        this.prefix = settings.prefix ?? this.prefix;
+        this.storage = new Storage(this.prefix);
 
         // Some basic settings
-        this.volume = ( settings.defaults.default_volume ) ? settings.defaults.default_volume : 50;
-        if ( this.storage.get( 'last-volume' ) !== false ) {
-            if ( this.storage.get( 'last-volume' ) >= 0 && this.storage.get( 'last-volume' ) <= 100 ) {
+        this.volume = (settings.defaults.default_volume) ? settings.defaults.default_volume : 50;
+        if (this.storage.get('last-volume') !== false) {
+            if (this.storage.get('last-volume') >= 0 && this.storage.get('last-volume') <= 100) {
 
-                this.volume = parseInt( this.storage.get( 'last-volume' ) );
+                this.volume = parseInt(this.storage.get('last-volume'));
 
             }
         }
 
         // Override internal settings
-        this.settings = this.deepCloneLeftSide( this.settings, settings );
+        this.settings = this.deepCloneLeftSide(this.settings, settings);
 
         // Template options are always dynamic and just passed through, so we accept anything
-        this.settings.tpl = ( settings.tpl ) ? settings.tpl : this.settings.tpl;
+        this.settings.tpl = (settings.tpl) ? settings.tpl : this.settings.tpl;
 
         // Options
         this.autoplay = this.settings.defaults.autoplay;
-        this.language = Object.assign( {}, this.language, settings.language ?? {} );
+        this.language = Object.assign({}, this.language, settings.language ?? {});
         this.channels = settings.channels ?? [];
 
         // Debug?
         this.debug = settings.debug ?? false;
 
         // Inject web socket "plugin"
-        this.ws = new PawTunesWS( this );
+        this.ws = new PawTunesWS(this);
 
         // Make sure the settings are OK
-        if ( this.channels.length < 1 ) {
+        if (this.channels.length < 1) {
 
-            this.renderFatalError( this.translate( 'error_create' ) );
+            this.renderFatalError(this.translate('error_create'));
 
         }
 
         // No streams in channel defined
-        if ( this.channels.length >= 1 ) {
+        if (this.channels.length >= 1) {
 
             let foundStream: boolean = false;
-            for ( let i: number = 0; i < this.channels.length; i++ ) {
+            for (let i: number = 0; i < this.channels.length; i++) {
 
-                if ( Object.keys( this.channels[ i ].streams ).length > 0 ) {
+                if (Object.keys(this.channels[i].streams).length > 0) {
                     foundStream = true;
                     break;
                 }
             }
 
-            if ( !foundStream ) {
-                this.renderFatalError( this.translate( 'error_stream' ) );
+            if (!foundStream) {
+                this.renderFatalError(this.translate('error_stream'));
             }
 
         }
@@ -291,7 +291,7 @@ export default class PawTunes extends HTML5Audio {
      */
     public async init(): Promise<void> {
 
-        if ( this.fatal ) {
+        if (this.fatal) {
             return;
         }
 
@@ -306,10 +306,10 @@ export default class PawTunes extends HTML5Audio {
 
         // Initial hash and/or on channel hash change
         let hashChannel = this.getDecodedHash();
-        window.addEventListener( 'hashchange', () => this.hashChange() );
+        window.addEventListener('hashchange', () => this.hashChange());
 
         // Channel, if hash detected use that as priority
-        this.setChannel( hashChannel );
+        this.setChannel(hashChannel);
         this.setStream();
 
         // DOM
@@ -328,26 +328,26 @@ export default class PawTunes extends HTML5Audio {
     public onAirTimer(): void {
 
         // Check if showing time is enabled, otherwise exit
-        if ( !this.settings.showTimer ) {
+        if (!this.settings.showTimer) {
             return;
         }
 
         // Exit if "start" time is empty
-        if ( this.onAir.time <= 0 ) {
+        if (this.onAir.time <= 0) {
             return;
         }
 
         // Set var for easier management
-        let ctime = ( ( new Date().getTime() - this.onAir.time ) / 1000 );
+        let ctime = ((new Date().getTime() - this.onAir.time) / 1000);
 
         // Divide, etc. to show time with format
-        let hour = Math.floor( ( ctime / 3600 ) % 60 );
-        let min  = Math.floor( ( ctime / 60 ) % 60 );
-        let sec  = Math.floor( ctime % 60 );
+        let hour = Math.floor((ctime / 3600) % 60);
+        let min = Math.floor((ctime / 60) % 60);
+        let sec = Math.floor(ctime % 60);
         let timer;
 
         // Display only active timer (1 h 2 min 3 sec)
-        if ( hour >= 1 ) { // hour:min:sec
+        if (hour >= 1) { // hour:min:sec
 
             timer = `${hour < 10 ? '0' : ''}${hour}:${min < 10 ? '0' : ''}${min}:${sec < 10 ? '0' : ''}${sec}`;
 
@@ -357,7 +357,7 @@ export default class PawTunes extends HTML5Audio {
 
         }
 
-        this.writeText( '.onair .time', timer );
+        this.writeText('.onair .time', timer);
 
     }
 
@@ -370,22 +370,22 @@ export default class PawTunes extends HTML5Audio {
     public async trackInfoInit(): Promise<void> {
 
         // API Interval? Stop it.
-        if ( this.timers.trackInfo ) {
-            clearInterval( this.timers.trackInfo );
+        if (this.timers.trackInfo) {
+            clearInterval(this.timers.trackInfo);
         }
 
         // Already connected to a web socket? Close it.
-        if ( this.ws.isWebSocketActive() ) {
+        if (this.ws.isWebSocketActive()) {
             await this.ws.close();
         }
 
         // Invalid channel config?
-        if ( !this.channel || !this.channel.name ) {
+        if (!this.channel || !this.channel.name) {
             return;
         }
 
         // Web Sockets - Azura Cast/Custom supported
-        if ( this.channel.ws && this.channel.ws.url ) {
+        if (this.channel.ws && this.channel.ws.url) {
 
             // Handles everything
             this.ws.connectToSocket();
@@ -396,31 +396,31 @@ export default class PawTunes extends HTML5Audio {
         // Every other method
         let pawTunesAPI = () => {
 
-            fetch( `${this.settings.api}?channel=${this.channel.name}` )
-                .then( response => {
+            fetch(`${this.settings.api}?channel=${this.channel.name}`)
+                .then(response => {
 
-                    if ( !response.ok ) {
-                        throw new Error( 'Network response was not ok' );
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
                     }
 
                     return response.json();
 
-                } )
-                .then( data => {
+                })
+                .then(data => {
 
-                    this.handleOnAirResponse( data );
+                    this.handleOnAirResponse(data);
 
-                } )
-                .catch( error => {
+                })
+                .catch(error => {
 
-                    this.handleOnAirError( error );
+                    this.handleOnAirError(error);
 
-                } );
+                });
 
         }
 
         pawTunesAPI();
-        this.timers.trackInfo = setInterval( pawTunesAPI, this.settings.refreshRate * 1000 )
+        this.timers.trackInfo = setInterval(pawTunesAPI, this.settings.refreshRate * 1000)
 
     }
 
@@ -430,61 +430,61 @@ export default class PawTunes extends HTML5Audio {
      *
      * @param data
      */
-    public handleOnAirResponse( data: any ): void {
+    public handleOnAirResponse(data: any): void {
 
-        if ( !data.artist || !data.title ) {
-            console.error( 'Invalid data or no data received from the server.' );
+        if (!data.artist || !data.title) {
+            console.error('Invalid data or no data received from the server.');
             return;
         }
 
         // Nothing has changed since last call/check
-        if ( data.artist == this.onAir.artist && data.title == this.onAir.title && data.artwork == this.onAir.artwork ) {
+        if (data.artist == this.onAir.artist && data.title == this.onAir.title && data.artwork == this.onAir.artwork) {
             return;
         }
 
         // Set ON AIR
         this.onAir = {
-            artist : data.artist,
-            title  : data.title,
+            artist: data.artist,
+            title: data.title,
             artwork: data.artwork ?? null,
-            time   : new Date().getTime()
+            time: new Date().getTime()
         };
 
         this.writeHTML(
             '.onair .artist',
-            `<span class="pointer css-hint" data-title="${this.onAir.artist}">${this.shorten( this.onAir.artist, this.settings.trackInfo.artistMaxLen )}</span>`
+            `<span class="pointer css-hint" data-title="${this.onAir.artist}">${this.shorten(this.onAir.artist, this.settings.trackInfo.artistMaxLen)}</span>`
         );
 
         this.writeHTML(
             '.onair .title',
-            `<span class="pointer css-hint" data-title="${this.onAir.title}">${this.shorten( this.onAir.title, this.settings.trackInfo.titleMaxLen )}</span>`
+            `<span class="pointer css-hint" data-title="${this.onAir.title}">${this.shorten(this.onAir.title, this.settings.trackInfo.titleMaxLen)}</span>`
         );
 
         // If enabled, we will also update window title on each song change
-        if ( this.settings.dynamicTitle ) {
+        if (this.settings.dynamicTitle) {
 
-            if ( this.temp.title == null ) this.temp.title = document.title;
+            if (this.temp.title == null) this.temp.title = document.title;
             document.title = `${this.onAir.artist} - ${this.onAir.title} | ${this.temp.title}`;
 
         }
 
-        this.loadArtwork( this.onAir.artwork );
-        this.emit( 'track.change', this.onAir );
+        this.loadArtwork(this.onAir.artwork);
+        this.emit('track.change', this.onAir);
         this.handleMetaChange();
 
         // History - full history from API
-        if ( data.history && data.history.length >= 1 ) {
+        if (data.history && data.history.length >= 1) {
 
             // Reverse sort when adding
-            data.history.sort( ( a: { time: number }, b: { time: number } ) => {
+            data.history.sort((a: { time: number }, b: { time: number }) => {
                     return a.time - b.time;
                 }
             );
 
             // Loop through and add to history
             this.history = [];
-            for ( const history of data.history ) {
-                this.addHistoryEntry( history );
+            for (const history of data.history) {
+                this.addHistoryEntry(history);
             }
 
             // UI Update with a new history list
@@ -493,31 +493,31 @@ export default class PawTunes extends HTML5Audio {
         } else {
 
             // Basic history - track onair songs
-            this.addHistoryEntry( this.onAir )
+            this.addHistoryEntry(this.onAir)
             this.updateHistoryDOM();
 
         }
 
     }
 
-    public handleOnAirError( error: any ): void {
+    public handleOnAirError(error: any): void {
 
         // Set default on air
         this.onAir = {
-            artist : this.settings.trackInfo.default.artist,
-            title  : this.settings.trackInfo.default.title,
+            artist: this.settings.trackInfo.default.artist,
+            title: this.settings.trackInfo.default.title,
             artwork: this.settings.trackInfo.default.artwork,
-            time   : new Date().getTime()
+            time: new Date().getTime()
         };
 
-        this.writeText( '.onair .artist', this.onAir.artist );
-        this.writeText( '.onair .title', this.onAir.title );
-        this.emit( 'track.change', this.onAir );
+        this.writeText('.onair .artist', this.onAir.artist);
+        this.writeText('.onair .title', this.onAir.title);
+        this.emit('track.change', this.onAir);
 
-        this.loadArtwork( this.onAir.artwork );
+        this.loadArtwork(this.onAir.artwork);
         this.handleMetaChange();
 
-        console.log( "Error fetching track info: ", error );
+        console.log("Error fetching track info: ", error);
 
     }
 
@@ -526,28 +526,28 @@ export default class PawTunes extends HTML5Audio {
      *
      * @param URL string|null
      */
-    public loadArtwork( URL: string | null ): void {
+    public loadArtwork(URL: string | null): void {
 
-        if ( !URL && !this.settings.trackInfo.default.artwork ) {
+        if (!URL && !this.settings.trackInfo.default.artwork) {
             this.hideLoading();
             return;
         }
 
-        this._( '.artwork', ( el: HTMLElement ) => {
+        this._('.artwork', (el: HTMLElement) => {
 
             this.showLoading();
-            el.setAttribute( 'src', URL ?? this.settings.trackInfo.default.artwork );
+            el.setAttribute('src', URL ?? this.settings.trackInfo.default.artwork);
 
-            el.addEventListener( 'load', () => {
+            el.addEventListener('load', () => {
                 this.hideLoading();
-            } )
+            })
 
-            el.addEventListener( 'error', () => {
-                if ( el.getAttribute( 'src' ) == this.settings.trackInfo.default.artwork ) return;
-                el.setAttribute( 'src', this.settings.trackInfo.default.artwork );
-            } )
+            el.addEventListener('error', () => {
+                if (el.getAttribute('src') == this.settings.trackInfo.default.artwork) return;
+                el.setAttribute('src', this.settings.trackInfo.default.artwork);
+            })
 
-        } );
+        });
 
     }
 
@@ -556,8 +556,8 @@ export default class PawTunes extends HTML5Audio {
      */
     public showLoading() {
 
-        let preloader = this.getElm( `.artwork-preloader` );
-        if ( preloader ) preloader.classList.remove( 'hidden' );
+        let preloader = this.getElm(`.artwork-preloader`);
+        if (preloader) preloader.classList.remove('hidden');
 
     }
 
@@ -566,19 +566,19 @@ export default class PawTunes extends HTML5Audio {
      */
     public hideLoading() {
 
-        let preloader = this.getElm( `.artwork-preloader` );
-        if ( preloader ) preloader.classList.add( 'hidden' );
+        let preloader = this.getElm(`.artwork-preloader`);
+        if (preloader) preloader.classList.add('hidden');
 
     }
 
     /**
      * Generate the artwork URL from setting
      */
-    public pawArtworkURL( artist: string, title: string ): string {
+    public pawArtworkURL(artist: string, title: string): string {
 
         return this.settings.trackInfo.lazyLoadURL
-            .replace( '{ARTIST}', artist )
-            .replace( '{TITLE}', title );
+            .replace('{ARTIST}', artist)
+            .replace('{TITLE}', title);
 
     }
 
@@ -593,23 +593,24 @@ export default class PawTunes extends HTML5Audio {
      *
      * @returns array of matching elements
      */
-    public _( selector: string, fn: Function | null = () => { }, elm: HTMLElement | Document = document, usePrefix: boolean = true ) {
+    public _(selector: string, fn: Function | null = () => {
+    }, elm: HTMLElement | Document = document, usePrefix: boolean = true) {
 
         // Shortcut for custom selectors
-        if ( selector in this.selectors ) {
-            selector = this.selectors[ selector ];
+        if (selector in this.selectors) {
+            selector = this.selectors[selector];
         }
 
-        if ( usePrefix ) {
+        if (usePrefix) {
             selector = `${this.selectorsPrefix} ${selector}`;
         }
 
-        const elements = ( elm || document ).querySelectorAll( selector );
+        const elements = (elm || document).querySelectorAll(selector);
 
         let list: HTMLElement[] = [];
-        for ( const element of elements ) {
-            if ( fn ) fn( element );
-            list.push( <HTMLElement>element );
+        for (const element of elements) {
+            if (fn) fn(element);
+            list.push(<HTMLElement>element);
         }
 
         return list;
@@ -624,51 +625,53 @@ export default class PawTunes extends HTML5Audio {
      * @param replacement
      * @returns {any} - Found object or null
      */
-    translate( key: string, string?: string, replacement?: string ): string {
+    translate(key: string, string?: string, replacement?: string): string {
 
-        if ( !string || !replacement ) return this.language[ key ] ?? "";
-        return this.language[ key ].replace( `{${string}}`, replacement );
+        if (!string || !replacement) return this.language[key] ?? "";
+        return this.language[key].replace(`{${string}}`, replacement);
 
     }
 
     /**
      * Handles pagination between views. You can also pass resizeEvent binding true/false
      */
-    pagination( page: string = "", animation: boolean = true ) {
+    pagination(page: string = "", animation: boolean = true) {
 
-        let pages = this._( '.main-container .view' );
-        if ( pages.length < 1 ) {
-            document.removeEventListener( 'resize', this.temp.resizePaginationEvent );
+        let pages = this._('.main-container .view');
+        if (pages.length < 1) {
+            document.removeEventListener('resize', this.temp.resizePaginationEvent);
             return;
         }
 
-        if ( page === "" ) page = this.currentPage;
-        let pageWidth  = pages[ 0 ].offsetWidth;
+        if (page === "") page = this.currentPage;
+        let pageWidth = pages[0].offsetWidth;
         let totalPages = pages.length;
         let pageNumber = 0;
 
         // For Loop to find proper page
-        for ( let i = 0; i < totalPages; i++ ) {
-            if ( pages[ i ].classList.contains( page ) ) {
+        for (let i = 0; i < totalPages; i++) {
+            if (pages[i].classList.contains(page)) {
                 this.currentPage = page;
-                pageNumber       = i;
+                pageNumber = i;
                 break;
             }
         }
 
         // Now calculate the margin required to get to that page and move.
-        if ( !animation ) {
+        if (!animation) {
 
             // Set transition to none
-            pages[ 0 ].style.transition = "none";
+            pages[0].style.transition = "none";
 
             // After JS render/event-loop add back animation
-            setTimeout( () => { pages[ 0 ].style.transition = ''; }, 0 );
+            setTimeout(() => {
+                pages[0].style.transition = '';
+            }, 0);
 
         }
 
         // Finally, move the element
-        pages[ 0 ].style.marginLeft = '-' + ( ( pageNumber !== 0 ) ? pageWidth * pageNumber : 0 ) + 'px';
+        pages[0].style.marginLeft = '-' + ((pageNumber !== 0) ? pageWidth * pageNumber : 0) + 'px';
 
     }
 
@@ -678,40 +681,40 @@ export default class PawTunes extends HTML5Audio {
     protected async bindEvents(): Promise<void> {
 
         // We need a reference, so we can remove it if we need to.
-        this.temp.resizePaginationEvent = () => this.pagination( "", false )
-        window.addEventListener( 'resize', this.temp.resizePaginationEvent );
+        this.temp.resizePaginationEvent = () => this.pagination("", false)
+        window.addEventListener('resize', this.temp.resizePaginationEvent);
 
         // Network status change, when online start playback and reconnect to websocket
-        window.addEventListener( 'online', () => {
+        window.addEventListener('online', () => {
 
             this.state = 'online'
-            this.emit( 'status', 'online' );
+            this.emit('status', 'online');
 
             this.trackInfoInit();
-            if ( this.temp.lastState?.paused === false ) {
+            if (this.temp.lastState?.paused === false) {
                 this.play();
             }
 
-            console.log( "Network is back online..." )
+            console.log("Network is back online...")
 
-        } );
+        });
 
         // Network status change, when offline stop playback
-        window.addEventListener( 'offline', () => {
+        window.addEventListener('offline', () => {
 
             this.state = 'offline'
-            this.emit( 'status', 'offline' );
+            this.emit('status', 'offline');
             this.temp.lastState = this.status();
-            console.warn( "Network is offline!" );
+            console.warn("Network is offline!");
 
-        } );
+        });
 
         // Unload event before leaving the website
-        window.addEventListener( 'beforeunload', () => {
-            if ( this.ws && this.ws.isWebSocketActive() ) {
+        window.addEventListener('beforeunload', () => {
+            if (this.ws && this.ws.isWebSocketActive()) {
                 this.ws.close();
             }
-        } )
+        })
 
     }
 
@@ -721,106 +724,106 @@ export default class PawTunes extends HTML5Audio {
     protected async bindPlayerEvents(): Promise<void> {
 
         // PLAY: This is called when "play" button is clicked
-        this.on( 'play', () => {
+        this.on('play', () => {
 
-            if ( 'mediaSession' in navigator ) {
+            if ('mediaSession' in navigator) {
                 navigator.mediaSession.playbackState = 'playing';
             }
 
-            this.toast( this.translate( 'status_init', 'STREAM', this.channel.name ), true );
+            this.toast(this.translate('status_init', 'STREAM', this.channel.name), true);
 
-            if ( this.settings.showTimer ) {
+            if (this.settings.showTimer) {
                 this.onAir.time = new Date().getTime();
                 this.onAirTimer();
             }
 
-        } );
+        });
 
         // PLAYING: This is called when media is playing
-        this.on( 'playing', () => {
+        this.on('playing', () => {
 
             this.handleMetaChange();
-            if ( 'mediaSession' in navigator ) {
+            if ('mediaSession' in navigator) {
                 navigator.mediaSession.playbackState = 'playing';
             }
 
-            this.toast( this.translate( 'status_playing', 'STREAM', this.channel.name ), true );
+            this.toast(this.translate('status_playing', 'STREAM', this.channel.name), true);
 
-        } )
+        })
 
         // STOPPED: Custom PawTunes event when player is stopped
-        this.on( 'stopped', () => {
+        this.on('stopped', () => {
 
-            this.toast( this.translate( 'status_stopped' ), false );
+            this.toast(this.translate('status_stopped'), false);
 
-            if ( 'mediaSession' in navigator ) {
+            if ('mediaSession' in navigator) {
                 navigator.mediaSession.playbackState = 'paused';
             }
 
-            if ( this.settings.showTimer ) {
+            if (this.settings.showTimer) {
                 this.onAir.time = new Date().getTime();
-                this.writeText( '.onair .time', '00:00' );
+                this.writeText('.onair .time', '00:00');
             }
 
-        } )
+        })
 
         // ERROR: An error occurred
-        this.on( 'error', ( err: MediaError ) => {
+        this.on('error', (err: MediaError) => {
 
             // Ignore autoplay errors
-            if ( err.code && err.code === 4 && ( this.status()?.networkState ?? 0 ) >= HTMLMediaElement.HAVE_CURRENT_DATA ) {
+            if (err.code && err.code === 4 && (this.status()?.networkState ?? 0) >= HTMLMediaElement.HAVE_CURRENT_DATA) {
                 return;
             }
 
-            this.toast( this.translate( 'error_network' ), true );
+            this.toast(this.translate('error_network'), true);
 
             // If we don't have anything to play
-            if ( this.status()?.readyState === HTMLMediaElement.HAVE_NOTHING ) {
-                this.toast( this.translate( 'error_playback' ), true )
+            if (this.status()?.readyState === HTMLMediaElement.HAVE_NOTHING) {
+                this.toast(this.translate('error_playback'), true)
             }
 
-        } );
+        });
 
         // VOLUMECHANGE: Simple volume change binding, replaces default with a storage option
-        this.on( 'volumechange', () => {
+        this.on('volumechange', () => {
 
             // Change main volume icons
-            if ( this.volume <= 1 ) {
+            if (this.volume <= 1) {
 
-                this.toast( this.translate( 'status_muted' ) );
+                this.toast(this.translate('status_muted'));
 
             } else {
 
-                this.toast( this.translate( 'status_volume', 'LEVEL', `${this.volume}%` ) );
+                this.toast(this.translate('status_volume', 'LEVEL', `${this.volume}%`));
 
             }
 
-            this.storage!.set( 'last-volume', this.volume );
+            this.storage!.set('last-volume', this.volume);
 
-        } );
+        });
 
-        this.on( 'timeupdate', () => {
+        this.on('timeupdate', () => {
 
-            if ( this.settings.showTimer ) {
+            if (this.settings.showTimer) {
                 this.onAirTimer();
             }
 
-        } )
+        })
 
         // Set custom events for media navigation (though not the best solution)
-        if ( 'mediaSession' in navigator ) {
+        if ('mediaSession' in navigator) {
 
-            navigator.mediaSession.setActionHandler( 'play', () => this.play() );
-            navigator.mediaSession.setActionHandler( 'pause', async() => {
+            navigator.mediaSession.setActionHandler('play', () => this.play());
+            navigator.mediaSession.setActionHandler('pause', async () => {
 
-                if ( 'mediaSession' in navigator ) {
+                if ('mediaSession' in navigator) {
                     navigator.mediaSession.playbackState = 'paused';
                 }
 
                 await this.stop();
-                this.toast( this.translate( 'status_stopped' ), true );
+                this.toast(this.translate('status_stopped'), true);
 
-            } );
+            });
 
         }
 
@@ -831,54 +834,54 @@ export default class PawTunes extends HTML5Audio {
      */
     protected generateChannelsDOM(): void {
 
-        if ( this.channels.length < 1 ) {
+        if (this.channels.length < 1) {
 
-            alert( this.translate( 'error_defined' ) );
-            this.toast( this.translate( 'error_defined' ) );
+            alert(this.translate('error_defined'));
+            this.toast(this.translate('error_defined'));
             return;
 
         }
 
-        let channelsContainer = this.getElm( ' .channels' ) as HTMLElement
-        let channelsList      = this.getElm( '.channel-list', channelsContainer ) as HTMLElement
-        if ( !channelsContainer || !channelsList ) {
+        let channelsContainer = this.getElm(' .channels') as HTMLElement
+        let channelsList = this.getElm('.channel-list', channelsContainer) as HTMLElement
+        if (!channelsContainer || !channelsList) {
             return;
         }
 
         channelsList.innerHTML = '';
 
-        if ( this.channels.length <= 1 ) {
+        if (this.channels.length <= 1) {
 
-            channelsContainer.classList.add( 'hidden' );
+            channelsContainer.classList.add('hidden');
             return;
 
         }
 
-        for ( let channel of this.channels ) {
+        for (let channel of this.channels) {
 
-            let li = document.createElement( 'li' );
-            li.classList.add( 'channel' );
+            let li = document.createElement('li');
+            li.classList.add('channel');
             li.innerHTML = `<a href="#" data-channel="${channel.name}">${channel.name}</a>`;
-            li.addEventListener( 'click', async( event ) => {
+            li.addEventListener('click', async (event) => {
 
                 event.preventDefault();
 
-                this._( '.channel', ( elm: HTMLElement ) => elm.classList.remove( 'active' ), channelsList );
+                this._('.channel', (elm: HTMLElement) => elm.classList.remove('active'), channelsList);
 
-                channelsContainer.classList.remove( 'active' );
+                channelsContainer.classList.remove('active');
                 window.location.hash = channel.name;
 
-            } )
+            })
 
-            if ( this.channel && this.channel.name === channel.name ) {
-                li.classList.add( 'active' );
+            if (this.channel && this.channel.name === channel.name) {
+                li.classList.add('active');
             }
 
-            channelsList.appendChild( li );
+            channelsList.appendChild(li);
 
         }
 
-        channelsContainer.classList.remove( 'hidden' );
+        channelsContainer.classList.remove('hidden');
 
     }
 
@@ -887,50 +890,50 @@ export default class PawTunes extends HTML5Audio {
      */
     protected generateStreamsDOM() {
 
-        let streamsContainer = this.getElm( ' .settings' ) as HTMLElement
-        let streamsList      = this.getElm( '.streams-list', streamsContainer ) as HTMLElement
-        if ( !streamsContainer || !streamsList ) {
+        let streamsContainer = this.getElm(' .settings') as HTMLElement
+        let streamsList = this.getElm('.streams-list', streamsContainer) as HTMLElement
+        if (!streamsContainer || !streamsList) {
             return;
         }
 
         streamsList.innerHTML = '';
 
         // When dealing with a single channel, we don't need to show streams
-        if ( !this.channel || typeof this.channel.streams !== 'object' || Object.keys( this.channel.streams ).length <= 1 ) {
+        if (!this.channel || typeof this.channel.streams !== 'object' || Object.keys(this.channel.streams).length <= 1) {
 
-            streamsContainer.classList.add( 'hidden' );
+            streamsContainer.classList.add('hidden');
             return null;
 
         }
 
-        for ( let stream of Object.keys( this.channel.streams ) ) {
+        for (let stream of Object.keys(this.channel.streams)) {
 
-            let li = document.createElement( 'li' );
-            li.classList.add( 'stream' );
+            let li = document.createElement('li');
+            li.classList.add('stream');
             li.innerHTML = `<a data-stream="${stream}" href="#">${stream}</a>`;
-            li.addEventListener( 'click', async( event ) => {
+            li.addEventListener('click', async (event) => {
 
                 event.preventDefault();
 
-                this._( '.stream', ( el: HTMLElement ) => el.classList.remove( 'active' ), streamsList );
+                this._('.stream', (el: HTMLElement) => el.classList.remove('active'), streamsList);
 
-                li.classList.add( 'active' );
-                streamsContainer.classList.remove( 'active' );
+                li.classList.add('active');
+                streamsContainer.classList.remove('active');
 
-                this.setStream( stream );
+                this.setStream(stream);
                 await this.play();
 
-            } )
+            })
 
-            if ( this.stream && this.stream === stream ) {
-                li.classList.add( 'active' );
+            if (this.stream && this.stream === stream) {
+                li.classList.add('active');
             }
 
-            streamsList.appendChild( li );
+            streamsList.appendChild(li);
 
         }
 
-        streamsContainer.classList.remove( 'hidden' );
+        streamsContainer.classList.remove('hidden');
 
     }
 
@@ -945,15 +948,15 @@ export default class PawTunes extends HTML5Audio {
         try {
 
             let rawHash = window.location.hash || '';
-            if ( rawHash.startsWith( '#' ) ) {
-                rawHash = rawHash.substring( 1 );
+            if (rawHash.startsWith('#')) {
+                rawHash = rawHash.substring(1);
             }
 
-            return decodeURIComponent( rawHash );
+            return decodeURIComponent(rawHash);
 
-        } catch ( e ) {
+        } catch (e) {
 
-            console.error( 'Error decoding channel name:', e );
+            console.error('Error decoding channel name:', e);
             return '';
 
         }
@@ -969,27 +972,27 @@ export default class PawTunes extends HTML5Audio {
     async hashChange() {
 
         let hashChannel = this.getDecodedHash();
-        this.setChannel( hashChannel );
+        this.setChannel(hashChannel);
         this.setStream();
         this.generateStreamsDOM();
         await this.play();
 
-        let channelsContainer = this.getElm( ' .channels' )
-        let channelsList      = channelsContainer.querySelectorAll( '.channel-list li' ) as NodeListOf<Element>;
-        if ( !channelsContainer || !channelsList ) {
+        let channelsContainer = this.getElm(' .channels')
+        let channelsList = channelsContainer.querySelectorAll('.channel-list li') as NodeListOf<Element>;
+        if (!channelsContainer || !channelsList) {
             return;
         }
 
-        for ( let li of channelsList ) {
+        for (let li of channelsList) {
 
-            if ( li.classList.contains( 'active' ) ) {
-                li.classList.remove( 'active' );
+            if (li.classList.contains('active')) {
+                li.classList.remove('active');
             }
 
-            let hrefElm = li.querySelector( 'a' );
-            if ( hrefElm ) {
-                if ( this.channel && this.channel.name === hrefElm.getAttribute( 'data-channel' ) ) {
-                    li.classList.add( 'active' );
+            let hrefElm = li.querySelector('a');
+            if (hrefElm) {
+                if (this.channel && this.channel.name === hrefElm.getAttribute('data-channel')) {
+                    li.classList.add('active');
                 }
             }
 
@@ -1003,46 +1006,46 @@ export default class PawTunes extends HTML5Audio {
      */
     protected setupHistory() {
 
-        if ( !this.settings.history ) {
+        if (!this.settings.history) {
             return;
         }
 
         // Save History HTML template
-        const historyTpl = this._( '.history-list-container .history-item' )
-        if ( historyTpl.length >= 1 ) {
-            this.historyTemplate = historyTpl[ 0 ];
-            this.historyTemplate.classList.remove( 'hidden' )
+        const historyTpl = this._('.history-list-container .history-item')
+        if (historyTpl.length >= 1) {
+            this.historyTemplate = historyTpl[0];
+            this.historyTemplate.classList.remove('hidden')
         }
 
-        this._( '.history-toggle', ( el: HTMLElement ) => {
+        this._('.history-toggle', (el: HTMLElement) => {
 
-            el.classList.remove( 'hidden' );
-            const historyBtn = this.getElm( 'a', el ) as HTMLElement;
+            el.classList.remove('hidden');
+            const historyBtn = this.getElm('a', el) as HTMLElement;
             let historyState = false;
 
-            historyBtn.addEventListener( 'click', ( e ) => {
+            historyBtn.addEventListener('click', (e) => {
 
                 e.preventDefault();
-                if ( !historyState ) {
+                if (!historyState) {
 
                     historyState = true;
-                    el.classList.add( 'active' );
-                    this.pagination( 'history' );
+                    el.classList.add('active');
+                    this.pagination('history');
                     return;
 
                 }
 
                 historyState = false;
-                el.classList.remove( 'active' );
-                this.pagination( 'main' );
+                el.classList.remove('active');
+                this.pagination('main');
 
 
-            } );
+            });
 
-        } )
+        })
 
         // Update time-ago every 5 seconds
-        this.timers.historyTimeAgo = setInterval( () => this.historyTimeTrack(), 1000 );
+        this.timers.historyTimeAgo = setInterval(() => this.historyTimeTrack(), 1000);
 
     }
 
@@ -1051,53 +1054,53 @@ export default class PawTunes extends HTML5Audio {
      */
     protected updateHistoryDOM(): void {
 
-        const historyContainer = this.getElm( ' .history-content .history-list-container' );
-        const unavailable      = this.getElm( ' .history-content .history-unavailable' )
-        const historyList      = this.getElm( ' .history-content .history-list' )
+        const historyContainer = this.getElm(' .history-content .history-list-container');
+        const unavailable = this.getElm(' .history-content .history-unavailable')
+        const historyList = this.getElm(' .history-content .history-list')
 
-        if ( historyContainer )
+        if (historyContainer)
             historyContainer.innerHTML = "";
 
-        if ( historyContainer && this.historyTemplate && this.history.length >= 1 ) {
-            for ( const history of this.history ) {
+        if (historyContainer && this.historyTemplate && this.history.length >= 1) {
+            for (const history of this.history) {
 
-                let at = new Date( history.time );
+                let at = new Date(history.time);
 
-                let item = this.historyTemplate.cloneNode( true ) as HTMLElement;
-                item.setAttribute( 'data-title', at.getHours() + ':' + ( ( at.getMinutes() <= 9 ) ? '0' + at.getMinutes() : at.getMinutes() ) )
-                item.setAttribute( 'data-unix', String( at.getTime() ) );
+                let item = this.historyTemplate.cloneNode(true) as HTMLElement;
+                item.setAttribute('data-title', at.getHours() + ':' + ((at.getMinutes() <= 9) ? '0' + at.getMinutes() : at.getMinutes()))
+                item.setAttribute('data-unix', String(at.getTime()));
 
-                this.writeText( '.history-track', `${history.artist} - ${history.title}`, item );
-                this.writeText( '.history-time-ago', this.ago( history.time ), item );
+                this.writeText('.history-track', `${history.artist} - ${history.title}`, item);
+                this.writeText('.history-time-ago', this.ago(history.time), item);
 
-                let artwork = ( !history.artwork ) ? this.settings.trackInfo.default.artwork : history.artwork;
-                this.writeHTML( '.history-artwork', '<div class="artwork-preloader"></div>', item );
+                let artwork = (!history.artwork) ? this.settings.trackInfo.default.artwork : history.artwork;
+                this.writeHTML('.history-artwork', '<div class="artwork-preloader"></div>', item);
 
-                let img    = new Image();
-                img.src    = artwork;
-                img.onload = () => this.writeHTML( '.history-artwork', `<img src="${artwork}" alt="image" class="history-artwork-image">`, item );
+                let img = new Image();
+                img.src = artwork;
+                img.onload = () => this.writeHTML('.history-artwork', `<img src="${artwork}" alt="image" class="history-artwork-image">`, item);
 
                 // On ERROR, we will revert to default
                 img.onerror = () => {
-                    if ( img.src === this.settings.trackInfo.default.artwork ) return;
-                    this.writeHTML( '.history-artwork', `<img src="${this.settings.trackInfo.default.artwork}" alt="image" class="history-artwork-image">`, item );
+                    if (img.src === this.settings.trackInfo.default.artwork) return;
+                    this.writeHTML('.history-artwork', `<img src="${this.settings.trackInfo.default.artwork}" alt="image" class="history-artwork-image">`, item);
                 }
 
-                historyContainer.append( item );
+                historyContainer.append(item);
 
             }
 
-            unavailable?.classList.add( 'hidden' );
-            historyList?.classList.remove( 'hidden' );
+            unavailable?.classList.add('hidden');
+            historyList?.classList.remove('hidden');
 
         } else {
 
-            unavailable?.classList.remove( 'hidden' );
-            historyList?.classList.add( 'hidden' );
+            unavailable?.classList.remove('hidden');
+            historyList?.classList.add('hidden');
 
         }
 
-        this.emit( 'history.change', { history: this.history } );
+        this.emit('history.change', {history: this.history});
 
     }
 
@@ -1108,19 +1111,19 @@ export default class PawTunes extends HTML5Audio {
      */
     protected historyTimeTrack(): void {
 
-        let historyItems = this._( ' .history-content .history-list-container .history-item' );
-        if ( historyItems.length > 0 ) {
+        let historyItems = this._(' .history-content .history-list-container .history-item');
+        if (historyItems.length > 0) {
 
             // Update whole table
-            historyItems.forEach( ( element: Element ) => {
+            historyItems.forEach((element: Element) => {
 
-                const elm   = element as HTMLElement;
-                let timeElm = this.getElm( '.history-time-ago', elm );
-                if ( timeElm && elm.dataset.unix ) {
-                    timeElm.textContent = this.ago( parseInt( elm.dataset.unix ) );
+                const elm = element as HTMLElement;
+                let timeElm = this.getElm('.history-time-ago', elm);
+                if (timeElm && elm.dataset.unix) {
+                    timeElm.textContent = this.ago(parseInt(elm.dataset.unix));
                 }
 
-            } );
+            });
 
         }
 
@@ -1132,15 +1135,15 @@ export default class PawTunes extends HTML5Audio {
      *
      * @param entry - The current track information to be added to history.
      */
-    protected addHistoryEntry( entry: OnAir ) {
+    protected addHistoryEntry(entry: OnAir) {
 
 
         // Delete the oldest record if the total exceeds 20
-        if ( this.history.length >= this.settings.historyMaxLen ) {
+        if (this.history.length >= this.settings.historyMaxLen) {
             this.history.pop();
         }
 
-        this.history.unshift( entry );
+        this.history.unshift(entry);
 
     }
 
@@ -1149,13 +1152,13 @@ export default class PawTunes extends HTML5Audio {
      *
      * @param specific string
      */
-    protected setChannel( specific: string = '' ) {
+    protected setChannel(specific: string = '') {
 
         this.showLoading();
-        this.findAndSetChannel( specific );
-        this.storage!.set( 'last-channel', this.channel.name );
-        this.emit( 'channel.change', this.channel );
-        this.channelDOMChange( this.channel.skin );
+        this.findAndSetChannel(specific);
+        this.storage!.set('last-channel', this.channel.name);
+        this.emit('channel.change', this.channel);
+        this.channelDOMChange(this.channel.skin);
 
         this.history = [];
         this.updateHistoryDOM();
@@ -1168,7 +1171,7 @@ export default class PawTunes extends HTML5Audio {
      */
     protected createGoogleAnalytics() {
 
-        if ( !this.settings.analytics || typeof this.settings.analytics !== 'string' )
+        if (!this.settings.analytics || typeof this.settings.analytics !== 'string')
             return false;
 
         //console.log("Creating Google Analytics with ID: " + s.analytics );
@@ -1176,61 +1179,61 @@ export default class PawTunes extends HTML5Audio {
         // @ts-ignore
         window.dataLayer = window.dataLayer || [];
 
-        let script    = document.createElement( 'script' );
-        script.src    = 'https://www.googletagmanager.com/gtag/js?id=' + this.settings.analytics;
-        script.async  = true;
+        let script = document.createElement('script');
+        script.src = 'https://www.googletagmanager.com/gtag/js?id=' + this.settings.analytics;
+        script.async = true;
         script.onload = () => {
 
             function gtag() {
                 // @ts-ignore
-                window.dataLayer.push( arguments );
+                window.dataLayer.push(arguments);
             }
 
             // @ts-ignore
-            gtag( 'js', new Date() );
+            gtag('js', new Date());
             // @ts-ignore
-            gtag( 'config', this.settings.analytics );
+            gtag('config', this.settings.analytics);
 
         }
 
-        window.document.body.appendChild( script );
+        window.document.body.appendChild(script);
 
     }
 
     /**
      * Send a temporary Toast to the player, useful for various playback states and issues
      */
-    protected toast( text: string | null = null, permanent: boolean = false ): string | null {
+    protected toast(text: string | null = null, permanent: boolean = false): string | null {
 
         // Emit no matter what!
-        this.emit( 'status.change', text );
+        this.emit('status.change', text);
 
         // Now select an element if it doesn't exist quit
-        let status = this._( '.player-status' )[ 0 ] as HTMLElement;
-        if ( status == null ) return null;
+        let status = this._('.player-status')[0] as HTMLElement;
+        if (status == null) return null;
 
-        if ( !text ) return status.textContent;
+        if (!text) return status.textContent;
 
-        if ( permanent ) {
+        if (permanent) {
             this.temp.notification = text;
         }
 
-        if ( this.timers.notify ) {
-            clearTimeout( this.timers.notify );
+        if (this.timers.notify) {
+            clearTimeout(this.timers.notify);
         }
 
         status.textContent = text ?? '';
 
-        if ( !permanent ) {
+        if (!permanent) {
 
-            status.classList.remove( 'text-animate' );
-            this.timers.notify = setTimeout( () => {
+            status.classList.remove('text-animate');
+            this.timers.notify = setTimeout(() => {
 
-                this.emit( 'status.change', this.temp.notification );
+                this.emit('status.change', this.temp.notification);
                 status.textContent = this.temp.notification ?? '';
-                status.classList.add( 'text-animate' );
+                status.classList.add('text-animate');
 
-            }, 2000 );
+            }, 2000);
         }
 
         return null;
@@ -1240,15 +1243,15 @@ export default class PawTunes extends HTML5Audio {
     /**
      * Shorten text
      */
-    protected shorten( text: string = "", length: number = 0 ) {
+    protected shorten(text: string = "", length: number = 0) {
 
         // Skip if max length defined zero
-        if ( text === "" || length === 0 ) return text;
+        if (text === "" || length === 0) return text;
 
         // Do the magic
         let $length = length || 10;
-        if ( text.length > $length ) {
-            text = text.substring( 0, $length ) + '&hellip;';
+        if (text.length > $length) {
+            text = text.substring(0, $length) + '&hellip;';
         }
 
         return text;
@@ -1262,23 +1265,23 @@ export default class PawTunes extends HTML5Audio {
      *
      * @returns {string} Human readable string
      */
-    protected ago( timestamp: number ): string {
+    protected ago(timestamp: number): string {
 
-        let seconds = Math.floor( ( ( new Date().getTime() + new Date().getTimezoneOffset() ) - timestamp ) / 1000 );
+        let seconds = Math.floor(((new Date().getTime() + new Date().getTimezoneOffset()) - timestamp) / 1000);
 
         // Hours
-        if ( Math.floor( seconds / 3600 ) >= 1 )
-            return `${Math.floor( seconds / 3600 )} ${this.translate( 'history_hour_ago' )}`;
+        if (Math.floor(seconds / 3600) >= 1)
+            return `${Math.floor(seconds / 3600)} ${this.translate('history_hour_ago')}`;
 
         // Minutes
-        if ( Math.floor( seconds / 60 ) >= 1 )
-            return `${Math.floor( seconds / 60 )} ${this.translate( 'history_min_ago' )}`;
+        if (Math.floor(seconds / 60) >= 1)
+            return `${Math.floor(seconds / 60)} ${this.translate('history_min_ago')}`;
 
         // Seconds
-        if ( seconds === 0 )
-            return this.translate( 'history_just_now' );
+        if (seconds === 0)
+            return this.translate('history_just_now');
 
-        return `${Math.floor( seconds )} ${this.translate( 'history_sec_ago' )}`;
+        return `${Math.floor(seconds)} ${this.translate('history_sec_ago')}`;
 
     }
 
@@ -1287,41 +1290,41 @@ export default class PawTunes extends HTML5Audio {
      */
     protected handleMetaChange(): void {
 
-        if ( 'mediaSession' in navigator ) {
+        if ('mediaSession' in navigator) {
 
             let images: { src: string; sizes: string; type: any; }[] = [];
-            if ( this.onAir.artwork ) {
+            if (this.onAir.artwork) {
 
                 let url: string = this.onAir.artwork;
-                let ext: string = this.onAir.artwork.split( /[#?]/ )[ 0 ]?.split( '.' )?.pop()?.trim() ?? "";
-                let imageMime   = '';
+                let ext: string = this.onAir.artwork.split(/[#?]/)[0]?.split('.')?.pop()?.trim() ?? "";
+                let imageMime = '';
 
-                const sizes = [ '96x96', '128x128', '192x192', '256x256', '384x384', '320x180', '512x512' ];
+                const sizes = ['96x96', '128x128', '192x192', '256x256', '384x384', '320x180', '512x512'];
 
                 // Find mimetype
-                for ( const [ index, mimetype ] of Object.entries( this.artworkTypes ) ) {
-                    if ( index === ext ) {
+                for (const [index, mimetype] of Object.entries(this.artworkTypes)) {
+                    if (index === ext) {
                         imageMime = mimetype;
                         break;
                     }
                 }
 
                 // Define images
-                for ( let i = 0; i < sizes.length; i++ ) {
-                    images.push( {
-                        src  : url,
-                        sizes: sizes[ i ],
-                        type : ( imageMime !== '' && imageMime !== '/' ) ? imageMime : null
-                    } )
+                for (let i = 0; i < sizes.length; i++) {
+                    images.push({
+                        src: url,
+                        sizes: sizes[i],
+                        type: (imageMime !== '' && imageMime !== '/') ? imageMime : null
+                    })
                 }
 
             }
 
             navigator.mediaSession.metadata = new window.MediaMetadata(
                 {
-                    artist : this.onAir.artist,
-                    title  : this.onAir.title,
-                    album  : '',
+                    artist: this.onAir.artist,
+                    title: this.onAir.title,
+                    album: '',
                     artwork: images
                 }
             );
@@ -1336,25 +1339,25 @@ export default class PawTunes extends HTML5Audio {
      * @param obj1
      * @param obj2
      */
-    protected deepCloneLeftSide( obj1: any, obj2: any ) {
+    protected deepCloneLeftSide(obj1: any, obj2: any) {
 
-        const result: { [ key: string ]: any } = {};
-        for ( const key in obj1 ) {
+        const result: { [key: string]: any } = {};
+        for (const key in obj1) {
 
-            if ( typeof obj1[ key ] === 'object' && obj1[ key ] !== undefined ) {
+            if (typeof obj1[key] === 'object' && obj1[key] !== undefined) {
 
-                if ( key in obj2 ) {
-                    result[ key ] = this.deepCloneLeftSide( obj1[ key ], obj2[ key ] );
+                if (key in obj2) {
+                    result[key] = this.deepCloneLeftSide(obj1[key], obj2[key]);
                     continue;
                 }
 
-                result[ key ] = this.deepCloneLeftSide( obj1[ key ], {} );
+                result[key] = this.deepCloneLeftSide(obj1[key], {});
                 continue;
 
             }
 
             // Not object, just value
-            result[ key ] = ( typeof obj2[ key ] === 'undefined' ) ? obj1[ key ] : obj2[ key ];
+            result[key] = (typeof obj2[key] === 'undefined') ? obj1[key] : obj2[key];
 
         }
 
@@ -1369,11 +1372,11 @@ export default class PawTunes extends HTML5Audio {
      * @param content
      * @param dom
      */
-    protected writeHTML( element: string, content: string, dom: HTMLElement | Document = document ) {
+    protected writeHTML(element: string, content: string, dom: HTMLElement | Document = document) {
 
-        this._( element, ( el: HTMLElement ) => {
+        this._(element, (el: HTMLElement) => {
             el.innerHTML = content;
-        }, dom, false );
+        }, dom, false);
 
     }
 
@@ -1384,11 +1387,11 @@ export default class PawTunes extends HTML5Audio {
      * @param content
      * @param dom
      */
-    protected writeText( element: string, content: string, dom: HTMLElement | Document = document ) {
+    protected writeText(element: string, content: string, dom: HTMLElement | Document = document) {
 
-        this._( element, ( el: HTMLElement ) => {
+        this._(element, (el: HTMLElement) => {
             el.textContent = content;
-        }, dom, false );
+        }, dom, false);
 
     }
 
@@ -1399,9 +1402,9 @@ export default class PawTunes extends HTML5Audio {
      * @param dom
      * @param usePrefix
      */
-    protected getElm( element: string, dom: HTMLElement | Document = document, usePrefix: boolean = true ) {
+    protected getElm(element: string, dom: HTMLElement | Document = document, usePrefix: boolean = true) {
 
-        return this._( element, null, dom, usePrefix )[ 0 ];
+        return this._(element, null, dom, usePrefix)[0];
 
     }
 
@@ -1410,41 +1413,41 @@ export default class PawTunes extends HTML5Audio {
      *
      * @param specific - Optional specific stream to set
      */
-    protected setStream( specific: string = '' ) {
+    protected setStream(specific: string = '') {
 
-        if ( !this.channel.streams ) {
+        if (!this.channel.streams) {
             return;
         }
 
         // Make sure stream exists
-        if ( specific === '' || !this.channel.streams[ specific ] ) {
+        if (specific === '' || !this.channel.streams[specific]) {
 
             // Maybe storage?
-            const streamStorage = this.storage!.get( `last-stream-${this.channel.name}` );
-            if ( streamStorage && this.channel.streams[ streamStorage ] ) {
+            const streamStorage = this.storage!.get(`last-stream-${this.channel.name}`);
+            if (streamStorage && this.channel.streams[streamStorage]) {
 
                 specific = streamStorage;
 
             } else { // Use first
 
-                specific = Object.keys( this.channel.streams )[ 0 ];
+                specific = Object.keys(this.channel.streams)[0];
 
             }
 
         }
 
-        if ( this.channel.streams[ specific ] ) {
+        if (this.channel.streams[specific]) {
 
             this.stream = specific;
             this.streamToMedia();
-            this.storage!.set( `last-stream-${this.channel.name}`, specific );
-            this.emit( 'stream.change', specific );
+            this.storage!.set(`last-stream-${this.channel.name}`, specific);
+            this.emit('stream.change', specific);
             return;
 
         }
 
         // @todo ERROR?
-        this.toast( this.translate( 'error_stream' ) )
+        this.toast(this.translate('error_stream'))
 
     }
 
@@ -1453,12 +1456,12 @@ export default class PawTunes extends HTML5Audio {
      *
      * @param message - The error message to display
      */
-    protected renderFatalError( message: string ) {
+    protected renderFatalError(message: string) {
 
         this.fatal = true;
-        this._( '#no-js-hide', ( el: HTMLElement ) => {
+        this._('#no-js-hide', (el: HTMLElement) => {
             el.innerHTML = `<span style="color:red; font-weight: 500; font-size: 16px;">ERROR: ${message}</span>`;
-        } )
+        })
 
     }
 
@@ -1468,12 +1471,12 @@ export default class PawTunes extends HTML5Audio {
     protected bindPlayerControls() {
 
         // Play
-        this._( 'play', ( elm: HTMLElement ) => elm.addEventListener( 'click', () => this.play() ) );
-        this._( 'stop', ( elm: HTMLElement ) => elm.addEventListener( 'click', () => this.stop() ) );
+        this._('play', (elm: HTMLElement) => elm.addEventListener('click', () => this.play()));
+        this._('stop', (elm: HTMLElement) => elm.addEventListener('click', () => this.stop()));
 
         // Mute/Unmute
-        this._( 'mute', ( elm: HTMLElement ) => elm.addEventListener( 'click', () => this.mute() ) );
-        this._( 'unmute', ( elm: HTMLElement ) => elm.addEventListener( 'click', () => this.unmute() ) );
+        this._('mute', (elm: HTMLElement) => elm.addEventListener('click', () => this.mute()));
+        this._('unmute', (elm: HTMLElement) => elm.addEventListener('click', () => this.unmute()));
 
         // Volume
         this.handleVolumeUI();
@@ -1487,23 +1490,23 @@ export default class PawTunes extends HTML5Audio {
     protected handleVolumeUI() {
 
         // If any of the elements are missing, do nothing
-        let isDragging     = false;
-        const updateVolume = ( event: MouseEvent | TouchEvent ) => {
+        let isDragging = false;
+        const updateVolume = (event: MouseEvent | TouchEvent) => {
 
             event.preventDefault();
 
-            const elm = this._( 'volumeBar' )[ 0 ];
-            if ( !this.audio || !elm ) {
+            const elm = this._('volumeBar')[0];
+            if (!this.audio || !elm) {
                 return;
             }
 
             let clientX;
             const rect = elm.getBoundingClientRect();
-            if ( "touches" in event && event.touches && event.touches.length > 0 ) {
+            if ("touches" in event && event.touches && event.touches.length > 0) {
 
-                clientX = event.touches[ 0 ].clientX;
+                clientX = event.touches[0].clientX;
 
-            } else if ( "clientX" in event && event.clientX !== undefined ) {
+            } else if ("clientX" in event && event.clientX !== undefined) {
 
                 clientX = event.clientX;
 
@@ -1513,57 +1516,57 @@ export default class PawTunes extends HTML5Audio {
 
             }
 
-            let volume        = ( clientX - rect.left ) / rect.width * 100;
-            volume            = Math.max( 0, Math.min( 100, volume ) );
+            let volume = (clientX - rect.left) / rect.width * 100;
+            volume = Math.max(0, Math.min(100, volume));
             this.audio.volume = volume / 100;
 
         }
 
-        const startDrag = ( event: MouseEvent | TouchEvent ) => {
+        const startDrag = (event: MouseEvent | TouchEvent) => {
             isDragging = true;
-            updateVolume( event );
+            updateVolume(event);
         }
 
-        const onDrag = ( event: MouseEvent | TouchEvent ) => {
-            if ( !isDragging ) return;
-            updateVolume( event );
+        const onDrag = (event: MouseEvent | TouchEvent) => {
+            if (!isDragging) return;
+            updateVolume(event);
         }
 
-        const endDrag = ( event: MouseEvent | TouchEvent ) => {
-            if ( !isDragging ) return;
+        const endDrag = (event: MouseEvent | TouchEvent) => {
+            if (!isDragging) return;
             isDragging = false;
-            updateVolume( event );
+            updateVolume(event);
         }
 
         // Mousewheel
-        const onWheelChange = ( event: WheelEvent ) => {
+        const onWheelChange = (event: WheelEvent) => {
 
             event.preventDefault();
-            if ( event.deltaY < 0 ) {
-                this.volume = Math.max( 0, Math.min( 100, this.volume + 2 ) );
+            if (event.deltaY < 0) {
+                this.volume = Math.max(0, Math.min(100, this.volume + 2));
             } else {
-                this.volume = Math.max( 0, Math.min( 100, this.volume - 2 ) );
+                this.volume = Math.max(0, Math.min(100, this.volume - 2));
             }
 
-            if ( this.audio ) {
+            if (this.audio) {
                 this.audio.volume = this.volume / 100;
             }
 
         }
 
         // Event listeners
-        this._( 'volumeHandle', ( elm: HTMLElement ) => elm.addEventListener( 'mousedown', startDrag ) )
-        this._( "volumeBar", ( elm: HTMLElement ) => elm.addEventListener( 'mousedown', startDrag ) )
-        document.addEventListener( 'mousemove', onDrag );
-        document.addEventListener( 'mouseup', endDrag );
+        this._('volumeHandle', (elm: HTMLElement) => elm.addEventListener('mousedown', startDrag))
+        this._("volumeBar", (elm: HTMLElement) => elm.addEventListener('mousedown', startDrag))
+        document.addEventListener('mousemove', onDrag);
+        document.addEventListener('mouseup', endDrag);
 
         // For touch devices
-        this._( "volumeHandle", ( elm: HTMLElement ) => elm.addEventListener( 'touchstart', startDrag ) )
-        document.addEventListener( 'touchmove', onDrag );
-        document.addEventListener( 'touchend', endDrag );
+        this._("volumeHandle", (elm: HTMLElement) => elm.addEventListener('touchstart', startDrag))
+        document.addEventListener('touchmove', onDrag);
+        document.addEventListener('touchend', endDrag);
 
         // Mousewheel interaction
-        this._( "volumeContainer", ( elm: HTMLElement ) => elm.addEventListener( 'wheel', onWheelChange ) )
+        this._("volumeContainer", (elm: HTMLElement) => elm.addEventListener('wheel', onWheelChange))
 
     }
 
@@ -1573,56 +1576,56 @@ export default class PawTunes extends HTML5Audio {
      * @param event - A string representing the type of event that triggers the UI update.
      * Possible values include 'seeking', 'playing', and others.
      */
-    protected updateUI( event: string ) {
+    protected updateUI(event: string) {
 
-        switch ( event ) {
+        switch (event) {
 
             case 'seeking':
-                this._( 'player', ( el: HTMLElement ) => el.classList.add( 'paw-seeking' ) )
+                this._('player', (el: HTMLElement) => el.classList.add('paw-seeking'))
                 break;
 
             // @ts-ignore
             case 'playing':
-                this._( 'player', ( el: HTMLElement ) => el.classList.remove( 'paw-seeking' ) )
+                this._('player', (el: HTMLElement) => el.classList.remove('paw-seeking'))
             // fallthrough
 
             case 'play':
-                this._( 'play', ( el: HTMLElement ) => el.classList.add( 'hidden' ) )
-                this._( 'stop', ( el: HTMLElement ) => el.classList.remove( 'hidden' ) )
+                this._('play', (el: HTMLElement) => el.classList.add('hidden'))
+                this._('stop', (el: HTMLElement) => el.classList.remove('hidden'))
                 break;
 
             case 'stopped':
-                this._( 'play', ( el: HTMLElement ) => el.classList.remove( 'hidden' ) )
-                this._( 'stop', ( el: HTMLElement ) => el.classList.add( 'hidden' ) )
-                this._( 'player', ( el: HTMLElement ) => el.classList.remove( 'paw-seeking' ) )
+                this._('play', (el: HTMLElement) => el.classList.remove('hidden'))
+                this._('stop', (el: HTMLElement) => el.classList.add('hidden'))
+                this._('player', (el: HTMLElement) => el.classList.remove('paw-seeking'))
                 break;
 
             case 'volumechange':
 
-                this._( 'volumeValue', ( el: HTMLElement ) => el.style.width = `${this.volume}%` )
-                this._( 'volumeHandle', ( el: HTMLElement ) => el.setAttribute( 'aria-valuenow', `${this.volume}` ) )
+                this._('volumeValue', (el: HTMLElement) => el.style.width = `${this.volume}%`)
+                this._('volumeHandle', (el: HTMLElement) => el.setAttribute('aria-valuenow', `${this.volume}`))
 
                 // If volume is 0, mute
-                if ( !this.isNoVolume ) {
-                    if ( this.volume === 0 ) {
+                if (!this.isNoVolume) {
+                    if (this.volume === 0) {
 
-                        this._( 'mute', ( el: HTMLElement ) => el.classList.add( 'hidden' ) )
-                        this._( 'unmute', ( el: HTMLElement ) => el.classList.remove( 'hidden' ) )
+                        this._('mute', (el: HTMLElement) => el.classList.add('hidden'))
+                        this._('unmute', (el: HTMLElement) => el.classList.remove('hidden'))
 
                     } else {
 
-                        this._( 'mute', ( el: HTMLElement ) => el.classList.remove( 'hidden' ) )
-                        this._( 'unmute', ( el: HTMLElement ) => el.classList.add( 'hidden' ) )
+                        this._('mute', (el: HTMLElement) => el.classList.remove('hidden'))
+                        this._('unmute', (el: HTMLElement) => el.classList.add('hidden'))
 
                     }
                 }
                 break;
 
             case 'disable-volume':
-                this._( "player", ( elm: HTMLElement ) => elm.classList.add( 'no-volume' ) );
-                this._( "volumeBar", ( elm: HTMLElement ) => elm.classList.add( 'hidden' ) );
-                this._( "mute", ( elm: HTMLElement ) => elm.classList.add( 'hidden' ) );
-                this._( "unmute", ( elm: HTMLElement ) => elm.classList.add( 'hidden' ) );
+                this._("player", (elm: HTMLElement) => elm.classList.add('no-volume'));
+                this._("volumeBar", (elm: HTMLElement) => elm.classList.add('hidden'));
+                this._("mute", (elm: HTMLElement) => elm.classList.add('hidden'));
+                this._("unmute", (elm: HTMLElement) => elm.classList.add('hidden'));
                 break;
         }
 
@@ -1639,47 +1642,47 @@ export default class PawTunes extends HTML5Audio {
      *
      * @returns The updated HTMLElement or null if no update is made.
      */
-    private channelDOMChange( theme: string ) {
+    private channelDOMChange(theme: string) {
 
-        if ( this.channel.logo ) {
-            this._( '.logo img', ( el: HTMLElement ) => {
+        if (this.channel.logo) {
+            this._('.logo img', (el: HTMLElement) => {
 
-                if ( !this.temp.logo ) {
-                    this.temp.logo = el.getAttribute( 'src' );
+                if (!this.temp.logo) {
+                    this.temp.logo = el.getAttribute('src');
                 }
 
-                let logo     = new Image();
-                logo.src     = <string>this.channel.logo;
-                logo.onload  = () => el.setAttribute( 'src', logo.src );
-                logo.onerror = () => el.setAttribute( 'src', this.temp.logo );
+                let logo = new Image();
+                logo.src = <string>this.channel.logo;
+                logo.onload = () => el.setAttribute('src', logo.src);
+                logo.onerror = () => el.setAttribute('src', this.temp.logo);
 
-            } )
+            })
         }
 
-        if ( !this.channel.logo && this.temp.logo ) {
-            this._( '.logo img', ( el: HTMLElement ) => {
-                el.setAttribute( 'src', this.temp.logo );
-            } )
+        if (!this.channel.logo && this.temp.logo) {
+            this._('.logo img', (el: HTMLElement) => {
+                el.setAttribute('src', this.temp.logo);
+            })
         }
 
-        return this._( '#main_theme', ( el: HTMLElement ) => {
+        return this._('#main_theme', (el: HTMLElement) => {
 
-            if ( !this.temp.skin ) {
-                this.temp.skin = el.getAttribute( 'href' );
+            if (!this.temp.skin) {
+                this.temp.skin = el.getAttribute('href');
             }
 
-            if ( theme ) {
-                el.setAttribute( 'href', `templates/${this.settings.template}/${theme}` );
-                this.emit( 'theme.change' )
+            if (theme) {
+                el.setAttribute('href', `templates/${this.settings.template}/${theme}`);
+                this.emit('theme.change')
                 return;
             }
 
-            if ( !theme && this.temp.skin && el.getAttribute( 'href' ) !== this.temp.skin ) {
-                el.setAttribute( 'href', this.temp.skin );
-                this.emit( 'theme.change' )
+            if (!theme && this.temp.skin && el.getAttribute('href') !== this.temp.skin) {
+                el.setAttribute('href', this.temp.skin);
+                this.emit('theme.change')
             }
 
-        }, document, false )
+        }, document, false)
     }
 
     /**
@@ -1687,41 +1690,41 @@ export default class PawTunes extends HTML5Audio {
      */
     private dropdownMenus() {
 
-        const elements = this._( '[data-toggle="dropdown"]' )
-        for ( const element of elements ) {
+        const elements = this._('[data-toggle="dropdown"]')
+        for (const element of elements) {
 
-            element.addEventListener( 'click', ( event ) => {
+            element.addEventListener('click', (event) => {
 
                 event.preventDefault();
 
                 let elm = element.parentNode as HTMLElement;
-                if ( elm ) {
+                if (elm) {
 
                     // If the dropdown is already active, close it.
-                    if ( elm.classList.contains( 'active' ) ) {
-                        elm.classList.remove( 'active' );
+                    if (elm.classList.contains('active')) {
+                        elm.classList.remove('active');
                         return false;
                     }
 
                     // Close all before opening new
-                    this._( '[data-toggle="dropdown"]' ).forEach( function( el ) {
-                        let parent = el.parentNode?.querySelector( '.dropdown' );
-                        parent?.classList.remove( 'active' );
-                    } );
+                    this._('[data-toggle="dropdown"]').forEach(function (el) {
+                        let parent = el.parentNode?.querySelector('.dropdown');
+                        parent?.classList.remove('active');
+                    });
 
                     // Open
-                    elm.classList.add( 'active' );
+                    elm.classList.add('active');
 
                     // When the body clicked, close this dropdown
-                    document.addEventListener( 'click', function( event ) {
-                        if ( event.target !== elm && !elm.contains( event.target as Node ) ) {
-                            elm.classList.remove( 'active' );
+                    document.addEventListener('click', function (event) {
+                        if (event.target !== elm && !elm.contains(event.target as Node)) {
+                            elm.classList.remove('active');
                         }
-                    } );
+                    });
 
                 }
 
-            } );
+            });
         }
 
     }
@@ -1731,29 +1734,29 @@ export default class PawTunes extends HTML5Audio {
      */
     private async streamToMedia() {
 
-        if ( !this.stream || !this.channel.streams[ this.stream ] ) return;
+        if (!this.stream || !this.channel.streams[this.stream]) return;
 
         const streams: PawMediaSource[] = [];
-        for ( const key of Object.keys( this.channel.streams[ this.stream ] ) ) {
-            streams.push( { type: key, src: this.channel.streams[ this.stream ][ key ] } );
+        for (const key of Object.keys(this.channel.streams[this.stream])) {
+            streams.push({type: key, src: this.channel.streams[this.stream][key]});
         }
 
         try {
 
-            await this.setMedia( streams );
-            if ( this.autoplay ) {
+            await this.setMedia(streams);
+            if (this.autoplay) {
 
                 await this.play();
-                this.updateUI( 'play' )
+                this.updateUI('play')
 
                 // Once done, stop it.
                 this.autoplay = false;
 
             }
 
-        } catch ( error ) {
+        } catch (error) {
 
-            this.emit( 'error', error );
+            this.emit('error', error);
 
         }
 
@@ -1762,35 +1765,35 @@ export default class PawTunes extends HTML5Audio {
     /**
      * Find specific channel used to play on air
      */
-    private findAndSetChannel( specific: string = '' ): Channel {
+    private findAndSetChannel(specific: string = ''): Channel {
 
-        if ( specific !== '' && this.findObjectByKey( this.channels, 'name', specific ) ) {
-            return this.channel = this.findObjectByKey( this.channels, 'name', specific );
+        if (specific !== '' && this.findObjectByKey(this.channels, 'name', specific)) {
+            return this.channel = this.findObjectByKey(this.channels, 'name', specific);
         }
 
         // Use storage
-        let defaultChannel = this.storage!.get( 'last-channel' );
-        if ( defaultChannel && this.findObjectByKey( this.channels, 'name', defaultChannel ) ) {
-            return this.channel = this.findObjectByKey( this.channels, 'name', defaultChannel );
+        let defaultChannel = this.storage!.get('last-channel');
+        if (defaultChannel && this.findObjectByKey(this.channels, 'name', defaultChannel)) {
+            return this.channel = this.findObjectByKey(this.channels, 'name', defaultChannel);
         }
 
         // Use settings
-        if ( this.settings.defaults.channel !== "" && this.findObjectByKey( this.channels, 'name', this.settings.defaults.channel ) ) {
-            return this.channel = this.findObjectByKey( this.channels, 'name', this.settings.defaults.channel );
+        if (this.settings.defaults.channel !== "" && this.findObjectByKey(this.channels, 'name', this.settings.defaults.channel)) {
+            return this.channel = this.findObjectByKey(this.channels, 'name', this.settings.defaults.channel);
         }
 
         // No default found, use the first channel
-        return this.channel = this.channels[ 0 ];
+        return this.channel = this.channels[0];
 
     }
 
     /**
      * Helper function to find a specific object in an array using a key
      */
-    private findObjectByKey( array: any, key: string, value: string ): any {
+    private findObjectByKey(array: any, key: string, value: string): any {
 
-        for ( let i = 0; i < array.length; i++ ) {
-            if ( array[ i ][ key ] === value ) return array[ i ];
+        for (let i = 0; i < array.length; i++) {
+            if (array[i][key] === value) return array[i];
         }
 
         return null;

@@ -173,7 +173,7 @@ return [
             ],
         ],
     ],
-    'icecast-public' => [
+    'icecast-public'   => [
         'label'  => 'Icecast (Public)',
         'fields' => [
             [

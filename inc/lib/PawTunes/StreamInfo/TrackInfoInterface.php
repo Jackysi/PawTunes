@@ -15,11 +15,12 @@ namespace lib\PawTunes\StreamInfo;
 
 use lib\PawTunes;
 
-interface TrackInfoInterface {
+interface TrackInfoInterface
+{
 
-    public function __construct( PawTunes $pawtunes, $channel );
+    public function __construct(PawTunes $pawtunes, $channel);
 
 
     public function getInfo();
-
+    
 }

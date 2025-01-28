@@ -16,7 +16,8 @@ namespace lib\PawTunes\Artwork;
 use lib\PawException;
 use lib\PawTunes;
 
-class LastFM extends Artwork {
+class LastFM extends Artwork
+{
 
     /**
      * @var string
@@ -31,51 +32,49 @@ class LastFM extends Artwork {
 
     /**
      * @param       $apiKey
-     * @param array $settings
+     * @param  array  $settings
      */
-    public function __construct( PawTunes $pawtunes, $override = null ) {
-
+    public function __construct(PawTunes $pawtunes, $override = null)
+    {
         // Parent constructor (parses settings)
-        parent::__construct( $pawtunes, $override );
+        parent::__construct($pawtunes, $override);
 
         // Required!
-        if ( empty( $this->pawtunes->config( 'artwork_sources' )[ 'lastfm' ][ 'api_key' ] ) ) {
-            throw new PawException( 'Missing API key for LastFM artwork API! Please get one from https://www.last.fm/api/account/create.' );
+        if (empty($this->pawtunes->config('artwork_sources')['lastfm']['api_key'])) {
+            throw new PawException('Missing API key for LastFM artwork API! Please get one from https://www.last.fm/api/account/create.');
         }
 
-        $this->apiKey = $this->pawtunes->config( 'artwork_sources' )[ 'lastfm' ][ 'api_key' ] ?? null ?? null;
-
+        $this->apiKey = $this->pawtunes->config('artwork_sources')['lastfm']['api_key'] ?? null ?? null;
     }
 
 
     /**
-     * @param string      $artist
-     * @param string|null $title
+     * @param  string  $artist
+     * @param  string|null  $title
      *
      * @return mixed
      */
-    protected function getArtworkURL( $artist, $title = '' ) {
-
-        if ( !$this->apiKey ) {
+    protected function getArtworkURL($artist, $title = '')
+    {
+        if ( ! $this->apiKey) {
             return null;
         }
 
         $data = xml2array(
             $this->pawtunes->get(
-                $this->pawtunes->template( $this->url, [ 'rawArtist' => rawurlencode( $artist ), 'apiKey' => $this->apiKey ], false ),
+                $this->pawtunes->template($this->url, ['rawArtist' => rawurlencode($artist), 'apiKey' => $this->apiKey], false),
                 null,
                 null,
                 false,
-                30 )
+                30)
         );
 
         // Unable to find artist
-        if ( !empty( $data[ 'error' ] ) ) {
-            throw new PawException( "LastFM Artwork Search for \"{$artist}\" failed! Response: " . $data[ 'error' ] );
+        if ( ! empty($data['error'])) {
+            throw new PawException("LastFM Artwork Search for \"{$artist}\" failed! Response: ".$data['error']);
         }
 
-        return ( !empty( $data[ 'artist' ][ 'image' ][ 4 ] ) ) ? $data[ 'artist' ][ 'image' ][ 4 ] : $data[ 'artist' ][ 'image' ][ 3 ];
-
+        return ( ! empty($data['artist']['image'][4])) ? $data['artist']['image'][4] : $data['artist']['image'][3];
     }
 
 }

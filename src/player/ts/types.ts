@@ -26,11 +26,11 @@ export interface Channel {
     logo: string | null,
     skin: string,
     ws: {
-        [ key: string ]: string
+        [key: string]: string
     },
     streams: {
-        [ key: string ]: {
-            [ key: string ]: string
+        [key: string]: {
+            [key: string]: string
         }
     }
 }

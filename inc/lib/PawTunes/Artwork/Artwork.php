@@ -16,7 +16,8 @@ namespace lib\PawTunes\Artwork;
 use lib\Helpers;
 use lib\PawTunes;
 
-abstract class Artwork {
+abstract class Artwork
+{
 
     /**
      * @var string
@@ -35,7 +36,7 @@ abstract class Artwork {
      *
      * @var string[]
      */
-    public $extensions = [ 'jpg', 'jpeg', 'png', 'svg', 'webp' ];
+    public $extensions = ['jpg', 'jpeg', 'png', 'svg', 'webp'];
 
     /**
      * @var integer
@@ -74,106 +75,103 @@ abstract class Artwork {
 
 
     /**
-     * @param PawTunes $pawtunes
+     * @param  PawTunes  $pawtunes
      */
-    public function __construct( PawTunes $pawtunes, $override = null ) {
+    public function __construct(PawTunes $pawtunes, $override = null)
+    {
+        $this->imageWidth  = $pawtunes->config('images_size') ?? 360;
+        $this->imageHeight = $pawtunes->config('images_size') ?? 360;
 
-        $this->imageWidth = $pawtunes->config( 'images_size' ) ?? 360;
-        $this->imageHeight = $pawtunes->config( 'images_size' ) ?? 360;
+        $this->cacheImage = $pawtunes->config('cache_images') ?? false;
+        $this->cachePath  = ( ! empty($pawtunes->config('cache')['path'])) ? $pawtunes->config('cache')['path'] : $this->cachePath;
 
-        $this->cacheImage = $pawtunes->config( 'cache_images' ) ?? false;
-        $this->cachePath = ( !empty( $pawtunes->config( 'cache' )[ 'path' ] ) ) ? $pawtunes->config( 'cache' )[ 'path' ] : $this->cachePath;
-
-        $this->defaultArtist = $pawtunes->config( 'artist_default' ) ?? 'Various Artists';
-        $this->defaultTrack = $pawtunes->config( 'title_default' ) ?? 'Unknown Track';
+        $this->defaultArtist = $pawtunes->config('artist_default') ?? 'Various Artists';
+        $this->defaultTrack  = $pawtunes->config('title_default') ?? 'Unknown Track';
 
         $this->pawtunes = $pawtunes;
 
         // Check if we have an override provided
-        $this->override = ( !empty( $override ) ) ? $override : null;
-
+        $this->override = ( ! empty($override)) ? $override : null;
     }
 
 
     /**
      * @param      $artist
      * @param      $title
-     * @param bool $skipCache
+     * @param  bool  $skipCache
      *
      * @return string|null
      */
-    public function __invoke( $artist, $title = '', string $override = '', bool $skipCache = false ): ?string {
-
+    public function __invoke($artist, $title = '', string $override = '', bool $skipCache = false): ?string
+    {
         // If we already have an image, stop here.
-        $existing = $this->getExistingImage( $artist, $title, $skipCache );
-        if ( $existing || empty( $artist ) ) {
+        $existing = $this->getExistingImage($artist, $title, $skipCache);
+        if ($existing || empty($artist)) {
             return $existing;
         }
 
         // Now let's do magic.
-        $artworkURL = ( !empty( $override ) ) ? $override : $this->getArtworkURL( $artist, $title );
-        if ( !$artworkURL || !filter_var( $artworkURL, FILTER_VALIDATE_URL ) ) {
+        $artworkURL = ( ! empty($override)) ? $override : $this->getArtworkURL($artist, $title);
+        if ( ! $artworkURL || ! filter_var($artworkURL, FILTER_VALIDATE_URL)) {
             return false;
         }
 
         // Not downloading & caching
-        if ( $skipCache || !$this->cacheImage ) {
+        if ($skipCache || ! $this->cacheImage) {
             return $artworkURL;
         }
 
         // Download and cache, return new URL
-        $fileName = $this->pawtunes->parseTrack( "{$artist} - {$title}" );
-        if ( !$newImage = $this->downloadArtwork( $artworkURL, $fileName ) ) {
+        $fileName = $this->pawtunes->parseTrack("{$artist} - {$title}");
+        if ( ! $newImage = $this->downloadArtwork($artworkURL, $fileName)) {
             return false;
         }
 
         return $newImage;
-
     }
 
 
     /**
      * Get image
      *
-     * @param string $artist
-     * @param string $title
-     * @param bool   $skipCache
+     * @param  string  $artist
+     * @param  string  $title
+     * @param  bool  $skipCache
      *
      * @return string
      */
-    public function getExistingImage( $artist, $title = '', bool $skipCache = false ): ?string {
-
+    public function getExistingImage($artist, $title = '', bool $skipCache = false): ?string
+    {
         // Figure out what we are actually searching for
-        $trackArtist = $this->pawtunes->parseTrack( $artist );
-        $trackName = $this->pawtunes->parseTrack( "{$artist} - {$title}" );
+        $trackArtist = $this->pawtunes->parseTrack($artist);
+        $trackName   = $this->pawtunes->parseTrack("{$artist} - {$title}");
 
         // Empty Artist, Too sort or default artist-title returned
-        if ( empty( $trackArtist ) || strlen( $trackArtist ) < 3 || $this->isDefaultTrack( $artist, $title ) ) {
+        if (empty($trackArtist) || strlen($trackArtist) < 3 || $this->isDefaultTrack($artist, $title)) {
             return false;
         }
 
         // Check if we have a cached image (artist - title)
-        if ( $title !== '' && $trackImage = $this->getExistingArtwork( $trackName ) ) {
+        if ($title !== '' && $trackImage = $this->getExistingArtwork($trackName)) {
             return $trackImage;
         }
 
         // Check if we have an artist image
-        if ( $artistImage = $this->getExistingArtwork( $trackArtist ) ) {
+        if ($artistImage = $this->getExistingArtwork($trackArtist)) {
             return $artistImage;
         }
 
         // Check if we have a cached artist image
-        if ( $skipCache === false && ( $cachedArtist = $this->getCachedArtwork( ( $title === '' ) ? $trackArtist : $trackName ) ) ) {
+        if ($skipCache === false && ($cachedArtist = $this->getCachedArtwork(($title === '') ? $trackArtist : $trackName))) {
             return $cachedArtist;
         }
 
         // Last check if there is an override
-        if ( $this->override && filter_var( $this->override, FILTER_VALIDATE_URL ) ) {
+        if ($this->override && filter_var($this->override, FILTER_VALIDATE_URL)) {
             return $this->override;
         }
 
         return null;
-
     }
 
 
@@ -185,10 +183,9 @@ abstract class Artwork {
      *
      * @return null
      */
-    protected function getArtworkURL( string $artist, ?string $title = '' ) {
-
+    protected function getArtworkURL(string $artist, ?string $title = '')
+    {
         return null;
-
     }
 
 
@@ -198,8 +195,8 @@ abstract class Artwork {
      *
      * @return string|null
      */
-    protected function downloadArtwork( $url, $imageName ) {
-
+    protected function downloadArtwork($url, $imageName)
+    {
         $this->ignoreAbort();
 
         // Headers list
@@ -214,33 +211,32 @@ abstract class Artwork {
             0,
             $err,
             [
-                CURLOPT_HEADERFUNCTION => function( $ch, $hLine ) use ( &$imageType ) {
+                CURLOPT_HEADERFUNCTION => function ($ch, $hLine) use (&$imageType) {
 
                     // Handle content type header
-                    if ( ( stripos( $hLine, 'content-type' ) !== false ) && stripos( $hLine, 'image/' ) !== false ) {
-                        $imageType = trim( str_ireplace( 'content-type: image/', '', $hLine ) );
+                    if ((stripos($hLine, 'content-type') !== false) && stripos($hLine, 'image/') !== false) {
+                        $imageType = trim(str_ireplace('content-type: image/', '', $hLine));
                     }
 
-                    return strlen( $hLine );
+                    return strlen($hLine);
 
                 },
             ]
         );
 
         // Download failed, invalid extension or too small file
-        if ( strlen( $img ) < 1024 || $imageType === null || !in_array( $imageType, $this->extensions ) ) {
+        if (strlen($img) < 1024 || $imageType === null || ! in_array($imageType, $this->extensions)) {
             return null;
         }
 
         // Where to store image
-        $path = "{$this->cachePath}/{$imageName}." . $imageType;
-        file_put_contents( $path, $img );
+        $path = "{$this->cachePath}/{$imageName}.".$imageType;
+        file_put_contents($path, $img);
 
         // Resize/Crop image
-        \lib\ImageResize::handle( $path, "{$this->imageWidth}x{$this->imageHeight}", 'crop' );
+        \lib\ImageResize::handle($path, "{$this->imageWidth}x{$this->imageHeight}", 'crop');
 
         return $path;
-
     }
 
 
@@ -250,10 +246,9 @@ abstract class Artwork {
      *
      * @return bool
      */
-    protected function isDefaultTrack( $artist, $title ): bool {
-
-        return ( $artist === $this->defaultArtist && $title === $this->defaultTrack );
-
+    protected function isDefaultTrack($artist, $title): bool
+    {
+        return ($artist === $this->defaultArtist && $title === $this->defaultTrack);
     }
 
 
@@ -262,18 +257,17 @@ abstract class Artwork {
      *
      * @return string|null
      */
-    protected function getExistingArtwork( $name ): ?string {
+    protected function getExistingArtwork($name): ?string
+    {
+        foreach ($this->extensions as $ext) {
 
-        foreach ( $this->extensions as $ext ) {
-
-            if ( is_file( "{$this->path}/{$name}.{$ext}" ) ) {
+            if (is_file("{$this->path}/{$name}.{$ext}")) {
                 return "{$this->path}/{$name}.{$ext}";
             }
 
         }
 
         return null;
-
     }
 
 
@@ -282,18 +276,17 @@ abstract class Artwork {
      *
      * @return string|null
      */
-    protected function getCachedArtwork( $name ): ?string {
+    protected function getCachedArtwork($name): ?string
+    {
+        foreach ($this->extensions as $ext) { ## Low priority cached images from various sources
 
-        foreach ( $this->extensions as $ext ) { ## Low priority cached images from various sources
-
-            if ( is_file( "{$this->cachePath}/{$name}.{$ext}" ) ) {
+            if (is_file("{$this->cachePath}/{$name}.{$ext}")) {
                 return "{$this->cachePath}/{$name}.{$ext}";
             }
 
         }
 
         return null;
-
     }
 
 
@@ -302,11 +295,10 @@ abstract class Artwork {
      *
      * @return void
      */
-    protected function ignoreAbort() {
-
-        ignore_user_abort( true );
-        set_time_limit( 0 );
-
+    protected function ignoreAbort()
+    {
+        ignore_user_abort(true);
+        set_time_limit(0);
     }
 
 }

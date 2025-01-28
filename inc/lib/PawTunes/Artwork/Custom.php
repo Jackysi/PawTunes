@@ -15,7 +15,8 @@ namespace lib\PawTunes\Artwork;
 
 use lib\PawTunes;
 
-class Custom extends Artwork {
+class Custom extends Artwork
+{
 
     /**
      * @var string
@@ -25,43 +26,42 @@ class Custom extends Artwork {
 
     /**
      * @param       $apiKey
-     * @param array $settings
+     * @param  array  $settings
      */
-    public function __construct( PawTunes $pawtunes, $override = null ) {
-
-        parent::__construct( $pawtunes, $override );
-        $this->url = $this->pawtunes->config( 'artwork_sources' )[ 'custom' ][ 'api_url' ] ?? null;
-
+    public function __construct(PawTunes $pawtunes, $override = null)
+    {
+        parent::__construct($pawtunes, $override);
+        $this->url = $this->pawtunes->config('artwork_sources')['custom']['api_url'] ?? null;
     }
 
 
     /**
-     * @param string $artist
-     * @param string $title
+     * @param  string  $artist
+     * @param  string  $title
      *
      * @return mixed
      */
-    protected function getArtworkURL( $artist, $title = '' ) {
-
+    protected function getArtworkURL($artist, $title = '')
+    {
         // Create full URL
         $url = $this->pawtunes->template(
             $this->url,
             [
-                'artist' => rawurlencode( $artist ),
-                'title'  => rawurlencode( $title ),
+                'artist' => rawurlencode($artist),
+                'title'  => rawurlencode($title),
             ]
         );
 
         // Check if URL exists
-        $fh = @get_headers( $url );
+        $fh   = @get_headers($url);
         $code = false;
 
         // URL exists or is it 404?
-        if ( $fh && is_array( $fh ) ) {
-            foreach ( $fh as $line ) {
+        if ($fh && is_array($fh)) {
+            foreach ($fh as $line) {
 
                 // Try to find 200 header
-                if ( stripos( $line, '200 OK' ) !== false ) {
+                if (stripos($line, '200 OK') !== false) {
                     $code = true;
                 }
 
@@ -69,8 +69,7 @@ class Custom extends Artwork {
         }
 
         // Now return
-        return ( $code ) ? $url : null;
-
+        return ($code) ? $url : null;
     }
 
 }

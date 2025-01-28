@@ -19,23 +19,23 @@
  */
 try {
 
-    if ( !isset( $panel ) ) {
-        header( "Location: index.php?page=home" );
+    if ( ! isset($panel)) {
+        header("Location: index.php?page=home");
         exit;
     }
 
     // Set headers
-    header( 'X-Accel-Buffering: no' );
-    header( 'Content-Encoding: none' );
-    header( 'Cache-Control: no-cache' );
-    set_time_limit( 0 );
+    header('X-Accel-Buffering: no');
+    header('Content-Encoding: none');
+    header('Cache-Control: no-cache');
+    set_time_limit(0);
 
     // Avoid session locking
     session_write_close();
 
     // Stop previous buffers
-    if ( ob_get_status() ) {
-        while ( ob_get_level() > 0 ) {
+    if (ob_get_status()) {
+        while (ob_get_level() > 0) {
             ob_end_clean();
         }
     }
@@ -61,34 +61,34 @@ try {
     ];
 
     // Get the action from $_GET
-    $action = $_GET[ 'action' ] ?? null;
-    if ( $action && isset( $routes[ $action ] ) ) {
+    $action = $_GET['action'] ?? null;
+    if ($action && isset($routes[$action])) {
 
         // Extract class and method from the route
-        [ $className, $methodName ] = explode( '::', $routes[ $action ] );
+        [$className, $methodName] = explode('::', $routes[$action]);
 
         // Instantiate the class
-        $instance = new $className( $pawtunes, $panel );
+        $instance = new $className($pawtunes, $panel);
 
         // Call the method with parameters
-        call_user_func_array( [ $instance, $methodName ], [] );
+        call_user_func_array([$instance, $methodName], []);
         exit;
 
     }
 
-    http_send_status( 404 );
-    die( "404 - Not Found" );
+    http_send_status(404);
+    die("404 - Not Found");
 
-} catch ( Throwable|Exception $e ) {
+} catch (Throwable|Exception $e) {
 
-    if ( isset( $instance ) && is_callable( [ $instance, 'handleError' ] ) ) {
-        $instance->handleError( $e );
+    if (isset($instance) && is_callable([$instance, 'handleError'])) {
+        $instance->handleError($e);
     }
 
-    $pawtunes->writeLog( 'panel_errors', $e->getMessage() );
-    $pawtunes->writeLog( 'panel_errors', $e->getTraceAsString() );
+    $pawtunes->writeLog('panel_errors', $e->getMessage());
+    $pawtunes->writeLog('panel_errors', $e->getTraceAsString());
 
-    http_send_status( 500 );
-    die( "500 - Internal Server Error" );
+    http_send_status(500);
+    die("500 - Internal Server Error");
 
 }
