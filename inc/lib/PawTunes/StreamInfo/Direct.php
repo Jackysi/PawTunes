@@ -18,6 +18,21 @@ use lib\PawException;
 class Direct extends TrackInfo {
 
     /**
+     * @return $this
+     * @throws \lib\PawException
+     */
+    private function requireURLFopen() {
+
+        if ( !ini_get( 'allow_url_fopen' ) ) {
+            throw new PawException( "Unable to connect to the stream because required PHP option \"allow_url_fopen\" is disabled!" );
+        }
+
+        return $this;
+
+    }
+
+
+    /**
      * Make sure extensions are loaded and stream URL is set
      * Then get info, parse it and return
      *
@@ -39,21 +54,6 @@ class Direct extends TrackInfo {
         }
 
         return $this->handleTrack( $get_info );
-
-    }
-
-
-    /**
-     * @return $this
-     * @throws \lib\PawException
-     */
-    private function requireURLFopen() {
-
-        if ( !ini_get( 'allow_url_fopen' ) ) {
-            throw new PawException( "Unable to connect to the stream because required PHP option \"allow_url_fopen\" is disabled!" );
-        }
-
-        return $this;
 
     }
 

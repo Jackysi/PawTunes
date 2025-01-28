@@ -66,17 +66,5 @@ class ShoutcastPublic extends TrackInfo {
         return $this->handleTrack( $response[ 'onAir' ] );
 
     }
-
-
-    /**
-     * @param $string
-     *
-     * @return string
-     */
-    private function cleanUpHTMLEntities( $string ): string {
-
-        return html_entity_decode( $string, ENT_QUOTES | ENT_XHTML, 'UTF-8' );
-
-    }
-
+    
 }

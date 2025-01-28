@@ -18,6 +18,20 @@ use lib\PawException;
 class Shoutcast extends TrackInfo {
 
     /**
+     * @throws \lib\PawException
+     */
+    private function requireAuthParam() {
+
+        if ( empty( $this->channel[ 'stats' ][ 'auth' ] ) ) {
+            throw new PawException( "Unable to connect to the stream because authentication info is missing!" );
+        }
+
+        return $this;
+
+    }
+
+
+    /**
      * Make sure requirements are meet and then get info, parse it and return
      *
      * @throws \lib\PawException
@@ -36,20 +50,6 @@ class Shoutcast extends TrackInfo {
         }
 
         return $this->parseResponse( $xml );
-
-    }
-
-
-    /**
-     * @throws \lib\PawException
-     */
-    private function requireAuthParam() {
-
-        if ( empty( $this->channel[ 'stats' ][ 'auth' ] ) ) {
-            throw new PawException( "Unable to connect to the stream because authentication info is missing!" );
-        }
-
-        return $this;
 
     }
 

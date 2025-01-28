@@ -18,6 +18,20 @@ use lib\PawException;
 class Centovacast extends TrackInfo {
 
     /**
+     * @throws \lib\PawException
+     */
+    private function requireUsername() {
+
+        if ( empty( $this->channel[ 'stats' ][ 'user' ] ) ) {
+            throw new PawException( "Unable to connect to the stream because CentovaCast username is not set!" );
+        }
+
+        return $this;
+
+    }
+
+
+    /**
      * @return array
      * @throws \lib\PawException
      */
@@ -50,20 +64,6 @@ class Centovacast extends TrackInfo {
 
 
     /**
-     * @throws \lib\PawException
-     */
-    private function requireUsername() {
-
-        if ( empty( $this->channel[ 'stats' ][ 'user' ] ) ) {
-            throw new PawException( "Unable to connect to the stream because CentovaCast username is not set!" );
-        }
-
-        return $this;
-
-    }
-
-
-    /**
      * Replacement for Centova cast because method is slightly different here
      *
      * @param $track
@@ -72,11 +72,7 @@ class Centovacast extends TrackInfo {
      */
     private function centovaHandleTrack( $track ) {
 
-        $info = [];
-
-        // Artist & Title
-        $info[ 'artist' ] = ( !$track || ( empty( $track[ 'artist' ] ) ) ? $this->pawtunes->config( 'artist_default' ) : trim( $track[ 'artist' ] ) );
-        $info[ 'title' ] = ( !$track || ( empty( $track[ 'title' ] ) ) ? $this->pawtunes->config( 'title_default' ) : trim( $track[ 'title' ] ) );
+        $info = $this->handleTrack( null, $track );
         $info[ 'artwork_override' ] = ( !empty( $track[ 'imageurl' ] ) && $this->channel[ 'stats' ][ 'use-cover' ] ? $track[ 'imageurl' ] : null );
 
         return $info;
