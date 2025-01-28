@@ -18,9 +18,9 @@
  * @var \lib\PawTunes $pawtunes
  */
 
-if ( !isset( $panel ) ) {
-    header( "Location: index.php?page=home" );
+if ( ! isset($panel)) {
+    header("Location: index.php?page=home");
     exit;
 }
 
-$panel->view( "logs" );
+$panel->view("logs");

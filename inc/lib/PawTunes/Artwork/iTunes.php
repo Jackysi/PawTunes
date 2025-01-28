@@ -15,7 +15,8 @@ namespace lib\PawTunes\Artwork;
 
 use lib\Helpers;
 
-class iTunes extends Artwork {
+class iTunes extends Artwork
+{
 
     /**
      * @var string
@@ -24,38 +25,38 @@ class iTunes extends Artwork {
 
 
     /**
-     * @param string      $artist
-     * @param string|null $title
+     * @param  string  $artist
+     * @param  string|null  $title
      *
      * @return false|string
      */
-    protected function getArtworkURL( $artist, $title = '' ) {
-
+    protected function getArtworkURL($artist, $title = '')
+    {
         $entity = 'song';
-        $track = rawurlencode( $artist );
+        $track  = rawurlencode($artist);
 
         // Also support searching full song names, if title is provided
-        if ( !empty( $title ) ) {
-            $track .= "+" . rawurlencode( $title );
+        if ( ! empty($title)) {
+            $track .= "+".rawurlencode($title);
         }
 
-        $search = $this->pawtunes->get( $this->pawtunes->template( $this->url, [ 'rawTrack' => $track, 'entity' => $entity ], false ) );
+        $search = $this->pawtunes->get($this->pawtunes->template($this->url, ['rawTrack' => $track, 'entity' => $entity], false));
 
         // If there is an response
-        if ( $search !== false ) {
+        if ($search !== false) {
 
             // Read JSON String
-            $data = json_decode( $search, true );
+            $data = json_decode($search, true);
 
             // Reading JSON
-            if ( !empty( $data[ 'resultCount' ] ) && $data[ 'resultCount' ] >= 1 ) { // Check if result is not empty
+            if ( ! empty($data['resultCount']) && $data['resultCount'] >= 1) { // Check if result is not empty
 
                 // Find position of LAST slash (/)
-                $last_slash = strrpos( $data[ 'results' ][ 0 ][ 'artworkUrl100' ], '/' );
+                $last_slash = strrpos($data['results'][0]['artworkUrl100'], '/');
 
                 // Return the modified string
-                return substr( $data[ 'results' ][ 0 ][ 'artworkUrl100' ], 0, $last_slash ) .
-                       "/{$this->imageWidth}x{$this->imageHeight}." . $this->pawtunes->extGet( $data[ 'results' ][ 0 ][ 'artworkUrl100' ] );
+                return substr($data['results'][0]['artworkUrl100'], 0, $last_slash).
+                       "/{$this->imageWidth}x{$this->imageHeight}.".$this->pawtunes->extGet($data['results'][0]['artworkUrl100']);
 
             }
 

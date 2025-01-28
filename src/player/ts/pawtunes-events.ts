@@ -38,16 +38,16 @@ export class PawTunesEvents {
     public eventNames(): Array<string | symbol> {
 
         const names: Array<string | symbol> = [];
-        if ( this._eventsCount === 0 ) return names;
+        if (this._eventsCount === 0) return names;
 
-        for ( const name in this._events ) {
-            if ( Object.prototype.hasOwnProperty.call( this._events, name ) ) {
-                names.push( name );
+        for (const name in this._events) {
+            if (Object.prototype.hasOwnProperty.call(this._events, name)) {
+                names.push(name);
             }
         }
 
-        if ( typeof Object.getOwnPropertySymbols === 'function' ) {
-            names.push( ...Object.getOwnPropertySymbols( this._events ) );
+        if (typeof Object.getOwnPropertySymbols === 'function') {
+            names.push(...Object.getOwnPropertySymbols(this._events));
         }
 
         return names;
@@ -60,18 +60,18 @@ export class PawTunesEvents {
      * @param event The event name.
      * @returns Array of listener functions.
      */
-    public listeners( event: string | symbol ): Function[] {
+    public listeners(event: string | symbol): Function[] {
 
-        const handlers = this._events[ event ];
+        const handlers = this._events[event];
 
-        if ( !handlers ) return [];
-        if ( ( handlers as EventListener ).fn ) {
+        if (!handlers) return [];
+        if ((handlers as EventListener).fn) {
 
-            return [ ( handlers as EventListener ).fn ];
+            return [(handlers as EventListener).fn];
 
         } else {
 
-            return ( handlers as EventListener[] ).map( ( listener ) => listener.fn );
+            return (handlers as EventListener[]).map((listener) => listener.fn);
 
         }
     }
@@ -82,14 +82,14 @@ export class PawTunesEvents {
      * @param event The event name.
      * @returns Number of listeners.
      */
-    public listenerCount( event: string | symbol ): number {
+    public listenerCount(event: string | symbol): number {
 
-        const listeners = this._events[ event ];
+        const listeners = this._events[event];
 
-        if ( !listeners ) return 0;
-        if ( ( listeners as EventListener ).fn ) return 1;
+        if (!listeners) return 0;
+        if ((listeners as EventListener).fn) return 1;
 
-        return ( listeners as EventListener[] ).length;
+        return (listeners as EventListener[]).length;
 
     }
 
@@ -100,24 +100,24 @@ export class PawTunesEvents {
      * @param args Arguments to pass to the listeners.
      * @returns `true` if the event had listeners, else `false`.
      */
-    public emit( event: string | symbol, ...args: any[] ): boolean {
+    public emit(event: string | symbol, ...args: any[]): boolean {
 
         const evt = event;
-        if ( !this._events[ evt ] ) return false;
+        if (!this._events[evt]) return false;
 
-        const listeners = this._events[ evt ];
-        if ( ( listeners as EventListener ).fn ) {
+        const listeners = this._events[evt];
+        if ((listeners as EventListener).fn) {
 
             const listener = listeners as EventListener;
-            if ( listener.once ) this.removeListener( event, listener.fn, undefined, true );
-            listener.fn.apply( listener.context, args );
+            if (listener.once) this.removeListener(event, listener.fn, undefined, true);
+            listener.fn.apply(listener.context, args);
 
         } else {
 
-            const listenersArray = ( listeners as EventListener[] ).slice();
-            for ( const listener of listenersArray ) {
-                if ( listener.once ) this.removeListener( event, listener.fn, undefined, true );
-                listener.fn.apply( listener.context, args );
+            const listenersArray = (listeners as EventListener[]).slice();
+            for (const listener of listenersArray) {
+                if (listener.once) this.removeListener(event, listener.fn, undefined, true);
+                listener.fn.apply(listener.context, args);
             }
 
         }
@@ -134,9 +134,9 @@ export class PawTunesEvents {
      * @param context The context to invoke the listener with.
      * @returns The instance of PawTunesEvents.
      */
-    public on( event: string | symbol, fn: Function, context?: any ): this {
+    public on(event: string | symbol, fn: Function, context?: any): this {
 
-        return this.registerListener( event, fn, context, false );
+        return this.registerListener(event, fn, context, false);
 
     }
 
@@ -148,9 +148,9 @@ export class PawTunesEvents {
      * @param context The context to invoke the listener with.
      * @returns The instance of PawTunesEvents.
      */
-    public once( event: string | symbol, fn: Function, context?: any ): this {
+    public once(event: string | symbol, fn: Function, context?: any): this {
 
-        return this.registerListener( event, fn, context, true );
+        return this.registerListener(event, fn, context, true);
 
     }
 
@@ -163,44 +163,44 @@ export class PawTunesEvents {
      * @param once Only remove one-time listeners.
      * @returns The instance of PawTunesEvents.
      */
-    public removeListener( event: string | symbol, fn?: Function, context?: any, once?: boolean ): this {
+    public removeListener(event: string | symbol, fn?: Function, context?: any, once?: boolean): this {
 
         const evt = event;
-        if ( !this._events[ evt ] ) return this;
+        if (!this._events[evt]) return this;
 
-        if ( !fn ) {
-            this.clearEvent( evt );
+        if (!fn) {
+            this.clearEvent(evt);
             return this;
         }
 
-        const listeners = this._events[ evt ];
-        if ( ( listeners as EventListener ).fn ) {
+        const listeners = this._events[evt];
+        if ((listeners as EventListener).fn) {
 
             const listener = listeners as EventListener;
             if (
                 listener.fn === fn &&
-                ( !once || listener.once ) &&
-                ( !context || listener.context === context )
+                (!once || listener.once) &&
+                (!context || listener.context === context)
             ) {
-                this.clearEvent( evt );
+                this.clearEvent(evt);
             }
 
         } else {
 
-            const events = ( listeners as EventListener[] ).filter(
-                ( listener ) =>
+            const events = (listeners as EventListener[]).filter(
+                (listener) =>
                     listener.fn !== fn ||
-                    ( once && !listener.once ) ||
-                    ( context && listener.context !== context )
+                    (once && !listener.once) ||
+                    (context && listener.context !== context)
             );
 
-            if ( events.length ) {
+            if (events.length) {
 
-                this._events[ evt ] = events.length === 1 ? events[ 0 ] : events;
+                this._events[evt] = events.length === 1 ? events[0] : events;
 
             } else {
 
-                this.clearEvent( evt );
+                this.clearEvent(evt);
 
             }
         }
@@ -214,16 +214,16 @@ export class PawTunesEvents {
      * @param event The event name.
      * @returns The instance of PawTunesEvents.
      */
-    public removeAllListeners( event?: string | symbol ): this {
+    public removeAllListeners(event?: string | symbol): this {
 
-        if ( event ) {
+        if (event) {
 
             const evt = event;
-            if ( this._events[ evt ] ) this.clearEvent( evt );
+            if (this._events[evt]) this.clearEvent(evt);
 
         } else {
 
-            this._events      = {};
+            this._events = {};
             this._eventsCount = 0;
 
         }
@@ -232,15 +232,15 @@ export class PawTunesEvents {
     }
 
     // Aliases for compatibility
-    public off( event: string | symbol, fn?: Function, context?: any, once?: boolean ): this {
+    public off(event: string | symbol, fn?: Function, context?: any, once?: boolean): this {
 
-        return this.removeListener( event, fn, context, once );
+        return this.removeListener(event, fn, context, once);
 
     }
 
-    public addListener( event: string | symbol, fn: Function, context?: any ): this {
+    public addListener(event: string | symbol, fn: Function, context?: any): this {
 
-        return this.on( event, fn, context );
+        return this.on(event, fn, context);
 
     }
 
@@ -253,29 +253,29 @@ export class PawTunesEvents {
      * @param once Specify if the listener is a one-time listener.
      * @returns The instance of PawTunesEvents.
      */
-    private registerListener( event: string | symbol, fn: Function, context: any, once: boolean ): this {
+    private registerListener(event: string | symbol, fn: Function, context: any, once: boolean): this {
 
-        if ( typeof fn !== 'function' ) {
-            throw new TypeError( 'The listener must be a function' );
+        if (typeof fn !== 'function') {
+            throw new TypeError('The listener must be a function');
         }
 
-        const listener: EventListener = { fn: fn, context: context || this, once: once };
-        const evt                     = event;
+        const listener: EventListener = {fn: fn, context: context || this, once: once};
+        const evt = event;
 
-        if ( !this._events[ evt ] ) {
+        if (!this._events[evt]) {
 
-            this._events[ evt ] = listener;
+            this._events[evt] = listener;
             this._eventsCount++;
 
-        } else if ( !( ( this._events[ evt ] as EventListener ).fn ) ) {
+        } else if (!((this._events[evt] as EventListener).fn)) {
 
             // It's an array of listeners
-            ( this._events[ evt ] as EventListener[] ).push( listener );
+            (this._events[evt] as EventListener[]).push(listener);
 
         } else {
 
             // Convert single listener to array
-            this._events[ evt ] = [ this._events[ evt ] as EventListener, listener ];
+            this._events[evt] = [this._events[evt] as EventListener, listener];
 
         }
 
@@ -288,14 +288,14 @@ export class PawTunesEvents {
      *
      * @param evt The event name.
      */
-    private clearEvent( evt: string | symbol ): void {
-        if ( --this._eventsCount === 0 ) {
+    private clearEvent(evt: string | symbol): void {
+        if (--this._eventsCount === 0) {
 
             this._events = {};
 
         } else {
 
-            delete this._events[ evt ];
+            delete this._events[evt];
 
         }
     }

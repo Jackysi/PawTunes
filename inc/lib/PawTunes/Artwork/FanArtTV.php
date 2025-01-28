@@ -19,7 +19,8 @@ use lib\PawTunes;
 use \MusicBrainz\HttpAdapters\GuzzleHttpAdapter;
 use \MusicBrainz\MusicBrainz;
 
-class FanArtTV extends Artwork {
+class FanArtTV extends Artwork
+{
 
     /**
      * @var string
@@ -39,94 +40,91 @@ class FanArtTV extends Artwork {
 
     /**
      * @param       $apiKey
-     * @param array $settings
+     * @param  array  $settings
      */
-    public function __construct( PawTunes $pawtunes, $override = null ) {
-
+    public function __construct(PawTunes $pawtunes, $override = null)
+    {
         // Parent constructor (parses settings)
-        parent::__construct( $pawtunes, $override );
+        parent::__construct($pawtunes, $override);
 
         // Required!
-        if ( empty( $this->pawtunes->config( 'artwork_sources' )[ 'fanarttv' ][ 'api_key' ] ) ) {
-            throw new PawException( 'Missing API key for FanArtTV artwork API! Please get one from https://fanart.tv/get-an-api-key/.' );
+        if (empty($this->pawtunes->config('artwork_sources')['fanarttv']['api_key'])) {
+            throw new PawException('Missing API key for FanArtTV artwork API! Please get one from https://fanart.tv/get-an-api-key/.');
         }
 
-        $this->apiKey = $this->pawtunes->config( 'artwork_sources' )[ 'fanarttv' ][ 'api_key' ] ?? null;
-
+        $this->apiKey = $this->pawtunes->config('artwork_sources')['fanarttv']['api_key'] ?? null;
     }
 
 
     /**
-     * @param string      $artist
-     * @param string|null $title
+     * @param  string  $artist
+     * @param  string|null  $title
      *
      * @return mixed
      */
-    protected function getArtworkURL( $artist, $title = '' ) {
-
+    protected function getArtworkURL($artist, $title = '')
+    {
         // Check API Key existance
-        if ( !$this->apiKey ) {
+        if ( ! $this->apiKey) {
             return null;
         }
 
         // Use MusicBrainz to get the ID of an artist
-        $id = $this->getArtistID( $artist );
-        if ( !$id ) {
+        $id = $this->getArtistID($artist);
+        if ( ! $id) {
             return null;
         }
 
         // We have ID, now access FanArt API and get our image!!!
         $data = null;
-        $api = $this->pawtunes->get( $this->pawtunes->template( $this->fanArtAPI, [ 'id' => $id, 'apiKey' => $this->apiKey ], false ) );
-        if ( $api ) {
-            $data = json_decode( $api, true );
+        $api  = $this->pawtunes->get($this->pawtunes->template($this->fanArtAPI, ['id' => $id, 'apiKey' => $this->apiKey], false));
+        if ($api) {
+            $data = json_decode($api, true);
         }
 
         // API Response was success, try using artistbackground
-        if ( $data && !empty( $data[ 'artistbackground' ] ) && count( $data[ 'artistbackground' ] ) > 0 ) {
+        if ($data && ! empty($data['artistbackground']) && count($data['artistbackground']) > 0) {
 
-            return $data[ 'artistbackground' ][ 0 ][ 'url' ];
+            return $data['artistbackground'][0]['url'];
 
         }
 
         // API Response was success, try using artistthumb
-        if ( $data && !empty( $data[ 'artistthumb' ] ) && count( $data[ 'artistthumb' ] ) > 0 ) {
+        if ($data && ! empty($data['artistthumb']) && count($data['artistthumb']) > 0) {
 
-            return $data[ 'artistthumb' ][ 0 ][ 'url' ];
+            return $data['artistthumb'][0]['url'];
 
         }
 
         return null;
-
     }
 
 
     /**
      * Use MusicBrainz to get the ID of an artist
      *
-     * @param string $artist
+     * @param  string  $artist
      *
      * @return mixed|null
      */
-    private function getArtistID( string $artist ) {
-
+    private function getArtistID(string $artist)
+    {
         // Get MusicBrainz ID of an artist
-        $getID = $this->pawtunes->get( $this->pawtunes->template( $this->brainzAPI, [ 'rawArtist' => rawurlencode( $artist ) ], false ) );
+        $getID = $this->pawtunes->get($this->pawtunes->template($this->brainzAPI, ['rawArtist' => rawurlencode($artist)], false));
 
         // API Response was success
-        if ( $getID ) {
+        if ($getID) {
 
-            $data = json_decode( $getID, true );
-            if ( $data && !empty( $data[ 'artists' ] ) && count( $data[ 'artists' ] ) > 0 ) {
+            $data = json_decode($getID, true);
+            if ($data && ! empty($data['artists']) && count($data['artists']) > 0) {
 
-                return $data[ 'artists' ][ 0 ][ 'id' ];
+                return $data['artists'][0]['id'];
 
             }
 
         }
 
         return null;
-
     }
 
 }

@@ -18,8 +18,8 @@
  * @var \lib\PawTunes $pawtunes
  */
 
-if ( !isset( $panel ) ) {
-    header( "Location: index.php?page=home" );
+if ( ! isset($panel)) {
+    header("Location: index.php?page=home");
     exit;
 }
 
@@ -29,32 +29,32 @@ use ScssPhp\ScssPhp\OutputStyle;
 
 // Load channels file (used for all actions on this page)
 $channels = [];
-if ( is_file( "inc/config/channels.php" ) ) {
-    $channels = include( "inc/config/channels.php" );
+if (is_file("inc/config/channels.php")) {
+    $channels = include("inc/config/channels.php");
 }
 
 // Artwork manager allowed extensions option
-$allow_ext = [ 'jpeg', 'jpg', 'png', 'svg', 'webp' ];
+$allow_ext = ['jpeg', 'jpg', 'png', 'svg', 'webp'];
 
 // Get list of templates available
 $templates = $pawtunes->getTemplates();
 
 // Handle compiling new CSS stylesheet
-if ( !empty( $_POST ) && $_POST[ 'form' ] === 'compile' ) {
+if ( ! empty($_POST) && $_POST['form'] === 'compile') {
 
     include 'panel/lib/scss/scss.inc.php';
 
     // Path
-    $base_path = $templates[ $_POST[ 'template' ] ][ 'path' ];
+    $base_path = $templates[$_POST['template']]['path'];
     $scss_file = '';
 
     // Find scheme
-    if ( is_array( $templates[ $_POST[ 'template' ] ][ 'schemes' ] ) && count( $templates[ $_POST[ 'template' ] ][ 'schemes' ] ) >= 1 ) {
-        foreach ( $templates[ $_POST[ 'template' ] ][ 'schemes' ] as $key => $path ) {
+    if (is_array($templates[$_POST['template']]['schemes']) && count($templates[$_POST['template']]['schemes']) >= 1) {
+        foreach ($templates[$_POST['template']]['schemes'] as $key => $path) {
 
-            if ( $path[ 'name' ] === $_POST[ 'base-theme' ] ) {
+            if ($path['name'] === $_POST['base-theme']) {
 
-                $scss_file = $path[ 'compile' ];
+                $scss_file = $path['compile'];
                 break;
 
             }
@@ -64,65 +64,65 @@ if ( !empty( $_POST ) && $_POST[ 'form' ] === 'compile' ) {
 
 
     // Validate data
-    if ( empty( $_POST[ 'filename' ] ) || empty( $_POST[ 'base-theme' ] ) || empty( $_POST[ 'base-color' ] ) ) {
+    if (empty($_POST['filename']) || empty($_POST['base-theme']) || empty($_POST['base-color'])) {
 
-        $theme_message = $panel->alert( 'Invalid data submission! There are some missing fields, please try again!', 'error' );
+        $theme_message = $panel->alert('Invalid data submission! There are some missing fields, please try again!', 'error');
 
-    } else if ( $scss_file === '' || !is_file( "{$base_path}/{$scss_file}" ) ) {
+    } elseif ($scss_file === '' || ! is_file("{$base_path}/{$scss_file}")) {
 
-        $theme_message = $panel->alert( 'Unable to compile a new theme since the <b>base theme</b> file or <b>template</b> path is missing!', 'error' );
+        $theme_message = $panel->alert('Unable to compile a new theme since the <b>base theme</b> file or <b>template</b> path is missing!', 'error');
 
-    } else if ( !is_dir( "{$base_path}/custom/" ) && !mkdir( "{$base_path}/custom/", 0755 ) && !is_dir( "{$base_path}/custom/" ) ) {
+    } elseif ( ! is_dir("{$base_path}/custom/") && ! mkdir("{$base_path}/custom/", 0755) && ! is_dir("{$base_path}/custom/")) {
 
-        $theme_message = $panel->alert( 'Directory "custom" under the template directory does not exist because something went wrong while creating it!', 'error' );
+        $theme_message = $panel->alert('Directory "custom" under the template directory does not exist because something went wrong while creating it!', 'error');
 
     } else {
 
         // Compile SASS and save it as file.
         $scss = new ScssPhp\ScssPhp\Compiler();
-        $scss->setImportPaths( $base_path . '/' . dirname( $scss_file ) );
-        $scss->setOutputStyle( OutputStyle::COMPRESSED );
+        $scss->setImportPaths($base_path.'/'.dirname($scss_file));
+        $scss->setOutputStyle(OutputStyle::COMPRESSED);
 
         // Compile!
         try {
 
-            $contents = $scss->compileString( "\$accent-color: {$_POST[ 'base-color' ]}; \$bg-color: {$_POST['bg-color']}; @import '" . basename( $scss_file ) . "';" );
+            $contents = $scss->compileString("\$accent-color: {$_POST[ 'base-color' ]}; \$bg-color: {$_POST['bg-color']}; @import '".basename($scss_file)."';");
 
             // Append color & scheme to the output file so we can use the information on update
-            if ( $contents->getCss() !== null ) {
+            if ($contents->getCss() !== null) {
 
                 // Replace pre-defined text strings
                 $contents = preg_replace(
-                    [ '/accent=([^;]*);/i', '/scheme=([^;]*);/i' ],
-                    [ "accent={$_POST['base-color']};", "scheme=" . basename( $scss_file ) . ";" ],
+                    ['/accent=([^;]*);/i', '/scheme=([^;]*);/i'],
+                    ["accent={$_POST['base-color']};", "scheme=".basename($scss_file).";"],
                     $contents->getCss()
                 );
 
             }
 
             // Create directory if not existing
-            if ( !is_dir( "{$base_path}/custom/" ) ) {
-                if ( !mkdir( "{$base_path}/custom/", 0755 ) && !is_dir( "{$base_path}/custom/" ) ) {
-                    throw new RuntimeException( sprintf( 'Directory "%s" was not created', "{$base_path}/custom/" ) );
+            if ( ! is_dir("{$base_path}/custom/")) {
+                if ( ! mkdir("{$base_path}/custom/", 0755) && ! is_dir("{$base_path}/custom/")) {
+                    throw new RuntimeException(sprintf('Directory "%s" was not created', "{$base_path}/custom/"));
                 }
             }
 
             // Attempt to save
-            if ( file_put_contents( "{$base_path}/custom/{$_POST['filename']}.css", $contents ) ) {
+            if (file_put_contents("{$base_path}/custom/{$_POST['filename']}.css", $contents)) {
 
                 // Clear templates cache
-                $pawtunes->cache->delete( 'templates' );
-                $theme_message = $panel->alert( 'Successfully compiled new player theme!', 'success' );
+                $pawtunes->cache->delete('templates');
+                $theme_message = $panel->alert('Successfully compiled new player theme!', 'success');
 
             } else {
 
-                $theme_message = $panel->alert( 'Unable to save new theme! Please make sure the template directory is writable (chmod 755)!', 'error' );
+                $theme_message = $panel->alert('Unable to save new theme! Please make sure the template directory is writable (chmod 755)!', 'error');
 
             }
 
-        } catch ( SassException $e ) {
+        } catch (SassException $e) {
 
-            $theme_message = $panel->alert( 'SASS Compilation ERROR occurred: ' . $e->getMEssage() . '!', 'error' );
+            $theme_message = $panel->alert('SASS Compilation ERROR occurred: '.$e->getMEssage().'!', 'error');
 
         }
 
@@ -131,72 +131,73 @@ if ( !empty( $_POST ) && $_POST[ 'form' ] === 'compile' ) {
 }
 
 // Handle artist image upload
-if ( !empty( $_POST ) && $_POST[ 'form' ] === 'artwork' ) {
+if ( ! empty($_POST) && $_POST['form'] === 'artwork') {
 
-    header( 'Content-Type: text/plain' );
-    if ( !isset( $_FILES[ 'image' ] ) || !$_FILES[ 'image' ][ 'tmp_name' ] ) {
-        $panel->sendError( 'No image was uploaded!' );
+    header('Content-Type: text/plain');
+    if ( ! isset($_FILES['image']) || ! $_FILES['image']['tmp_name']) {
+        $panel->sendError('No image was uploaded!');
     }
 
-    if ( !in_array( $pawtunes->extGet( $_FILES[ 'image' ][ 'name' ] ), $allow_ext ) ) {
-        $panel->sendError( 'You have uploaded invalid image file!' );
+    if ( ! in_array($pawtunes->extGet($_FILES['image']['name']), $allow_ext)) {
+        $panel->sendError('You have uploaded invalid image file!');
     }
 
-    if ( empty( $_POST[ 'track' ] ) ) {
-        $panel->sendError( 'You need to enter track name!' );
+    if (empty($_POST['track'])) {
+        $panel->sendError('You need to enter track name!');
     }
 
 
-    $track = $pawtunes->parseTrack( $_POST[ 'track' ] );
-    $panel->deleteArtwork( $_POST[ 'track' ] );
+    $track = $pawtunes->parseTrack($_POST['track']);
+    $panel->deleteArtwork($_POST['track']);
 
     // Attempt to save
-    $up = $panel->upload( 'image', 'data/images/', $track );
-    if ( !empty( $up[ 'error' ] ) ) {
+    $up = $panel->upload('image', 'data/images/', $track);
+    if ( ! empty($up['error'])) {
 
-        $panel->sendError( "Uploading failed! ERROR: {$up['error']}" );
+        $panel->sendError("Uploading failed! ERROR: {$up['error']}");
 
-    } else if ( !extension_loaded( 'gd' ) ) {
+    } elseif ( ! extension_loaded('gd')) {
 
-        @unlink( $up[ 'path' ] );
-        $panel->sendError( 'Cropping image failed because GD extension is not available!' );
+        @unlink($up['path']);
+        $panel->sendError('Cropping image failed because GD extension is not available!');
 
     } else {
 
         // From post to variable
-        $p[ 'cropY' ] = (int) trim( $_POST[ 'cropY' ] );
-        $p[ 'cropX' ] = (int) trim( $_POST[ 'cropX' ] );
+        $p['cropY'] = (int) trim($_POST['cropY']);
+        $p['cropX'] = (int) trim($_POST['cropX']);
 
         // Check image size
         if (
-            empty( $pawtunes->config( 'images_size' ) ) ||
-            !is_numeric( $pawtunes->config( 'images_size' ) ) ||
-            $pawtunes->config( 'images_size' ) < 100
+            empty($pawtunes->config('images_size'))
+            ||
+            ! is_numeric($pawtunes->config('images_size'))
+            || $pawtunes->config('images_size') < 100
         ) {
 
-            $pawtunes->setConfig( 'images_size', 280 );
+            $pawtunes->setConfig('images_size', 280);
 
         }
 
         // Calculate crop position depending on input/output image size
-        if ( $p[ 'cropY' ] !== 0 ) {
+        if ($p['cropY'] !== 0) {
 
-            $p[ 'cropY' ] *= ( $pawtunes->config( 'images_size' ) / 140 );
+            $p['cropY'] *= ($pawtunes->config('images_size') / 140);
 
-        } else if ( $p[ 'cropX' ] !== 0 ) {
+        } elseif ($p['cropX'] !== 0) {
 
-            $p[ 'cropX' ] *= ( $pawtunes->config( 'images_size' ) / 140 );
+            $p['cropX'] *= ($pawtunes->config('images_size') / 140);
 
         }
 
         // Crop
         lib\ImageResize::handle(
-            $up[ 'path' ],
+            $up['path'],
             "{$pawtunes->config('images_size')}x{$pawtunes->config('images_size')}",
             'crop', null,
             [
-                'cropY' => $p[ 'cropY' ],
-                'cropX' => $p[ 'cropX' ],
+                'cropY' => $p['cropY'],
+                'cropX' => $p['cropX'],
             ]
         );
 

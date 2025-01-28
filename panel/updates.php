@@ -18,16 +18,16 @@
  * @var \lib\PawTunes $pawtunes
  */
 
-if ( !isset( $panel ) ) {
-    header( "Location: index.php?page=home" );
+if ( ! isset($panel)) {
+    header("Location: index.php?page=home");
     exit;
 }
 
 // Writable or not?
-if ( !is_writable( 'data/updates' ) ) {
+if ( ! is_writable('data/updates')) {
 
-    $message = $panel->alert( 'Directory <b>/data/updates/</b> is not writable! This means that player will not be able to download update files!
-		<br>You can fix this issue by setting <b>chmod</b> of folder <b>/data/updates/</b> to <b>755</b>.' );
+    $message = $panel->alert('Directory <b>/data/updates/</b> is not writable! This means that player will not be able to download update files!
+		<br>You can fix this issue by setting <b>chmod</b> of folder <b>/data/updates/</b> to <b>755</b>.');
 
 }
 

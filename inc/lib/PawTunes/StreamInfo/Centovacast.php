@@ -15,19 +15,19 @@ namespace lib\PawTunes\StreamInfo;
 
 use lib\PawException;
 
-class Centovacast extends TrackInfo {
+class Centovacast extends TrackInfo
+{
 
     /**
      * @throws \lib\PawException
      */
-    private function requireUsername() {
-
-        if ( empty( $this->channel[ 'stats' ][ 'user' ] ) ) {
-            throw new PawException( "Unable to connect to the stream because CentovaCast username is not set!" );
+    private function requireUsername()
+    {
+        if (empty($this->channel['stats']['user'])) {
+            throw new PawException("Unable to connect to the stream because CentovaCast username is not set!");
         }
 
         return $this;
-
     }
 
 
@@ -35,31 +35,30 @@ class Centovacast extends TrackInfo {
      * @return array
      * @throws \lib\PawException
      */
-    public function getInfo() {
-
+    public function getInfo()
+    {
         $this->requireCURLExt()
              ->requireURLSet()
              ->requireUsername();
 
         // Attempt to get JSON response from API
-        $json = $this->pawtunes->get( "{$this->channel['stats']['url']}/external/rpc.php?m=streaminfo.get&username={$this->channel['stats']['user']}&rid={$this->channel['stats']['user']}&charset=utf8" );
-        if ( !$json ) {
-            throw new PawException( "Connection to the Centovacast RPC API failed!" );
+        $json = $this->pawtunes->get("{$this->channel['stats']['url']}/external/rpc.php?m=streaminfo.get&username={$this->channel['stats']['user']}&rid={$this->channel['stats']['user']}&charset=utf8");
+        if ( ! $json) {
+            throw new PawException("Connection to the Centovacast RPC API failed!");
         }
 
         // Can we decode it?
-        $parsed = json_decode( $json, true );
-        if ( !$parsed ) {
-            throw new PawException( "Unable to parse Centovacast RPC API response!" );
+        $parsed = json_decode($json, true);
+        if ( ! $parsed) {
+            throw new PawException("Unable to parse Centovacast RPC API response!");
         }
 
         // Was error returned?
-        if ( !empty( $parsed[ 'error' ] ) ) {
-            throw new PawException( "Centovacast RPC API returned ERROR: {$parsed['error']}" );
+        if ( ! empty($parsed['error'])) {
+            throw new PawException("Centovacast RPC API returned ERROR: {$parsed['error']}");
         }
 
-        return $this->centovaHandleTrack( $parsed[ 'data' ][ 0 ][ 'track' ] );
-
+        return $this->centovaHandleTrack($parsed['data'][0]['track']);
     }
 
 
@@ -70,13 +69,11 @@ class Centovacast extends TrackInfo {
      *
      * @return array
      */
-    private function centovaHandleTrack( $track ) {
-
-        $info = $this->handleTrack( null, $track );
-        $info[ 'artwork_override' ] = ( !empty( $track[ 'imageurl' ] ) && $this->channel[ 'stats' ][ 'use-cover' ] ? $track[ 'imageurl' ] : null );
-
+    private function centovaHandleTrack($track)
+    {
+        $info                     = $this->handleTrack(null, $track);
+        $info['artwork_override'] = (! empty($track['imageurl']) && $this->channel['stats']['use-cover'] ? $track['imageurl'] : null);
         return $info;
-
     }
 
 }

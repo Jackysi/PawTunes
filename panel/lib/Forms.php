@@ -11,7 +11,8 @@
  * Contributions and feedback are welcome! Visit the repository or website for more details.
  * @TODO         needs a rewrite sometime
  */
-class Forms {
+class Forms
+{
 
     /**
      * @var array List of form inputs.
@@ -26,12 +27,12 @@ class Forms {
     /**
      * Append a form field to the list.
      *
-     * @param array|string $field The field configuration array or HTML string.
+     * @param  array|string  $field  The field configuration array or HTML string.
      *
      * @return void
      */
-    public function append( $field ): void {
-
+    public function append($field): void
+    {
         $this->fields[] = $field;
 
     }
@@ -42,10 +43,10 @@ class Forms {
      *
      * @return void
      */
-    public function clear(): void {
-
+    public function clear(): void
+    {
         $this->fields = [];
-        $this->html = null;
+        $this->html   = null;
 
     }
 
@@ -53,21 +54,21 @@ class Forms {
     /**
      * Generate the form HTML from the list of fields.
      *
-     * @param array|null $fields      Optional. A specific list of fields to generate.
-     * @param mixed|null $forcedValue Optional. A value to force into the fields.
+     * @param  array|null  $fields  Optional. A specific list of fields to generate.
+     * @param  mixed|null  $forcedValue  Optional. A value to force into the fields.
      *
      * @return void
      */
-    public function generateForm( $fields = null, $forcedValue = null ): void {
+    public function generateForm($fields = null, $forcedValue = null): void
+    {
         $fields = $fields ?? $this->fields;
-
-        foreach ( $fields as $field ) {
-            if ( !is_array( $field ) ) {
+        foreach ($fields as $field) {
+            if ( ! is_array($field)) {
                 echo $field;
                 continue;
             }
 
-            echo $this->add( $field, $forcedValue );
+            echo $this->add($field, $forcedValue);
         }
     }
 
@@ -75,15 +76,16 @@ class Forms {
     /**
      * Add a field and return its HTML representation.
      *
-     * @param array      $options     Field options array.
-     * @param mixed|null $forcedValue Optional. A value to force into the field.
+     * @param  array  $options  Field options array.
+     * @param  mixed|null  $forcedValue  Optional. A value to force into the field.
      *
      * @return string The field's HTML output.
      */
-    public function add( array $options, $forcedValue = null ): string {
-
-        $output = $this->field( $options, $forcedValue );
+    public function add(array $options, $forcedValue = null): string
+    {
+        $output     = $this->field($options, $forcedValue);
         $this->html .= $output;
+
         return $output;
 
     }
@@ -92,13 +94,13 @@ class Forms {
     /**
      * Generate the HTML for a form field based on the options provided.
      *
-     * @param array      $options    Field options array.
-     * @param mixed|null $forceValue Optional. A value to force into the field.
+     * @param  array  $options  Field options array.
+     * @param  mixed|null  $forceValue  Optional. A value to force into the field.
      *
      * @return string The generated HTML for the field.
      */
-    public function field( array $options, $forceValue = null ): string {
-
+    public function field(array $options, $forceValue = null): string
+    {
         // Default field options
         $defaults = [
             'type'       => 'text',
@@ -106,49 +108,49 @@ class Forms {
             'class'      => 'col-sm-6',
         ];
 
-        $o = array_merge( $defaults, $options );
+        $o = array_merge($defaults, $options);
 
-        $output = '';
-        $fieldName = $o[ 'name' ] ?? null;
-        $fieldValue = $forceValue ?? $_POST[ $fieldName ] ?? null;
+        $output     = '';
+        $fieldName  = $o['name'] ?? null;
+        $fieldValue = $forceValue ?? $_POST[$fieldName] ?? null;
 
         // Begin form-group div
         $output .= '<div class="form-group">';
 
         // Add label if provided
-        if ( !empty( $o[ 'label' ] ) ) {
-            $labelClass = $o[ 'label-full' ] ? 'col-sm-12' : 'col-sm-2 control-label';
-            $labelStyle = isset( $o[ 'label-left' ] ) ? 'style="width: auto !important;"' : '';
-            $labelFor = $fieldName ? 'for="' . $fieldName . '"' : '';
+        if ( ! empty($o['label'])) {
+            $labelClass = $o['label-full'] ? 'col-sm-12' : 'col-sm-2 control-label';
+            $labelStyle = isset($o['label-left']) ? 'style="width: auto !important;"' : '';
+            $labelFor   = $fieldName ? 'for="'.$fieldName.'"' : '';
 
             $output .= sprintf(
                 '<label %s class="%s" %s>%s</label>',
                 $labelStyle,
                 $labelClass,
                 $labelFor,
-                $o[ 'label' ]
+                $o['label']
             );
         }
 
         // Handle multiple fields in a single row
-        if ( isset( $o[ 'multi' ] ) && is_array( $o[ 'multi' ] ) ) {
+        if (isset($o['multi']) && is_array($o['multi'])) {
 
-            foreach ( $o[ 'multi' ] as $multiField ) {
-                $output .= $this->add( $multiField, $forceValue );
+            foreach ($o['multi'] as $multiField) {
+                $output .= $this->add($multiField, $forceValue);
             }
 
         } else {
 
             // Generate field-specific HTML
-            $output .= $this->generateFieldHtml( $o, $fieldValue );
+            $output .= $this->generateFieldHtml($o, $fieldValue);
         }
 
         // Add description/help text if provided
-        if ( !empty( $o[ 'description' ] ) && !in_array( $o[ 'type' ], [ 'checkbox', 'radio' ] ) ) {
+        if ( ! empty($o['description']) && ! in_array($o['type'], ['checkbox', 'radio'])) {
 
-            $output .= $o[ 'label-full' ] ? '<div class="col-sm-12">' : '';
-            $output .= '<div class="help-block">' . $o[ 'description' ] . '</div>';
-            $output .= $o[ 'label-full' ] ? '</div>' : '';
+            $output .= $o['label-full'] ? '<div class="col-sm-12">' : '';
+            $output .= '<div class="help-block">'.$o['description'].'</div>';
+            $output .= $o['label-full'] ? '</div>' : '';
 
         }
 
@@ -163,28 +165,28 @@ class Forms {
     /**
      * Generate HTML for specific field types.
      *
-     * @param array $o          Field options array.
-     * @param mixed $fieldValue The value of the field.
+     * @param  array  $o  Field options array.
+     * @param  mixed  $fieldValue  The value of the field.
      *
      * @return string The generated HTML for the field.
      */
-    private function generateFieldHtml( array $o, $fieldValue ): string {
+    private function generateFieldHtml(array $o, $fieldValue): string
+    {
+        $output     = '';
+        $fieldName  = $o['name'] ?? '';
+        $fieldId    = $fieldName;
+        $fieldClass = $o['class'] ?? '';
+        $extras     = $this->buildAttributes($o);
 
-        $output = '';
-        $fieldName = $o[ 'name' ] ?? '';
-        $fieldId = $fieldName;
-        $fieldClass = $o[ 'class' ] ?? '';
-        $extras = $this->buildAttributes( $o );
-
-        switch ( $o[ 'type' ] ) {
+        switch ($o['type']) {
             case 'text':
             case 'password':
             case 'number':
             case 'url':
             case 'email':
-                $inputType = $o[ 'type' ];
-                $valueAttr = isset( $fieldValue ) ? 'value="' . $fieldValue . '"' : '';
-                $output .= sprintf(
+                $inputType = $o['type'];
+                $valueAttr = isset($fieldValue) ? 'value="'.$fieldValue.'"' : '';
+                $output    .= sprintf(
                     '<div class="%s"><input type="%s" name="%s" id="%s" class="form-control" %s %s></div>',
                     $fieldClass,
                     $inputType,
@@ -196,8 +198,8 @@ class Forms {
                 break;
 
             case 'textarea':
-                $heightStyle = isset( $o[ 'height' ] ) ? 'style="min-height: ' . (int) $o[ 'height' ] . 'px;"' : '';
-                $output .= sprintf(
+                $heightStyle = isset($o['height']) ? 'style="min-height: '.(int) $o['height'].'px;"' : '';
+                $output      .= sprintf(
                     '<div class="%s"><textarea name="%s" id="%s" class="form-control" %s %s>%s</textarea></div>',
                     $fieldClass,
                     $fieldName,
@@ -216,10 +218,10 @@ class Forms {
                     $fieldId,
                     $extras
                 );
-                if ( isset( $o[ 'options' ] ) && is_array( $o[ 'options' ] ) ) {
-                    foreach ( $o[ 'options' ] as $optValue => $optLabel ) {
-                        $selected = ( $fieldValue == $optValue ) ? ' selected' : '';
-                        $output .= sprintf(
+                if (isset($o['options']) && is_array($o['options'])) {
+                    foreach ($o['options'] as $optValue => $optLabel) {
+                        $selected = ($fieldValue == $optValue) ? ' selected' : '';
+                        $output   .= sprintf(
                             '<option value="%s"%s>%s</option>',
                             $optValue,
                             $selected,
@@ -232,11 +234,11 @@ class Forms {
 
             case 'checkbox':
             case 'radio':
-                $inputType = $o[ 'type' ];
-                $checked = ( isset( $fieldValue ) && $fieldValue == $o[ 'value' ] ) ? ' checked' : '';
-                $output .= sprintf(
-                    '<div class="%s"><div class="%s"><label for="%s" tabindex="0">' .
-                    '<input type="%s" name="%s" id="%s" value="%s"%s %s>' .
+                $inputType = $o['type'];
+                $checked   = (isset($fieldValue) && $fieldValue == $o['value']) ? ' checked' : '';
+                $output    .= sprintf(
+                    '<div class="%s"><div class="%s"><label for="%s" tabindex="0">'.
+                    '<input type="%s" name="%s" id="%s" value="%s"%s %s>'.
                     '<span class="icon fa fa-check"></span> <span class="description">%s</span></label></div></div>',
                     $fieldClass,
                     $inputType,
@@ -244,21 +246,21 @@ class Forms {
                     $inputType,
                     $fieldName,
                     $fieldId,
-                    $o[ 'value' ],
+                    $o['value'],
                     $checked,
                     $extras,
-                    $o[ 'description' ] ?? ''
+                    $o['description'] ?? ''
                 );
                 break;
 
             case 'file':
                 $output .= sprintf(
-                    '<div class="%s"><div class="file-input">' .
-                    '<input type="file" name="%s" id="%s">' .
-                    '<div class="input-group">' .
-                    '<input type="text" class="form-control file-name %s" %s>' .
-                    '<div class="input-group-btn">' .
-                    '<a href="#" class="btn btn-danger"><i class="icon fa fa-folder-open"></i> Browse</a>' .
+                    '<div class="%s"><div class="file-input">'.
+                    '<input type="file" name="%s" id="%s">'.
+                    '<div class="input-group">'.
+                    '<input type="text" class="form-control file-name %s" %s>'.
+                    '<div class="input-group-btn">'.
+                    '<a href="#" class="btn btn-danger"><i class="icon fa fa-folder-open"></i> Browse</a>'.
                     '</div></div></div></div>',
                     $fieldClass,
                     $fieldName,
@@ -269,8 +271,8 @@ class Forms {
                 break;
 
             case 'static':
-                $staticValue = $o[ 'value' ] ?? $fieldValue ?? '';
-                $output .= sprintf(
+                $staticValue = $o['value'] ?? $fieldValue ?? '';
+                $output      .= sprintf(
                     '<div class="%s"><p class="form-control-static">%s</p></div>',
                     $fieldClass,
                     $staticValue
@@ -290,13 +292,13 @@ class Forms {
     /**
      * Build additional attributes for an input field.
      *
-     * @param array $o Field options array.
+     * @param  array  $o  Field options array.
      *
      * @return string A string of additional attributes.
      */
-    private function buildAttributes( array $o ): string {
-
-        $attributes = [];
+    private function buildAttributes(array $o): string
+    {
+        $attributes         = [];
         $possibleAttributes = [
             'size'         => 'maxlength',
             'placeholder'  => 'placeholder',
@@ -311,16 +313,16 @@ class Forms {
             'disabled'     => 'disabled',
         ];
 
-        foreach ( $possibleAttributes as $key => $attrName ) {
-            if ( isset( $o[ $key ] ) ) {
+        foreach ($possibleAttributes as $key => $attrName) {
+            if (isset($o[$key])) {
 
-                $attrValue = is_bool( $o[ $key ] ) ? '' : $o[ $key ];
-                $attributes[] = $attrValue !== '' ? sprintf( '%s="%s"', $attrName, $attrValue ) : $attrName;
+                $attrValue    = is_bool($o[$key]) ? '' : $o[$key];
+                $attributes[] = $attrValue !== '' ? sprintf('%s="%s"', $attrName, $attrValue) : $attrName;
 
             }
         }
 
-        return implode( ' ', $attributes );
+        return implode(' ', $attributes);
 
     }
 

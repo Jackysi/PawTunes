@@ -17,7 +17,7 @@ export default class Storage {
     prefix: string = "";
 
 
-    constructor( prefix: string = "" ) {
+    constructor(prefix: string = "") {
 
         this.prefix = prefix;
 
@@ -30,9 +30,7 @@ export default class Storage {
      * @returns {Storage}
      */
     isLocalStorageSupported(): boolean {
-
         return typeof window.localStorage !== 'undefined';
-
     }
 
 
@@ -46,9 +44,9 @@ export default class Storage {
      * @param expires
      * @returns {boolean}
      */
-    set( key: any, value: any, expires = 0 ): boolean {
+    set(key: any, value: any, expires = 0): boolean {
 
-        if ( !this.isLocalStorageSupported() || !key ) {
+        if (!this.isLocalStorageSupported() || !key) {
             return false;
         }
 
@@ -56,14 +54,14 @@ export default class Storage {
         key = this.prefix + key;
 
         // Set value
-        localStorage.setItem( key, value );
+        localStorage.setItem(key, value);
 
         // Set expiration
-        if ( expires > 0 ) {
+        if (expires > 0) {
 
             let now = new Date();
-            now.setSeconds( now.getSeconds() + expires );
-            localStorage.setItem( key + '_expires', now.getTime().toString() );
+            now.setSeconds(now.getSeconds() + expires);
+            localStorage.setItem(key + '_expires', now.getTime().toString());
 
         }
 
@@ -79,9 +77,9 @@ export default class Storage {
      * @param key
      * @returns {string|boolean}
      */
-    get( key: any ): any {
+    get(key: any): any {
 
-        if ( !this.isLocalStorageSupported() || !key ) {
+        if (!this.isLocalStorageSupported() || !key) {
             return false;
         }
 
@@ -89,18 +87,18 @@ export default class Storage {
         key = this.prefix + key;
 
         // Check if key exists
-        if ( localStorage.getItem( key ) == null ) {
+        if (localStorage.getItem(key) == null) {
             return false;
         }
 
         // Check if the key is expired
-        if ( localStorage.getItem( key + '_expires' ) !== null ) {
+        if (localStorage.getItem(key + '_expires') !== null) {
 
             let now = new Date().getTime();
-            if ( now > parseInt( localStorage.getItem( key + '_expires' ) ?? '' ) ) {
+            if (now > parseInt(localStorage.getItem(key + '_expires') ?? '')) {
 
                 // Delete expired key
-                this.delete( key );
+                this.delete(key);
                 return false;
 
             }
@@ -108,7 +106,7 @@ export default class Storage {
         }
 
         // Return value
-        return localStorage.getItem( key ) ?? false;
+        return localStorage.getItem(key) ?? false;
 
     }
 
@@ -119,17 +117,17 @@ export default class Storage {
      * @param key
      * @returns {boolean}
      */
-    delete( key: any ): boolean {
+    delete(key: any): boolean {
 
-        if ( !this.isLocalStorageSupported() || !key ) {
+        if (!this.isLocalStorageSupported() || !key) {
             return false;
         }
 
         // Add prefix to key (if set)
         key = this.prefix + key;
 
-        localStorage.removeItem( key );
-        localStorage.removeItem( key + '_expires' );
+        localStorage.removeItem(key);
+        localStorage.removeItem(key + '_expires');
 
         return true;
 

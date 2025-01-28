@@ -15,50 +15,52 @@ namespace lib\PawTunes\StreamInfo;
 
 use lib\PawException;
 
-class Custom extends TrackInfo {
+class Custom extends TrackInfo
+{
 
     /**
      * @throws \lib\PawException
      */
-    public function getInfo() {
-
+    public function getInfo()
+    {
         $this->requireCURLExt()
              ->requireURLSet();
 
         // Cancel if websocket
-        $url = parse_url( $this->channel[ 'stats' ][ 'url' ] );
-        if ( $url[ 'scheme' ] === 'wss' ) {
-            return $this->handleTrack( null, [ 'artist' => "", 'title' => "" ] );
+        $url = parse_url($this->channel['stats']['url']);
+        if ($url['scheme'] === 'wss') {
+            return $this->handleTrack(null, ['artist' => "", 'title' => ""]);
         }
 
         // Attempt connection
         $data = $this->pawtunes->get(
-            $this->channel[ 'stats' ][ 'url' ],
+            $this->channel['stats']['url'],
             null,
             (
-            ( !empty( $this->channel[ 'stats' ][ 'auth-user' ] ) && !empty( $this->channel[ 'stats' ][ 'auth-pass' ] ) ) ?
-                "{$this->channel['stats']['auth-user']}:{$this->channel['stats']['auth-pass']}" :
+            ( ! empty($this->channel['stats']['auth-user']) && ! empty($this->channel['stats']['auth-pass']))
+                ?
+                "{$this->channel['stats']['auth-user']}:{$this->channel['stats']['auth-pass']}"
+                :
                 ''
             )
         );
 
-        if ( !$data ) {
-            throw new PawException( "Connection to the custom API URL failed!" );
+        if ( ! $data) {
+            throw new PawException("Connection to the custom API URL failed!");
         }
 
-        if ( empty( $data ) ) {
-            throw new PawException( "Connection to the \"Custom\" method was successful but the server response is empty!" );
+        if (empty($data)) {
+            throw new PawException("Connection to the \"Custom\" method was successful but the server response is empty!");
         }
 
         // Attempt decoding JSON
-        $track = json_decode( $this->pawtunes->strToUTF8( $data ), true );
-        if ( !empty( $track ) ) {
-            return $this->parseJSONResponse( $track );
+        $track = json_decode($this->pawtunes->strToUTF8($data), true);
+        if ( ! empty($track)) {
+            return $this->parseJSONResponse($track);
         }
 
         // Text response
-        return $this->handleTrack( $data );
-
+        return $this->handleTrack($data);
     }
 
 
@@ -69,44 +71,41 @@ class Custom extends TrackInfo {
      *
      * @return array
      */
-    private function parseJSONResponse( $data ): array {
+    private function parseJSONResponse($data): array
+    {
+        $track = $this->handleTrack(null, $data);
 
-        // Track
-        $track = $this->handleTrack( null, $data );
+        if ( ! empty($data['history']) && count($data['history']) > 0) {
 
-        // History
-        if ( !empty( $data[ 'history' ] ) && count( $data[ 'history' ] ) > 0 ) {
-
-            foreach ( $data[ 'history' ] as $key => $value ) {
+            foreach ($data['history'] as $key => $value) {
 
                 // Artist or Title not provided
-                if ( empty( $data[ 'artist' ] ) || empty( $data[ 'title' ] ) ) {
+                if (empty($data['artist']) || empty($data['title'])) {
 
-                    $data[ 'history' ][ $key ][ 'artist' ] = $this->pawtunes->config( 'artist_default' );
-                    $data[ 'history' ][ $key ][ 'title' ] = $this->pawtunes->config( 'title_default' );
+                    $data['history'][$key]['artist'] = $this->pawtunes->config('artist_default');
+                    $data['history'][$key]['title']  = $this->pawtunes->config('title_default');
 
                 }
 
                 // Played At provided
-                if ( !empty( $value[ 'played_at' ] ) ) {
-                    $data[ 'history' ][ $key ][ 'time' ] = $value[ 'played_at' ];
-                    unset( $data[ 'history' ][ $key ][ 'played_at' ] );
+                if ( ! empty($value['played_at'])) {
+                    $data['history'][$key]['time'] = $value['played_at'];
+                    unset($data['history'][$key]['played_at']);
                 }
 
                 // Artwork provided
-                if ( !empty( $value[ 'artwork' ] ) || !empty( $value[ 'image' ] ) ) {
-                    $data[ 'history' ][ $key ][ 'artwork_override' ] = $value[ 'artwork' ] ?? $value[ 'image' ];
+                if ( ! empty($value['artwork']) || ! empty($value['image'])) {
+                    $data['history'][$key]['artwork_override'] = $value['artwork'] ?? $value['image'];
                 }
 
             }
 
             // Reverse array so it's in the right order
-            $track[ 'history' ] = array_reverse( $data[ 'history' ] );
+            $track['history'] = array_reverse($data['history']);
 
         }
 
         return $track;
-
     }
 
 }

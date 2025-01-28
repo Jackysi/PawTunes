@@ -13,7 +13,8 @@
 
 namespace lib;
 
-class PawTunes extends Helpers {
+class PawTunes extends Helpers
+{
 
     /**
      * @var \lib\Cache
@@ -24,7 +25,7 @@ class PawTunes extends Helpers {
      *
      * @var string[]
      */
-    public array $artworkExtensions = [ 'jpg', 'jpeg', 'png', 'svg', 'webp' ];
+    public array $artworkExtensions = ['jpg', 'jpeg', 'png', 'svg', 'webp'];
     /**
      * @var string
      */
@@ -46,13 +47,14 @@ class PawTunes extends Helpers {
      *
      * @var array|string[]
      */
-    protected array $artworkMethods = [
-        'itunes'   => 'iTunes',
-        'fanarttv' => 'FanArtTV',
-        'lastfm'   => 'LastFM',
-        'spotify'  => 'Spotify',
-        'custom'   => 'Custom',
-    ];
+    protected array $artworkMethods
+        = [
+            'itunes'   => 'iTunes',
+            'fanarttv' => 'FanArtTV',
+            'lastfm'   => 'LastFM',
+            'spotify'  => 'Spotify',
+            'custom'   => 'Custom',
+        ];
     /**
      * @var string|null
      */
@@ -64,8 +66,8 @@ class PawTunes extends Helpers {
 
 
     /**
-     * @param string $settingsFile
-     * @param string $channelsFile
+     * @param  string  $settingsFile
+     * @param  string  $channelsFile
      *
      * @return void
      */
@@ -75,66 +77,64 @@ class PawTunes extends Helpers {
     ) {
 
         $this->currentDir = __DIR__;
-        $this->prefix = substr( base64_encode( $this->currentDir ), 0, 8 ) . '_';
-        $this->settings = require( $settingsFile );
+        $this->prefix     = substr(base64_encode($this->currentDir), 0, 8).'_';
+        $this->settings   = require($settingsFile);
 
         // May not exist.
-        if ( is_file( $channelsFile ) ) {
-            $this->channels = require( $channelsFile );
+        if (is_file($channelsFile)) {
+            $this->channels = require($channelsFile);
         }
 
         // If DISK cache and path is set, do realpath as we need full path for cache to work
-        if ( empty( $this->settings[ 'cache' ][ 'mode' ] ) || $this->settings[ 'cache' ][ 'mode' ] === 'disk' ) {
-            if ( !empty( $this->settings[ 'cache' ][ 'path' ] ) ) {
-                $cachePath = realpath( $this->settings[ 'cache' ][ 'path' ] );
+        if (empty($this->settings['cache']['mode']) || $this->settings['cache']['mode'] === 'disk') {
+            if ( ! empty($this->settings['cache']['path'])) {
+                $cachePath = realpath($this->settings['cache']['path']);
             }
         }
 
         $this->cache = new Cache(
             [
-                'prefix' => $this->settings[ 'cache' ][ 'prefix' ] ?? $this->prefix,
-                'path'   => $cachePath ?? null ] + $this->settings[ 'cache' ]
+                'prefix' => $this->settings['cache']['prefix'] ?? $this->prefix,
+                'path'   => $cachePath ?? null,
+            ] + $this->settings['cache']
         );
 
     }
 
 
-    public function getChannels() {
-
+    public function getChannels()
+    {
         return $this->channels;
-
     }
 
 
-    public function getConfigAll() {
-
+    public function getConfigAll()
+    {
         return $this->settings;
-
     }
 
 
-    public function setConfigAll( $settings ) {
-
+    public function setConfigAll($settings)
+    {
         return $this->settings = $settings;
-
     }
 
 
-    public function getCache(): Cache {
+    public function getCache(): Cache
+    {
         return $this->cache;
     }
 
 
-    public function setCache( Cache $cache ): Cache {
-
+    public function setCache(Cache $cache): Cache
+    {
         return $this->cache = $cache;
-
     }
 
 
-    public function setConfig( $key, $value ) {
-
-        return $this->settings[ $key ] = $value;
+    public function setConfig($key, $value)
+    {
+        return $this->settings[$key] = $value;
 
     }
 
@@ -142,8 +142,8 @@ class PawTunes extends Helpers {
     /**
      * @throws \Exception
      */
-    public function outputBufferHandler( $buffer ) {
-
+    public function outputBufferHandler($buffer)
+    {
         // Array with replacement matching (regex)
         $regex = [
             ## REGEX					  ## REPLACE WITH
@@ -152,36 +152,37 @@ class PawTunes extends Helpers {
         ];
 
         // Replace tabs, empty spaces etc etc...
-        $html_out = preg_replace( array_keys( $regex ), $regex, $buffer );
+        $html_out = preg_replace(array_keys($regex), $regex, $buffer);
 
         // Optimize <style> tags
-        $html_out = preg_replace_callback( '#<style(.*?)>(.*?)</style>#is', static function( $m ) {
+        $html_out = preg_replace_callback('#<style(.*?)>(.*?)</style>#is', static function ($m) {
 
             // Minify the css
-            $css = $m[ 2 ];
-            $css = preg_replace( '!/\*[^*]*\*+([^/][^*]*\*+)*/!', '', $css );
+            $css = $m[2];
+            $css = preg_replace('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '', $css);
 
-            $css = str_replace( [ "\r\n", "\r", "\n", "\t", '  ', '    ', '     ' ], '', $css );
+            $css = str_replace(["\r\n", "\r", "\n", "\t", '  ', '    ', '     '], '', $css);
 
-            $css = preg_replace( [ '(( )+{)', '({( )+)' ], '{', $css );
-            $css = preg_replace( [ '(( )+})', '(}( )+)', '(;( )*})' ], '}', $css );
-            $css = preg_replace( [ '(;( )+)', '(( )+;)' ], ';', $css );
+            $css = preg_replace(['(( )+{)', '({( )+)'], '{', $css);
+            $css = preg_replace(['(( )+})', '(}( )+)', '(;( )*})'], '}', $css);
+            $css = preg_replace(['(;( )+)', '(( )+;)'], ';', $css);
 
-            return '<style>' . $css . '</style>';
+            return '<style>'.$css.'</style>';
 
-        },                                 $html_out );
+        }, $html_out);
 
 
         // Optimize <script> tags
-        return preg_replace_callback( '#<script(.*?)>(.*?)</script>#is', static function( $m ) {
+        return preg_replace_callback('#<script(.*?)>(.*?)</script>#is', static function ($m) {
 
             // Minify the js
-            $js = $m[ 2 ];
-            $js = preg_replace( '/\/\*(?:[^*]|\*+[^*\/])*\*+\/|(?<!:|\|\')\/\/.*/', '', $js );
-            $js = str_replace( [ "\r\n", "\r", "\n", "\t", '  ', '    ', '     ' ], '', $js );
-            return "<script{$m[1]}>" . $js . "</script>";
+            $js = $m[2];
+            $js = preg_replace('/\/\*(?:[^*]|\*+[^*\/])*\*+\/|(?<!:|\|\')\/\/.*/', '', $js);
+            $js = str_replace(["\r\n", "\r", "\n", "\t", '  ', '    ', '     '], '', $js);
 
-        },                            $html_out );
+            return "<script{$m[1]}>".$js."</script>";
+
+        }, $html_out);
 
     }
 
@@ -189,46 +190,46 @@ class PawTunes extends Helpers {
     /**
      * @throws \JsonException
      */
-    public function getTemplateEngineOpts(): array {
-
+    public function getTemplateEngineOpts(): array
+    {
         ## Handle URL to the player generation
-        $this->settings[ 'host' ] = ( ( isset( $_SERVER[ 'HTTPS' ] ) && $_SERVER[ 'HTTPS' ] === 'on' ) ? 'https://' : 'http://' ) . $_SERVER[ 'HTTP_HOST' ] ?? $_SERVER[ 'SERVER_NAME' ];
-        $this->settings[ 'url' ] = "{$this->settings['host']}{$_SERVER['REQUEST_URI']}";
+        $this->settings['host'] = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https://' : 'http://').$_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'];
+        $this->settings['url']  = "{$this->settings['host']}{$_SERVER['REQUEST_URI']}";
 
         ## Facebook share image
-        if ( empty( $this->settings[ 'share_image_override' ] ) ) {
-            $facebookShare = $this->settings[ 'host' ] . dirname( $_SERVER[ 'PHP_SELF' ] ) . '/' . $this->defaultArtwork();
+        if (empty($this->settings['share_image_override'])) {
+            $facebookShare = $this->settings['host'].dirname($_SERVER['PHP_SELF']).'/'.$this->defaultArtwork();
         }
 
         // Expose config keys:
-        $pass = [];
-        $configKeys = [ 'autoplay', 'site_title', 'title', 'description', 'google_analytics', 'template', 'artist_default', 'title_default' ];
-        foreach ( $configKeys as $key ) {
-            $pass[ $key ] = $this->config( $key );
+        $pass       = [];
+        $configKeys = ['autoplay', 'site_title', 'title', 'description', 'google_analytics', 'template', 'artist_default', 'title_default'];
+        foreach ($configKeys as $key) {
+            $pass[$key] = $this->config($key);
         }
 
         $json = $this->generateConfigJSON();
-        $tpl = [ 'tpl' => $this->arrayKeysCaseToSnakeCase( $json[ 'tpl' ] ) ];
+        $tpl  = ['tpl' => $this->arrayKeysCaseToSnakeCase($json['tpl'])];
 
         // Others
         $opts = [
-            'url'             => $this->config( 'url' ),
-            'indexing'        => ( $this->config( 'disable_index' ) ? 'NOINDEX, NOFOLLOW' : 'INDEX, FOLLOW' ),
-            'default_artwork' => $json[ 'trackInfo' ][ 'default' ][ 'artwork' ],
-            'og_image'        => $facebookShare ?? $this->settings[ 'share_image_override' ],
-            'og_site_title'   => ( ( !empty( $this->config( 'site_title' ) ) ) ? '<meta property="og:site_name" content="' . $this->config( 'site_title' ) . '">' : ' ' ),
+            'url'             => $this->config('url'),
+            'indexing'        => ($this->config('disable_index') ? 'NOINDEX, NOFOLLOW' : 'INDEX, FOLLOW'),
+            'default_artwork' => $json['trackInfo']['default']['artwork'],
+            'og_image'        => $facebookShare ?? $this->settings['share_image_override'],
+            'og_site_title'   => (( ! empty($this->config('site_title'))) ? '<meta property="og:site_name" content="'.$this->config('site_title').'">' : ' '),
             'timestamp'       => time(),
-            'json_settings'   => json_encode( $json, JSON_THROW_ON_ERROR ),
+            'json_settings'   => json_encode($json, JSON_THROW_ON_ERROR),
         ];
 
-        return array_merge( $opts, $pass, $this->getLanguage(), $tpl );
+        return array_merge($opts, $pass, $this->getLanguage(), $tpl);
 
     }
 
 
-    public function config( $key ) {
-
-        return $this->settings[ $key ] ?? null;
+    public function config($key)
+    {
+        return $this->settings[$key] ?? null;
 
     }
 
@@ -236,37 +237,37 @@ class PawTunes extends Helpers {
     /**
      * @throws \JsonException
      */
-    private function generateConfigJSON(): array {
-
+    private function generateConfigJSON(): array
+    {
         $channels = [];
-        if ( count( $this->channels ) >= 1 ) {
-            foreach ( $this->channels as $channel ) {
+        if (count($this->channels) >= 1) {
+            foreach ($this->channels as $channel) {
 
                 $chn = [
-                    'name'    => $channel[ 'name' ],
-                    'logo'    => $channel[ 'logo' ] ?? null,
-                    'skin'    => isset( $channel[ 'skin' ] ) && is_file( "templates/{$this->settings['template']}/{$channel['skin']}" ) ? $channel[ 'skin' ] : null,
-                    'streams' => $channel[ 'streams' ],
+                    'name'    => $channel['name'],
+                    'logo'    => $channel['logo'] ?? null,
+                    'skin'    => isset($channel['skin']) && is_file("templates/{$this->settings['template']}/{$channel['skin']}") ? $channel['skin'] : null,
+                    'streams' => $channel['streams'],
                 ];
 
                 // Check if we need to use websocket
                 if (
-                    !empty( $channel[ 'stats' ][ 'url' ] ) &&
-                    in_array( $channel[ 'stats' ][ 'method' ], [ 'azuracast', 'custom' ] )
+                    ! empty($channel['stats']['url'])
+                    && in_array($channel['stats']['method'], ['azuracast', 'custom'])
                 ) {
 
-                    $statsURL = parse_url( $channel[ 'stats' ][ 'url' ] );
+                    $statsURL = parse_url($channel['stats']['url']);
 
                     // Set websocket info
-                    $chn[ 'ws' ][ 'method' ] = $channel[ 'stats' ][ 'method' ];
-                    $chn[ 'ws' ][ 'url' ] = ( $statsURL[ 'scheme' ] === 'wss' ) ? $channel[ 'stats' ][ 'url' ] : false;
+                    $chn['ws']['method'] = $channel['stats']['method'];
+                    $chn['ws']['url']    = ($statsURL['scheme'] === 'wss') ? $channel['stats']['url'] : false;
 
                     // Azura Cast has additional parameters
-                    if ( $channel[ 'stats' ][ 'method' ] === 'azuracast' ) {
+                    if ($channel['stats']['method'] === 'azuracast') {
 
-                        $chn[ 'ws' ][ 'station' ] = $channel[ 'stats' ][ 'station' ];
-                        $chn[ 'ws' ][ 'history' ] = $channel[ 'stats' ][ 'azura-history' ];
-                        $chn[ 'ws' ][ 'useRemoteCovers' ] = $channel[ 'stats' ][ 'use-cover' ];
+                        $chn['ws']['station']         = $channel['stats']['station'];
+                        $chn['ws']['history']         = $channel['stats']['azura-history'];
+                        $chn['ws']['useRemoteCovers'] = $channel['stats']['use-cover'];
 
                     }
 
@@ -279,28 +280,28 @@ class PawTunes extends Helpers {
 
         return [
             'channels'      => $channels,
-            'analytics'     => ( !empty( $this->config( 'google_analytics' ) ) ? $this->config( 'google_analytics' ) : false ),
+            'analytics'     => (! empty($this->config('google_analytics')) ? $this->config('google_analytics') : false),
             'defaults'      => [
-                'channel'        => $this->strToUTF8( $this->config( 'default_channel' ) ),
-                'default_volume' => ( ( $this->config( 'default_volume' ) >= 1 && $this->config( 'default_volume' ) <= 100 ) ? (int) $this->config( 'default_volume' ) : 50 ),
-                'autoplay'       => ( isset( $_GET[ 'autoplay' ] ) && $_GET[ 'autoplay' ] === 'false' ) ? false : $this->config( 'autoplay' ),
+                'channel'        => $this->strToUTF8($this->config('default_channel')),
+                'default_volume' => (($this->config('default_volume') >= 1 && $this->config('default_volume') <= 100) ? (int) $this->config('default_volume') : 50),
+                'autoplay'       => (isset($_GET['autoplay']) && $_GET['autoplay'] === 'false') ? false : $this->config('autoplay'),
             ],
-            'dynamicTitle'  => $this->config( 'dynamic_title' ) ?? false,
+            'dynamicTitle'  => $this->config('dynamic_title') ?? false,
             'prefix'        => $this->prefix,
-            'history'       => $this->config( 'history' ),
-            'historyMaxLen' => $this->config( 'historyLength' ) ?? 20,
+            'history'       => $this->config('history'),
+            'historyMaxLen' => $this->config('historyLength') ?? 20,
             'language'      => $this->getLanguage(),
-            'refreshRate'   => ( is_numeric( $this->config( 'stats_refresh' ) ) && $this->config( 'stats_refresh' ) >= 3 ) ? (int) $this->config( 'stats_refresh' ) : 15,
-            'template'      => $this->config( 'template' ),
-            'tpl'           => $this->getAdvancedTemplateOptions( $this->config( 'template' ) ),
-            'title'         => $this->strToUTF8( $this->config( 'title' ) ),
+            'refreshRate'   => (is_numeric($this->config('stats_refresh')) && $this->config('stats_refresh') >= 3) ? (int) $this->config('stats_refresh') : 15,
+            'template'      => $this->config('template'),
+            'tpl'           => $this->getAdvancedTemplateOptions($this->config('template')),
+            'title'         => $this->strToUTF8($this->config('title')),
             'trackInfo'     => [
-                'artistMaxLen'     => $this->config( 'artist_maxlength' ),
-                'titleMaxLen'      => $this->config( 'title_maxlength' ),
-                'lazyLoadArtworks' => $this->config( 'artwork_lazy_loading' ),
+                'artistMaxLen'     => $this->config('artist_maxlength'),
+                'titleMaxLen'      => $this->config('title_maxlength'),
+                'lazyLoadArtworks' => $this->config('artwork_lazy_loading'),
                 'default'          => [
-                    'artist'  => $this->strToUTF8( $this->config( 'artist_default' ) ),
-                    'title'   => $this->strToUTF8( $this->config( 'title_default' ) ),
+                    'artist'  => $this->strToUTF8($this->config('artist_default')),
+                    'title'   => $this->strToUTF8($this->config('title_default')),
                     'artwork' => $this->defaultArtwork(),
                 ],
             ],
@@ -309,18 +310,18 @@ class PawTunes extends Helpers {
     }
 
 
-    private function getLanguage() {
-
-        $lang = ( ( empty( $_GET[ 'language' ] ) ) ? strtolower( substr( $_SERVER[ 'HTTP_ACCEPT_LANGUAGE' ] ?? '', 0, 2 ) ) : $_GET[ 'language' ] );
-        if ( file_exists( "{$this->currentDir}/.././locale/{$lang}.php" ) ) { // Load if language is found
-            return require( "{$this->currentDir}/.././locale/{$lang}.php" );
+    private function getLanguage()
+    {
+        $lang = ((empty($_GET['language'])) ? strtolower(substr($_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '', 0, 2)) : $_GET['language']);
+        if (file_exists("{$this->currentDir}/.././locale/{$lang}.php")) { // Load if language is found
+            return require("{$this->currentDir}/.././locale/{$lang}.php");
         }
 
-        if ( $this->config( 'multi_lang' ) || $this->config( 'multi_lang' ) !== true ) {
-            return require( "{$this->currentDir}/.././locale/{$this->config(  'default_lang' )}" );
+        if ($this->config('multi_lang') || $this->config('multi_lang') !== true) {
+            return require("{$this->currentDir}/.././locale/{$this->config(  'default_lang' )}");
         }
 
-        return require( "{$this->currentDir}/.././locale/{$this->config(  'default_lang' )}" );
+        return require("{$this->currentDir}/.././locale/{$this->config(  'default_lang' )}");
 
     }
 
@@ -331,26 +332,26 @@ class PawTunes extends Helpers {
      * @return array
      * @throws \JsonException
      */
-    public function getAdvancedTemplateOptions( $template ): array {
-
+    public function getAdvancedTemplateOptions($template): array
+    {
         // Get templates
         $templates = $this->getTemplates();
 
         // Check if template exists
-        if ( !empty( $templates[ $template ] ) && !empty( $templates[ $template ][ 'extra' ] ) ) {
+        if ( ! empty($templates[$template]) && ! empty($templates[$template]['extra'])) {
 
             $extras = [];
-            foreach ( $templates[ $template ][ 'extra' ] as $index => $extra ) {
+            foreach ($templates[$template]['extra'] as $index => $extra) {
 
                 // If template isset exists and is not checkbox set to default value
-                if ( !isset( $this->settings[ 'tplOptions' ][ $template ][ $index ] ) ) {
+                if ( ! isset($this->settings['tplOptions'][$template][$index])) {
 
-                    $extras[ $index ] = ( $extra[ 'type' ] !== 'checkbox' ) ? $extra[ 'default' ] : (bool) ( $extra[ 'default' ] );
+                    $extras[$index] = ($extra['type'] !== 'checkbox') ? $extra['default'] : (bool) ($extra['default']);
                     continue;
 
                 }
 
-                $extras[ $index ] = $this->settings[ 'tplOptions' ][ $template ][ $index ] ?? null;
+                $extras[$index] = $this->settings['tplOptions'][$template][$index] ?? null;
 
             }
 
@@ -369,34 +370,34 @@ class PawTunes extends Helpers {
      * @return array|mixed
      * @throws \JsonException
      */
-    public function getTemplates() {
-
+    public function getTemplates()
+    {
         // Use cache
-        if ( ( $templates = $this->cache->get( 'templates' ) ) === false ) {
+        if (($templates = $this->cache->get('templates')) === false) {
 
             // New list
             $templates = [];
 
             // Handle themes here
-            $list = $this->browse( "templates/", false, true, false );
+            $list = $this->browse("templates/", false, true, false);
 
             // Loop
-            foreach ( $list as $dir ) {
+            foreach ($list as $dir) {
 
                 // Definitions?
-                if ( is_file( "templates/{$dir}/manifest.json" ) ) {
+                if (is_file("templates/{$dir}/manifest.json")) {
 
                     // Get json
-                    $loadedFile = json_decode( file_get_contents( "templates/{$dir}/manifest.json" ), true, 512, JSON_THROW_ON_ERROR );
+                    $loadedFile = json_decode(file_get_contents("templates/{$dir}/manifest.json"), true, 512, JSON_THROW_ON_ERROR);
 
                     // Verify List - Do not append unless manifest is correct
-                    if ( !empty( $loadedFile[ 'name' ] ) && is_file( "templates/{$dir}/{$loadedFile['template']}" ) ) {
+                    if ( ! empty($loadedFile['name']) && is_file("templates/{$dir}/{$loadedFile['template']}")) {
 
                         // This is JSON from the template
-                        $templates[ $dir ] = $loadedFile;
+                        $templates[$dir] = $loadedFile;
 
                         // Add full path to the variable
-                        $templates[ $dir ][ 'path' ] = "templates/{$dir}";
+                        $templates[$dir]['path'] = "templates/{$dir}";
 
                     }
 
@@ -405,10 +406,10 @@ class PawTunes extends Helpers {
             }
 
             // Sort them ascending
-            asort( $templates );
+            asort($templates);
 
             // Store cache
-            $this->cache->set( 'templates', $templates, 0 );
+            $this->cache->set('templates', $templates, 0);
 
         }
 
@@ -424,13 +425,13 @@ class PawTunes extends Helpers {
      *
      * @return string
      */
-    public function parseTrack( $string ): string {
-
+    public function parseTrack($string): string
+    {
         // Replace some known characters/strings with text
         $string = str_replace(
-            [ '&', 'ft.' ],
-            [ 'and', 'feat' ],
-            empty( $string ) ? '' : $string
+            ['&', 'ft.'],
+            ['and', 'feat'],
+            empty($string) ? '' : $string
         );
 
         // Rep
@@ -440,8 +441,9 @@ class PawTunes extends Helpers {
         ];
 
         // Replace bad characters
-        $string = preg_replace( array_keys( $rep_arr ), $rep_arr, trim( $string ) );
-        return strtolower( rtrim( $string, '.' ) );
+        $string = preg_replace(array_keys($rep_arr), $rep_arr, trim($string));
+
+        return strtolower(rtrim($string, '.'));
 
     }
 
@@ -451,15 +453,15 @@ class PawTunes extends Helpers {
      *
      * @throws \JsonException
      */
-    public function exitJSON(): void {
-
+    public function exitJSON(): void
+    {
         // Clean buffer and every thing above
-        if ( ob_get_level() ) {
+        if (ob_get_level()) {
             ob_end_clean();
         }
 
         // Empty array
-        echo json_encode( [], JSON_THROW_ON_ERROR );
+        echo json_encode([], JSON_THROW_ON_ERROR);
         exit;
 
     }
@@ -470,21 +472,22 @@ class PawTunes extends Helpers {
      *
      * @return array
      */
-    protected function getSortedArtworkSourcesList(): array {
-
+    protected function getSortedArtworkSourcesList(): array
+    {
         $list = [];
-        foreach ( $this->config( 'artwork_sources' ) as $key => $value ) {
-            if ( isset( $value[ 'state' ] ) && $value[ 'state' ] === 'enabled' ) {
-                $list[] = [ 'method' => $key ] + $value;
+        foreach ($this->config('artwork_sources') as $key => $value) {
+            if (isset($value['state']) && $value['state'] === 'enabled') {
+                $list[] = ['method' => $key] + $value;
             }
         }
 
-        uasort( $list, static function( $a, $b ) {
-            if ( isset( $a[ 'index' ], $b[ 'index' ] ) ) {
-                return $a[ 'index' ] <=> $b[ 'index' ];
+        uasort($list, static function ($a, $b) {
+            if (isset($a['index'], $b['index'])) {
+                return $a['index'] <=> $b['index'];
             }
-            return isset( $a[ 'index' ] ) ? -1 : 1;
-        } );
+
+            return isset($a['index']) ? -1 : 1;
+        });
 
         return $list;
 
