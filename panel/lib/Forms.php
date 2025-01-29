@@ -174,7 +174,7 @@ class Forms
     {
         $output     = '';
         $fieldName  = $o['name'] ?? '';
-        $fieldId    = $fieldName;
+        $fieldId    = $o['id'] ?? $fieldName;
         $fieldClass = $o['class'] ?? '';
         $extras     = $this->buildAttributes($o);
 

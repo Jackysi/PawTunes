@@ -412,8 +412,8 @@
                 <div class="row">
                     <div class="col-sm-9 col-sm-offset-2">
                         <b>Note</b>: Your password will be one-way encrypted (hashed).
-                                   To regain access, remove "admin_password" configuration key from the configuration file (<strong>inc/config/general.php</strong>).
-                                   That will reset the password to default (password).
+                        To regain access, remove "admin_password" configuration key from the configuration file (<strong>inc/config/general.php</strong>).
+                        That will reset the password to default (password).
                     </div>
                 </div>
             </div>
@@ -457,7 +457,7 @@
                                         @php $opts = $pawtunes->getAdvancedTemplateOptions( $index ); @endphp
                                         @foreach ( $data[ 'extra' ] as $key => $value )
                                             @php
-                                                echo $form->add([ 'label-full' => true, 'class'=> 'col-sm-12'] + $value,$opts[ $key ] ?? null);
+                                                echo $form->add([ 'id' => "{$index}_{$value['name']}",'label-full' => true, 'class'=> 'col-sm-12'] + $value,$opts[ $key ] ?? null);
                                             @endphp
                                         @endforeach
                                     @endif
@@ -477,48 +477,49 @@
     <script type="text/javascript">
 
         // Bind document ready
-        $( document ).ready( function() {
+        $(document).ready(function () {
 
-            $( '.table.artwork-apis' ).rowSorter( {
+            $('.table.artwork-apis').rowSorter({
                 handler: '.sort-handle',
-            } );
+            });
 
             // Delete existing logo
-            $( '.delete-override' ).on( 'click', function() {
+            $('.delete-override').on('click', function () {
 
-                let elm = $( this );
-                $.get( 'index.php?page=settings&delete=override-share-image', function() {
-                    $( elm ).closest( '.logo-container' ).remove();
-                } );
+                let elm = $(this);
+                $.get('index.php?page=settings&delete=override-share-image', function () {
+                    $(elm).closest('.logo-container').remove();
+                });
 
                 return false;
 
-            } );
+            });
 
             // Change input value for browse
-            $( 'input[type="file"]' ).on( 'change', function() {
-                let cVal = $( this ).val().replace( /.*\\fakepath\\/, '' );
-                let elm  = $( this ).closest( '.form-group' );
-                elm.find( 'input#override_share_image' ).val( cVal );
-                elm.find( '.logo-container' ).remove();
-            } );
+            $('input[type="file"]').on('change', function () {
+                let cVal = $(this).val().replace(/.*\\fakepath\\/, '');
+                let elm = $(this).closest('.form-group');
+                elm.find('input#override_share_image').val(cVal);
+                elm.find('.logo-container').remove();
+            });
 
             let timeout = null;
-            $( '.templateOptions' ).find( 'select, input, textarea' ).each( function() {
-                let form = $( this ).closest( 'form' );
-                $( this ).on( 'change', function() {
+            $('.templateOptions').find('select, input, textarea').each(function () {
+                let form = $(this).closest('form');
+                $(this).on('change', function () {
 
-                    clearTimeout( timeout );
-                    timeout = setTimeout( function() {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(function () {
 
-                        $.post( $( form ).attr( 'data-action' ), $( form ).serialize(), function() {}, 'json' );
+                        $.post($(form).attr('data-action'), $(form).serialize(), function () {
+                        }, 'json');
 
-                    }, 600 );
+                    }, 600);
 
-                } );
-            } );
+                });
+            });
 
-        } );
+        });
 
     </script>
 @endsection
