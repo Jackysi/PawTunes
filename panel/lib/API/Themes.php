@@ -13,32 +13,32 @@
 
 namespace API;
 
-class Themes extends Base {
+class Themes extends Base
+{
 
-    public function getThemes() {
-
-        $this->sendJSON( $this->readThemes() );
-
+    public function getThemes()
+    {
+        $this->sendJSON($this->readThemes());
     }
 
 
-    private function readThemes() {
-
+    private function readThemes()
+    {
         // List of templates
         $templates = $this->pawtunes->getTemplates();
-        $schemes = [];
+        $schemes   = [];
 
         // Read all custom folders
-        foreach ( $templates as $template ) {
-            if ( is_dir( $template[ 'path' ] . '/custom' ) ) {
+        foreach ($templates as $template) {
+            if (is_dir($template['path'].'/custom')) {
 
-                $list = $this->pawtunes->browse( $template[ 'path' ] . '/custom' );
-                foreach ( $list as $custom ) {
+                $list = $this->pawtunes->browse($template['path'].'/custom');
+                foreach ($list as $custom) {
                     $schemes[] = [
                         'name'     => $custom,
-                        'template' => $template[ 'name' ],
-                        'path'     => $template[ 'path' ] . '/custom/' . $custom,
-                        'size'     => $this->pawtunes->formatBytes( filesize( $template[ 'path' ] . '/custom/' . $custom ) ),
+                        'template' => $template['name'],
+                        'path'     => $template['path'].'/custom/'.$custom,
+                        'size'     => $this->pawtunes->formatBytes(filesize($template['path'].'/custom/'.$custom)),
                     ];
                 }
 
@@ -46,37 +46,35 @@ class Themes extends Base {
         }
 
         // Sort by template
-        usort( $schemes, static function( $a, $b ) {
-            return $a[ 'template' ] <=> $b[ 'template' ];
-        } );
+        usort($schemes, static function ($a, $b) {
+            return $a['template'] <=> $b['template'];
+        });
 
         return $schemes;
-
     }
 
 
-    public function deleteTheme() {
-
-        $name = $_GET[ 'path' ];
-        if ( $name ) {
+    public function deleteTheme()
+    {
+        $name = $_GET['path'];
+        if ($name) {
             $schemes = $this->readThemes();
 
             $valid = false;
-            foreach ( $schemes as $scheme ) {
-                if ( $scheme[ 'path' ] === $name ) {
+            foreach ($schemes as $scheme) {
+                if ($scheme['path'] === $name) {
                     $valid = true;
                     break;
                 }
             }
 
-            if ( $valid ) {
-                $this->sendJSON( [ 'success' => @unlink( $_GET[ 'path' ] ) ] );
+            if ($valid) {
+                $this->sendJSON(['success' => @unlink($_GET['path'])]);
             }
 
-            $this->sendJSON( [ 'success' => false ] );
+            $this->sendJSON(['success' => false]);
 
         }
-
     }
 
 }

@@ -15,17 +15,17 @@
  * Autoload Functions and libraries on-demand so we only load what we actually need
  * This is for PawTunes Control Panel only
  */
-spl_autoload_register( static function( string $className ) {
+spl_autoload_register(static function (string $className) {
 
     # 1 with namespaces
     # 2 without
     $fileName = [
-        __DIR__ . '/' . str_replace( '\\', '/', $className . '.php' ),
-        __DIR__ . '/' . $className . '.php',
+        __DIR__.'/'.str_replace('\\', '/', $className.'.php'),
+        __DIR__.'/'.$className.'.php',
     ];
 
-    foreach ( $fileName as $file ) {
-        if ( is_file( $file ) ) {
+    foreach ($fileName as $file) {
+        if (is_file($file)) {
 
             require $file;
             break;
@@ -33,4 +33,4 @@ spl_autoload_register( static function( string $className ) {
         }
     }
 
-} );
+});
