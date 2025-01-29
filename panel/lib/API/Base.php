@@ -16,7 +16,8 @@ namespace API;
 use lib\PawTunes;
 use Panel;
 
-abstract class Base {
+abstract class Base
+{
 
     protected Pawtunes $pawtunes;
 
@@ -30,29 +31,28 @@ abstract class Base {
         $panel
     ) {
         $this->pawtunes = $pawtunes;
-        $this->panel = $panel;
+        $this->panel    = $panel;
     }
 
 
     /**
      * @param      $content
-     * @param null $name
+     * @param  null  $name
      *
      * @return void
      */
-    public function sendSSE( $content, $name = null ): void {
-
-        $content = base64_encode( $content );
+    public function sendSSE($content, $name = null): void
+    {
+        $content = base64_encode($content);
 
         // Named events
-        if ( !empty( $this->sseName ) || $name !== null ) {
+        if ( ! empty($this->sseName) || $name !== null) {
             $name = $name ?? $this->sseName;
             echo "event: {$name}\n";
         }
 
         echo "data: {$content}\n\n";
         flush();
-
     }
 
 
@@ -61,9 +61,9 @@ abstract class Base {
      *
      * @return void
      */
-    public function closeSSE( $name = null ): void {
-
-        if ( !empty( $this->sseName ) || $name !== null ) {
+    public function closeSSE($name = null): void
+    {
+        if ( ! empty($this->sseName) || $name !== null) {
             $name = $name ?? $this->sseName;
             echo "event: {$name}\n";
         }
@@ -71,7 +71,6 @@ abstract class Base {
         echo "data: close\n\n";
         flush();
         exit;
-
     }
 
 
@@ -81,12 +80,11 @@ abstract class Base {
      * @return void
      * @throws \JsonException
      */
-    public function sendJSON( $data ): void {
-
-        header( "Content-Type: application/json" );
-        echo json_encode( $data, JSON_THROW_ON_ERROR );
+    public function sendJSON($data): void
+    {
+        header("Content-Type: application/json");
+        echo json_encode($data, JSON_THROW_ON_ERROR);
         exit;
-
     }
 
 }
