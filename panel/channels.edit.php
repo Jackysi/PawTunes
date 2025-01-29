@@ -314,7 +314,7 @@ if ( ! empty($_POST)) {
         // Prepare output config array
         $conf[] = [
             'name'    => $pawtunes->strToUTF8($_POST['name']),
-            'logo'    => ((empty($logoPath)) ? ($channels[$_GET['e'] ?? null]['logo'] ?? null) : $logoPath),
+            'logo'    => ((empty($logoPath)) ? ($channels[$_GET['channel'] ?? null]['logo'] ?? null) : $logoPath),
             'skin'    => ( ! empty($_POST['skin'])) ? $_POST['skin'] : null,
             'streams' => $quality_groups,
             'stats'   => $stats ?? [],
