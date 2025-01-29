@@ -343,6 +343,11 @@ class PawTunes extends Helpers
             $extras = [];
             foreach ($templates[$template]['extra'] as $index => $extra) {
 
+                // Generate ID for unique fields
+                #$extras[$index]['id'] = "{$extra['name']}_{$index}";
+                $extras[$index]['id'] = "hi";
+
+
                 // If template isset exists and is not checkbox set to default value
                 if ( ! isset($this->settings['tplOptions'][$template][$index])) {
 
