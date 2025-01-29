@@ -3,14 +3,12 @@
 
     if (typeof define === 'function' && define.amd) { // AMD
         define(['jquery'], factory);
-    }
-    else if (typeof exports == "object" && typeof module == "object") { // CommonJS
+    } else if (typeof exports == "object" && typeof module == "object") { // CommonJS
         module.exports = factory(require('jquery'));
-    }
-    else { // Browser
+    } else { // Browser
         factory(jQuery);
     }
-})(function($, undefined) {
+})(function ($, undefined) {
     "use strict";
 
     var defaultOpts = {
@@ -54,23 +52,23 @@
             showAlpha: false,
             theme: "sp-light",
             palette: [
-                ["#000000","#444444","#5b5b5b","#999999","#bcbcbc","#eeeeee","#f3f6f4","#ffffff"],
-                ["#f44336","#744700","#ce7e00","#8fce00","#2986cc","#16537e","#6a329f","#c90076"],
-                ["#f4cccc","#fce5cd","#fff2cc","#d9ead3","#d0e0e3","#cfe2f3","#d9d2e9","#ead1dc"],
-                ["#ea9999","#f9cb9c","#ffe599","#b6d7a8","#a2c4c9","#9fc5e8","#b4a7d6","#d5a6bd"],
-                ["#e06666","#f6b26b","#ffd966","#93c47d","#76a5af","#6fa8dc","#8e7cc3","#c27ba0"],
-                ["#cc0000","#e69138","#f1c232","#6aa84f","#45818e","#3d85c6","#674ea7","#a64d79"],
-                ["#990000","#b45f06","#bf9000","#38761d","#134f5c","#0b5394","#351c75","#741b47"],
-                ["#660000","#783f04","#7f6000","#274e13","#0c343d","#073763","#20124d","#4c1130"]
+                ["#000000", "#444444", "#5b5b5b", "#999999", "#bcbcbc", "#eeeeee", "#f3f6f4", "#ffffff"],
+                ["#f44336", "#744700", "#ce7e00", "#8fce00", "#2986cc", "#16537e", "#6a329f", "#c90076"],
+                ["#f4cccc", "#fce5cd", "#fff2cc", "#d9ead3", "#d0e0e3", "#cfe2f3", "#d9d2e9", "#ead1dc"],
+                ["#ea9999", "#f9cb9c", "#ffe599", "#b6d7a8", "#a2c4c9", "#9fc5e8", "#b4a7d6", "#d5a6bd"],
+                ["#e06666", "#f6b26b", "#ffd966", "#93c47d", "#76a5af", "#6fa8dc", "#8e7cc3", "#c27ba0"],
+                ["#cc0000", "#e69138", "#f1c232", "#6aa84f", "#45818e", "#3d85c6", "#674ea7", "#a64d79"],
+                ["#990000", "#b45f06", "#bf9000", "#38761d", "#134f5c", "#0b5394", "#351c75", "#741b47"],
+                ["#660000", "#783f04", "#7f6000", "#274e13", "#0c343d", "#073763", "#20124d", "#4c1130"]
             ],
             selectionPalette: [],
             disabled: false,
             offset: null
         },
         spectrums = [],
-        IE = !!/msie/i.exec( window.navigator.userAgent ),
-        rgbaSupport = (function() {
-            function contains( str, substr ) {
+        IE = !!/msie/i.exec(window.navigator.userAgent),
+        rgbaSupport = (function () {
+            function contains(str, substr) {
                 return !!~('' + str).indexOf(substr);
             }
 
@@ -137,11 +135,11 @@
             ].join("");
         })();
 
-    function paletteTemplate (p, color, className, opts) {
+    function paletteTemplate(p, color, className, opts) {
         var html = [];
         for (var i = 0; i < p.length; i++) {
             var current = p[i];
-            if(current) {
+            if (current) {
                 var tiny = tinycolor(current);
                 var c = tiny.toHsl().l < 0.5 ? "sp-thumb-el sp-thumb-dark" : "sp-thumb-el sp-thumb-light";
                 c += (tinycolor.equals(color, current)) ? " sp-thumb-active" : "";
@@ -256,10 +254,10 @@
 
         //If there is a label for this element, when clicked on, show the colour picker
         var thisId = boundElement.attr('id');
-        if(thisId !== undefined && thisId.length > 0) {
-            var label = $('label[for="'+thisId+'"]');
-            if(label.length) {
-                label.on('click', function(e){
+        if (thisId !== undefined && thisId.length > 0) {
+            var label = $('label[for="' + thisId + '"]');
+            if (label.length) {
+                label.on('click', function (e) {
                     e.preventDefault();
                     boundElement.spectrum('show');
                     return false;
@@ -316,7 +314,7 @@
             applyOptions();
 
             originalInputContainer = $('<span class="sp-original-input-container"></span>');
-            ['margin'].forEach(function(cssProp) {
+            ['margin'].forEach(function (cssProp) {
                 originalInputContainer.css(cssProp, boundElement.css(cssProp));
             });
             // inline-flex by default, switching to flex if needed
@@ -330,8 +328,8 @@
             } else if (type == 'component') {
                 boundElement.addClass('spectrum').wrap(originalInputContainer);
                 var addOn = $(["<div class='sp-colorize-container sp-add-on'>",
-                               "<div class='sp-colorize'></div> ",
-                               "</div>"].join(''));
+                    "<div class='sp-colorize'></div> ",
+                    "</div>"].join(''));
 
                 var addOnWidth = boundElement.outerHeight();
 
@@ -359,8 +357,7 @@
 
             if (flat) {
                 boundElement.after(container).hide();
-            }
-            else {
+            } else {
 
                 var appendTo = opts.appendTo === "parent" ? boundElement.parent() : $(document).find(opts.appendTo);
                 if (appendTo.length !== 1) {
@@ -393,14 +390,14 @@
             });
 
 
-            if(boundElement.is(":disabled") || (opts.disabled === true)) {
+            if (boundElement.is(":disabled") || (opts.disabled === true)) {
                 disable();
             }
 
             // Prevent clicks from bubbling up to document.  This would cause it to be hidden.
             container.on("click", stopPropagation);
 
-            container.on("keydown", 'div[role="button"]', function(e) {
+            container.on("keydown", 'div[role="button"]', function (e) {
                 if (e.keyCode == 13) {
                     e.preventDefault();
                     $(this).click();
@@ -408,15 +405,21 @@
             });
 
             // Handle user typed input
-            [textInput, boundElement].forEach(function(input) {
-                input.on("change", function() { setFromTextInput(input.val()); });
-                input.on("paste", function () {
-                    setTimeout(function() { setFromTextInput(input.val()); }, 1);
+            [textInput, boundElement].forEach(function (input) {
+                input.on("change", function () {
+                    setFromTextInput(input.val());
                 });
-                input.on("keydown", function (e) { if (e.keyCode == 13) {
-                    setFromTextInput($(input).val());
-                    if (input == boundElement) hide();
-                } });
+                input.on("paste", function () {
+                    setTimeout(function () {
+                        setFromTextInput(input.val());
+                    }, 1);
+                });
+                input.on("keydown", function (e) {
+                    if (e.keyCode == 13) {
+                        setFromTextInput($(input).val());
+                        if (input == boundElement) hide();
+                    }
+                });
             });
 
             cancelButton.text(opts.cancelText);
@@ -434,7 +437,7 @@
                 isEmpty = true;
                 move();
 
-                if(flat) {
+                if (flat) {
                     //for the flat style, this is a change event
                     updateOriginalInput(true);
                 }
@@ -503,8 +506,7 @@
                 // shift+drag should snap the movement to either the x or y axis.
                 if (!e.shiftKey) {
                     shiftMovementDirection = null;
-                }
-                else if (!shiftMovementDirection) {
+                } else if (!shiftMovementDirection) {
                     var oldDragX = currentSaturation * dragWidth;
                     var oldDragY = dragHeight - (currentValue * dragHeight);
                     var furtherFromX = Math.abs(dragX - oldDragX) > Math.abs(dragY - oldDragY);
@@ -554,8 +556,7 @@
                 if (e.data && e.data.ignore) {
                     set($(e.target).closest(".sp-thumb-el").data("color"));
                     move();
-                }
-                else {
+                } else {
                     set($(e.target).closest(".sp-thumb-el").data("color"));
                     move();
 
@@ -574,7 +575,7 @@
 
             var paletteEvent = IE ? "mousedown.spectrum" : "click.spectrum touchstart.spectrum";
             paletteContainer.on(paletteEvent, ".sp-thumb-el", paletteElementClick);
-            initialColorContainer.on(paletteEvent, ".sp-thumb-el:nth-child(1)", { ignore: true }, paletteElementClick);
+            initialColorContainer.on(paletteEvent, ".sp-thumb-el:nth-child(1)", {ignore: true}, paletteElementClick);
         }
 
         function updateSelectionPaletteFromStorage() {
@@ -586,17 +587,17 @@
                     var oldPalette = localStorage[localStorageKey].split(",#");
                     if (oldPalette.length > 1) {
                         delete localStorage[localStorageKey];
-                        $.each(oldPalette, function(i, c) {
+                        $.each(oldPalette, function (i, c) {
                             addColorToSelectionPalette(c);
                         });
                     }
+                } catch (e) {
                 }
-                catch(e) { }
 
                 try {
                     selectionPalette = window.localStorage[localStorageKey].split(";");
+                } catch (e) {
                 }
-                catch (e) { }
             }
         }
 
@@ -605,7 +606,7 @@
                 var rgb = tinycolor(color).toRgbString();
                 if (!paletteLookup[rgb] && $.inArray(rgb, selectionPalette) === -1) {
                     selectionPalette.push(rgb);
-                    while(selectionPalette.length > maxSelectionSize) {
+                    while (selectionPalette.length > maxSelectionSize) {
                         selectionPalette.shift();
                     }
                 }
@@ -613,8 +614,8 @@
                 if (localStorageKey) {
                     try {
                         window.localStorage[localStorageKey] = selectionPalette.join(";");
+                    } catch (e) {
                     }
-                    catch(e) { }
                 }
             }
         }
@@ -666,30 +667,31 @@
             isDragging = true;
             container.addClass(draggingClass);
             shiftMovementDirection = null;
-            boundElement.trigger('dragstart.spectrum', [ get() ]);
+            boundElement.trigger('dragstart.spectrum', [get()]);
         }
 
         function dragStop() {
             isDragging = false;
             container.removeClass(draggingClass);
-            boundElement.trigger('dragstop.spectrum', [ get() ]);
+            boundElement.trigger('dragstop.spectrum', [get()]);
         }
 
         function setFromTextInput(value) {
-            if (abortNextInputChange) { abortNextInputChange = false; return; }
+            if (abortNextInputChange) {
+                abortNextInputChange = false;
+                return;
+            }
             if ((value === null || value === "") && allowEmpty) {
                 set(null);
                 move();
                 updateOriginalInput();
-            }
-            else {
+            } else {
                 var tiny = tinycolor(value);
                 if (tiny.isValid()) {
                     set(tiny);
                     move();
                     updateOriginalInput();
-                }
-                else {
+                } else {
                     textInput.addClass("sp-validation-error");
                 }
             }
@@ -698,8 +700,7 @@
         function toggle() {
             if (visible) {
                 hide();
-            }
-            else {
+            } else {
                 show();
             }
         }
@@ -713,7 +714,7 @@
                 return;
             }
 
-            boundElement.trigger(event, [ get() ]);
+            boundElement.trigger(event, [get()]);
 
             if (callbacks.beforeShow(get()) === false || event.isDefaultPrevented()) {
                 return;
@@ -737,7 +738,7 @@
 
             drawInitial();
             callbacks.show(colorOnShow);
-            boundElement.trigger('show.spectrum', [ colorOnShow ]);
+            boundElement.trigger('show.spectrum', [colorOnShow]);
         }
 
         function onkeydown(e) {
@@ -749,16 +750,19 @@
 
         function clickout(e) {
             // Return on right click.
-            if (e.button == 2) { return; }
+            if (e.button == 2) {
+                return;
+            }
 
             // If a drag event was happening during the mouseup, don't hide
             // on click.
-            if (isDragging) { return; }
+            if (isDragging) {
+                return;
+            }
 
             if (clickoutFiresChange) {
                 updateOriginalInput(true);
-            }
-            else {
+            } else {
                 revert();
             }
             hide();
@@ -766,7 +770,9 @@
 
         function hide() {
             // Return if hiding is unnecessary
-            if (!visible || flat) { return; }
+            if (!visible || flat) {
+                return;
+            }
             visible = false;
 
             $(doc).off("keydown.spectrum", onkeydown);
@@ -778,7 +784,7 @@
             container.addClass("sp-hidden");
 
             callbacks.hide(get());
-            boundElement.trigger('hide.spectrum', [ get() ]);
+            boundElement.trigger('hide.spectrum', [get()]);
         }
 
         function revert() {
@@ -815,7 +821,7 @@
         }
 
         function get(opts) {
-            opts = opts || { };
+            opts = opts || {};
 
             if (allowEmpty && isEmpty) {
                 return null;
@@ -826,7 +832,7 @@
                 s: currentSaturation,
                 v: currentValue,
                 a: Math.round(currentAlpha * 1000) / 1000
-            }, { format: opts.format || currentPreferredFormat });
+            }, {format: opts.format || currentPreferredFormat});
         }
 
         function isValid() {
@@ -837,7 +843,7 @@
             updateUI();
 
             callbacks.move(get());
-            boundElement.trigger('move.spectrum', [ get() ]);
+            boundElement.trigger('move.spectrum', [get()]);
         }
 
         function updateUI() {
@@ -847,7 +853,7 @@
             updateHelperLocations();
 
             // Update dragger background color (gradients take care of saturation and value).
-            var flatColor = tinycolor.fromRatio({ h: currentHue, s: 1, v: 1 });
+            var flatColor = tinycolor.fromRatio({h: currentHue, s: 1, v: 1});
             dragger.css("background-color", flatColor.toHexString());
 
             // Get a format that alpha will be included in (hex and names ignore alpha)
@@ -858,7 +864,7 @@
                 }
             }
 
-            var realColor = get({ format: format }),
+            var realColor = get({format: format}),
                 displayColor = '';
 
             //reset background info for preview element
@@ -868,16 +874,14 @@
             if (!realColor && allowEmpty) {
                 // Update the replaced elements background with icon indicating no color selection
                 previewElement.addClass("sp-clear-display");
-            }
-            else {
+            } else {
                 var realHex = realColor.toHexString(),
                     realRgb = realColor.toRgbString();
 
                 // Update the replaced elements background color (with actual selected color)
                 if (rgbaSupport || realColor.alpha === 1) {
                     previewElement.css("background-color", realRgb);
-                }
-                else {
+                } else {
                     previewElement.css("background-color", "transparent");
                     previewElement.css("filter", realColor.toFilter());
                 }
@@ -889,9 +893,8 @@
                     var gradient = "linear-gradient(left, " + realAlpha + ", " + realHex + ")";
 
                     if (IE) {
-                        alphaSliderInner.css("filter", tinycolor(realAlpha).toFilter({ gradientType: 1 }, realHex));
-                    }
-                    else {
+                        alphaSliderInner.css("filter", tinycolor(realAlpha).toFilter({gradientType: 1}, realHex));
+                    } else {
                         alphaSliderInner.css("background", "-webkit-" + gradient);
                         alphaSliderInner.css("background", "-moz-" + gradient);
                         alphaSliderInner.css("background", "-ms-" + gradient);
@@ -931,13 +934,12 @@
             var s = currentSaturation;
             var v = currentValue;
 
-            if(allowEmpty && isEmpty) {
+            if (allowEmpty && isEmpty) {
                 //if selected color is empty, hide the helpers
                 alphaSlideHelper.hide();
                 slideHelper.hide();
                 dragHelper.hide();
-            }
-            else {
+            } else {
                 //make sure helpers are visible
                 alphaSlideHelper.show();
                 slideHelper.show();
@@ -988,7 +990,7 @@
                 // we trigger the change event or input, but the input change event is also binded
                 // to some spectrum processing, that we do no need
                 abortNextInputChange = true;
-                boundElement.trigger('change', [ color ]);
+                boundElement.trigger('change', [color]);
             }
         }
 
@@ -1126,11 +1128,11 @@
 
         offsetLeft -=
             Math.min(offsetLeft, (offsetLeft + dpWidth > viewWidth && viewWidth > dpWidth) ?
-                                 Math.abs(offsetLeft + dpWidth - viewWidth) : 0);
+                Math.abs(offsetLeft + dpWidth - viewWidth) : 0);
 
         offsetTop -=
             Math.min(offsetTop, ((offsetTop + dpHeight > viewHeight && viewHeight > dpHeight) ?
-                                 Math.abs(dpHeight + inputHeight - extraY) : extraY));
+                Math.abs(dpHeight + inputHeight - extraY) : extraY));
 
         return {
             top: offsetTop,
@@ -1173,9 +1175,12 @@
      * when dragging, the x is within [0,element.width] and y is within [0,element.height]
      */
     function draggable(element, onmove, onstart, onstop) {
-        onmove = onmove || function () { };
-        onstart = onstart || function () { };
-        onstop = onstop || function () { };
+        onmove = onmove || function () {
+        };
+        onstart = onstart || function () {
+        };
+        onstop = onstop || function () {
+        };
         var doc = document;
         var dragging = false;
         var offset = {};
@@ -1249,7 +1254,7 @@
 
                 // Wait a tick before notifying observers to allow the click event
                 // to fire in Chrome.
-                setTimeout(function() {
+                setTimeout(function () {
                     onstop.apply(element, arguments);
                 }, 0);
             }
@@ -1285,30 +1290,26 @@
         if (typeof opts == "string") {
 
             var returnValue = this;
-            var args = Array.prototype.slice.call( arguments, 1 );
+            var args = Array.prototype.slice.call(arguments, 1);
 
             this.each(function () {
                 var spect = spectrums[$(this).data(dataID)];
                 if (spect) {
                     var method = spect[opts];
                     if (!method) {
-                        throw new Error( "Spectrum: no such method: '" + opts + "'" );
+                        throw new Error("Spectrum: no such method: '" + opts + "'");
                     }
 
                     if (opts == "get") {
                         returnValue = spect.get();
-                    }
-                    else if (opts == "container") {
+                    } else if (opts == "container") {
                         returnValue = spect.container;
-                    }
-                    else if (opts == "option") {
+                    } else if (opts == "option") {
                         returnValue = spect.option.apply(spect, args);
-                    }
-                    else if (opts == "destroy") {
+                    } else if (opts == "destroy") {
                         spect.destroy();
                         $(this).removeData(dataID);
-                    }
-                    else {
+                    } else {
                         method.apply(spect, args);
                     }
                 }
@@ -1343,9 +1344,9 @@
         return inputTypeColorSupport._cachedResult;
     };
 
-    $.spectrum = { };
-    $.spectrum.localization = { };
-    $.spectrum.palettes = { };
+    $.spectrum = {};
+    $.spectrum.localization = {};
+    $.spectrum.palettes = {};
 
     $.fn.spectrum.processNativeColorInputs = function () {
         var colorInputs = $("input[type=color]");
@@ -1360,7 +1361,7 @@
     // https://github.com/bgrins/TinyColor
     // Brian Grinstead, MIT License
 
-    (function() {
+    (function () {
 
         var trimLeft = /^[\s,#]+/,
             trimRight = /\s+$/,
@@ -1371,10 +1372,10 @@
             mathMax = math.max,
             mathRandom = math.random;
 
-        var tinycolor = function(color, opts) {
+        var tinycolor = function (color, opts) {
 
             color = (color) ? color : '';
-            opts = opts || { };
+            opts = opts || {};
 
             // If input is already a tinycolor, return itself
             if (color instanceof tinycolor) {
@@ -1399,93 +1400,99 @@
             // Potentially lose a little bit of precision here, but will fix issues where
             // .5 gets interpreted as half of the total, instead of half of 1
             // If it was supposed to be 128, this was already taken care of by `inputToRgb`
-            if (this._r < 1) { this._r = mathRound(this._r); }
-            if (this._g < 1) { this._g = mathRound(this._g); }
-            if (this._b < 1) { this._b = mathRound(this._b); }
+            if (this._r < 1) {
+                this._r = mathRound(this._r);
+            }
+            if (this._g < 1) {
+                this._g = mathRound(this._g);
+            }
+            if (this._b < 1) {
+                this._b = mathRound(this._b);
+            }
 
             this._ok = rgb.ok;
             this._tc_id = tinyCounter++;
         };
 
         tinycolor.prototype = {
-            isDark: function() {
+            isDark: function () {
                 return this.getBrightness() < 128;
             },
-            isLight: function() {
+            isLight: function () {
                 return !this.isDark();
             },
-            isValid: function() {
+            isValid: function () {
                 return this._ok;
             },
-            getOriginalInput: function() {
+            getOriginalInput: function () {
                 return this._originalInput;
             },
-            getFormat: function() {
+            getFormat: function () {
                 return this._format;
             },
-            getAlpha: function() {
+            getAlpha: function () {
                 return this._a;
             },
-            getBrightness: function() {
+            getBrightness: function () {
                 var rgb = this.toRgb();
                 return (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
             },
-            setAlpha: function(value) {
+            setAlpha: function (value) {
                 this._a = boundAlpha(value);
                 this._roundA = mathRound(1000 * this._a) / 1000;
                 return this;
             },
-            toHsv: function() {
+            toHsv: function () {
                 var hsv = rgbToHsv(this._r, this._g, this._b);
-                return { h: hsv.h * 360, s: hsv.s, v: hsv.v, a: this._a };
+                return {h: hsv.h * 360, s: hsv.s, v: hsv.v, a: this._a};
             },
-            toHsvString: function() {
+            toHsvString: function () {
                 var hsv = rgbToHsv(this._r, this._g, this._b);
                 var h = mathRound(hsv.h * 360), s = mathRound(hsv.s * 100), v = mathRound(hsv.v * 100);
                 return (this._a == 1) ?
-                       "hsv("  + h + ", " + s + "%, " + v + "%)" :
-                       "hsva(" + h + ", " + s + "%, " + v + "%, "+ this._roundA + ")";
+                    "hsv(" + h + ", " + s + "%, " + v + "%)" :
+                    "hsva(" + h + ", " + s + "%, " + v + "%, " + this._roundA + ")";
             },
-            toHsl: function() {
+            toHsl: function () {
                 var hsl = rgbToHsl(this._r, this._g, this._b);
-                return { h: hsl.h * 360, s: hsl.s, l: hsl.l, a: this._a };
+                return {h: hsl.h * 360, s: hsl.s, l: hsl.l, a: this._a};
             },
-            toHslString: function() {
+            toHslString: function () {
                 var hsl = rgbToHsl(this._r, this._g, this._b);
                 var h = mathRound(hsl.h * 360), s = mathRound(hsl.s * 100), l = mathRound(hsl.l * 100);
                 return (this._a == 1) ?
-                       "hsl("  + h + ", " + s + "%, " + l + "%)" :
-                       "hsla(" + h + ", " + s + "%, " + l + "%, "+ this._roundA + ")";
+                    "hsl(" + h + ", " + s + "%, " + l + "%)" :
+                    "hsla(" + h + ", " + s + "%, " + l + "%, " + this._roundA + ")";
             },
-            toHex: function(allow3Char) {
+            toHex: function (allow3Char) {
                 return rgbToHex(this._r, this._g, this._b, allow3Char);
             },
-            toHexString: function(allow3Char) {
+            toHexString: function (allow3Char) {
                 return '#' + this.toHex(allow3Char);
             },
-            toHex8: function() {
+            toHex8: function () {
                 return rgbaToHex(this._r, this._g, this._b, this._a);
             },
-            toHex8String: function() {
+            toHex8String: function () {
                 return '#' + this.toHex8();
             },
-            toRgb: function() {
-                return { r: mathRound(this._r), g: mathRound(this._g), b: mathRound(this._b), a: this._a };
+            toRgb: function () {
+                return {r: mathRound(this._r), g: mathRound(this._g), b: mathRound(this._b), a: this._a};
             },
-            toRgbString: function() {
+            toRgbString: function () {
                 return (this._a == 1) ?
-                       "rgb("  + mathRound(this._r) + ", " + mathRound(this._g) + ", " + mathRound(this._b) + ")" :
-                       "rgba(" + mathRound(this._r) + ", " + mathRound(this._g) + ", " + mathRound(this._b) + ", " + this._roundA + ")";
+                    "rgb(" + mathRound(this._r) + ", " + mathRound(this._g) + ", " + mathRound(this._b) + ")" :
+                    "rgba(" + mathRound(this._r) + ", " + mathRound(this._g) + ", " + mathRound(this._b) + ", " + this._roundA + ")";
             },
-            toPercentageRgb: function() {
-                return { r: mathRound(bound01(this._r, 255) * 100) + "%", g: mathRound(bound01(this._g, 255) * 100) + "%", b: mathRound(bound01(this._b, 255) * 100) + "%", a: this._a };
+            toPercentageRgb: function () {
+                return {r: mathRound(bound01(this._r, 255) * 100) + "%", g: mathRound(bound01(this._g, 255) * 100) + "%", b: mathRound(bound01(this._b, 255) * 100) + "%", a: this._a};
             },
-            toPercentageRgbString: function() {
+            toPercentageRgbString: function () {
                 return (this._a == 1) ?
-                       "rgb("  + mathRound(bound01(this._r, 255) * 100) + "%, " + mathRound(bound01(this._g, 255) * 100) + "%, " + mathRound(bound01(this._b, 255) * 100) + "%)" :
-                       "rgba(" + mathRound(bound01(this._r, 255) * 100) + "%, " + mathRound(bound01(this._g, 255) * 100) + "%, " + mathRound(bound01(this._b, 255) * 100) + "%, " + this._roundA + ")";
+                    "rgb(" + mathRound(bound01(this._r, 255) * 100) + "%, " + mathRound(bound01(this._g, 255) * 100) + "%, " + mathRound(bound01(this._b, 255) * 100) + "%)" :
+                    "rgba(" + mathRound(bound01(this._r, 255) * 100) + "%, " + mathRound(bound01(this._g, 255) * 100) + "%, " + mathRound(bound01(this._b, 255) * 100) + "%, " + this._roundA + ")";
             },
-            toName: function() {
+            toName: function () {
                 if (this._a === 0) {
                     return "transparent";
                 }
@@ -1496,7 +1503,7 @@
 
                 return hexNames[rgbToHex(this._r, this._g, this._b, true)] || false;
             },
-            toFilter: function(secondColor) {
+            toFilter: function (secondColor) {
                 var hex8String = '#' + rgbaToHex(this._r, this._g, this._b, this._a);
                 var secondHex8String = hex8String;
                 var gradientType = this._gradientType ? "GradientType = 1, " : "";
@@ -1506,9 +1513,9 @@
                     secondHex8String = s.toHex8String();
                 }
 
-                return "progid:DXImageTransform.Microsoft.gradient("+gradientType+"startColorstr="+hex8String+",endColorstr="+secondHex8String+")";
+                return "progid:DXImageTransform.Microsoft.gradient(" + gradientType + "startColorstr=" + hex8String + ",endColorstr=" + secondHex8String + ")";
             },
-            toString: function(format) {
+            toString: function (format) {
                 var formatSet = !!format;
                 format = format || this._format;
 
@@ -1552,7 +1559,7 @@
                 return formattedString || this.toHexString();
             },
 
-            _applyModification: function(fn, args) {
+            _applyModification: function (fn, args) {
                 var color = fn.apply(null, [this].concat([].slice.call(args)));
                 this._r = color._r;
                 this._g = color._g;
@@ -1560,62 +1567,61 @@
                 this.setAlpha(color._a);
                 return this;
             },
-            lighten: function() {
+            lighten: function () {
                 return this._applyModification(lighten, arguments);
             },
-            brighten: function() {
+            brighten: function () {
                 return this._applyModification(brighten, arguments);
             },
-            darken: function() {
+            darken: function () {
                 return this._applyModification(darken, arguments);
             },
-            desaturate: function() {
+            desaturate: function () {
                 return this._applyModification(desaturate, arguments);
             },
-            saturate: function() {
+            saturate: function () {
                 return this._applyModification(saturate, arguments);
             },
-            greyscale: function() {
+            greyscale: function () {
                 return this._applyModification(greyscale, arguments);
             },
-            spin: function() {
+            spin: function () {
                 return this._applyModification(spin, arguments);
             },
 
-            _applyCombination: function(fn, args) {
+            _applyCombination: function (fn, args) {
                 return fn.apply(null, [this].concat([].slice.call(args)));
             },
-            analogous: function() {
+            analogous: function () {
                 return this._applyCombination(analogous, arguments);
             },
-            complement: function() {
+            complement: function () {
                 return this._applyCombination(complement, arguments);
             },
-            monochromatic: function() {
+            monochromatic: function () {
                 return this._applyCombination(monochromatic, arguments);
             },
-            splitcomplement: function() {
+            splitcomplement: function () {
                 return this._applyCombination(splitcomplement, arguments);
             },
-            triad: function() {
+            triad: function () {
                 return this._applyCombination(triad, arguments);
             },
-            tetrad: function() {
+            tetrad: function () {
                 return this._applyCombination(tetrad, arguments);
             }
         };
 
         // If input is an object, force 1 into "1.0" to handle ratios properly
         // String input requires "1.0" as input, so 1 will be treated as 1
-        tinycolor.fromRatio = function(color, opts) {
+        tinycolor.fromRatio = function (color, opts) {
             if (typeof color == "object") {
                 var newColor = {};
                 for (var i in color) {
                     if (color.hasOwnProperty(i)) {
                         if (i === "a") {
                             newColor[i] = color[i];
-                        }
-                        else {
+                        } else {
                             newColor[i] = convertToPercentage(color[i]);
                         }
                     }
@@ -1643,7 +1649,7 @@
         //
         function inputToRGB(color) {
 
-            var rgb = { r: 0, g: 0, b: 0 };
+            var rgb = {r: 0, g: 0, b: 0};
             var a = 1;
             var ok = false;
             var format = false;
@@ -1657,15 +1663,13 @@
                     rgb = rgbToRgb(color.r, color.g, color.b);
                     ok = true;
                     format = String(color.r).substr(-1) === "%" ? "prgb" : "rgb";
-                }
-                else if (color.hasOwnProperty("h") && color.hasOwnProperty("s") && color.hasOwnProperty("v")) {
+                } else if (color.hasOwnProperty("h") && color.hasOwnProperty("s") && color.hasOwnProperty("v")) {
                     color.s = convertToPercentage(color.s);
                     color.v = convertToPercentage(color.v);
                     rgb = hsvToRgb(color.h, color.s, color.v);
                     ok = true;
                     format = "hsv";
-                }
-                else if (color.hasOwnProperty("h") && color.hasOwnProperty("s") && color.hasOwnProperty("l")) {
+                } else if (color.hasOwnProperty("h") && color.hasOwnProperty("s") && color.hasOwnProperty("l")) {
                     color.s = convertToPercentage(color.s);
                     color.l = convertToPercentage(color.l);
                     rgb = hslToRgb(color.h, color.s, color.l);
@@ -1702,7 +1706,7 @@
         // <http://www.w3.org/TR/css3-color/>
         // *Assumes:* r, g, b in [0, 255] or [0, 1]
         // *Returns:* { r, g, b } in [0, 255]
-        function rgbToRgb(r, g, b){
+        function rgbToRgb(r, g, b) {
             return {
                 r: bound01(r, 255) * 255,
                 g: bound01(g, 255) * 255,
@@ -1723,22 +1727,27 @@
             var max = mathMax(r, g, b), min = mathMin(r, g, b);
             var h, s, l = (max + min) / 2;
 
-            if(max == min) {
+            if (max == min) {
                 h = s = 0; // achromatic
-            }
-            else {
+            } else {
                 var d = max - min;
                 s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-                switch(max) {
-                    case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-                    case g: h = (b - r) / d + 2; break;
-                    case b: h = (r - g) / d + 4; break;
+                switch (max) {
+                    case r:
+                        h = (g - b) / d + (g < b ? 6 : 0);
+                        break;
+                    case g:
+                        h = (b - r) / d + 2;
+                        break;
+                    case b:
+                        h = (r - g) / d + 4;
+                        break;
                 }
 
                 h /= 6;
             }
 
-            return { h: h, s: s, l: l };
+            return {h: h, s: s, l: l};
         }
 
         // `hslToRgb`
@@ -1753,26 +1762,25 @@
             l = bound01(l, 100);
 
             function hue2rgb(p, q, t) {
-                if(t < 0) t += 1;
-                if(t > 1) t -= 1;
-                if(t < 1/6) return p + (q - p) * 6 * t;
-                if(t < 1/2) return q;
-                if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                if (t < 0) t += 1;
+                if (t > 1) t -= 1;
+                if (t < 1 / 6) return p + (q - p) * 6 * t;
+                if (t < 1 / 2) return q;
+                if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
                 return p;
             }
 
-            if(s === 0) {
+            if (s === 0) {
                 r = g = b = l; // achromatic
-            }
-            else {
+            } else {
                 var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
                 var p = 2 * l - q;
-                r = hue2rgb(p, q, h + 1/3);
+                r = hue2rgb(p, q, h + 1 / 3);
                 g = hue2rgb(p, q, h);
-                b = hue2rgb(p, q, h - 1/3);
+                b = hue2rgb(p, q, h - 1 / 3);
             }
 
-            return { r: r * 255, g: g * 255, b: b * 255 };
+            return {r: r * 255, g: g * 255, b: b * 255};
         }
 
         // `rgbToHsv`
@@ -1791,18 +1799,23 @@
             var d = max - min;
             s = max === 0 ? 0 : d / max;
 
-            if(max == min) {
+            if (max == min) {
                 h = 0; // achromatic
-            }
-            else {
-                switch(max) {
-                    case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-                    case g: h = (b - r) / d + 2; break;
-                    case b: h = (r - g) / d + 4; break;
+            } else {
+                switch (max) {
+                    case r:
+                        h = (g - b) / d + (g < b ? 6 : 0);
+                        break;
+                    case g:
+                        h = (b - r) / d + 2;
+                        break;
+                    case b:
+                        h = (r - g) / d + 4;
+                        break;
                 }
                 h /= 6;
             }
-            return { h: h, s: s, v: v };
+            return {h: h, s: s, v: v};
         }
 
         // `hsvToRgb`
@@ -1825,7 +1838,7 @@
                 g = [t, v, v, q, p, p][mod],
                 b = [p, p, t, v, v, q][mod];
 
-            return { r: r * 255, g: g * 255, b: b * 255 };
+            return {r: r * 255, g: g * 255, b: b * 255};
         }
 
         // `rgbToHex`
@@ -1847,6 +1860,7 @@
 
             return hex.join("");
         }
+
         // `rgbaToHex`
         // Converts an RGBA color plus alpha transparency to hex
         // Assumes r, g, b and a are contained in the set [0, 255]
@@ -1867,12 +1881,16 @@
         // Can be called with any tinycolor input
         tinycolor.equals = function (color1, color2) {
             // empty stay empty
-            if (!color1 && !color2) { return true; }
+            if (!color1 && !color2) {
+                return true;
+            }
             // Only one of both are empty
-            if (!color1 || !color2) { return false; }
+            if (!color1 || !color2) {
+                return false;
+            }
             return tinycolor(color1).toRgbString() == tinycolor(color2).toRgbString();
         };
-        tinycolor.random = function() {
+        tinycolor.random = function () {
             return tinycolor.fromRatio({
                 r: mathRandom(),
                 g: mathRandom(),
@@ -1906,7 +1924,7 @@
             return tinycolor(color).desaturate(100);
         }
 
-        function lighten (color, amount) {
+        function lighten(color, amount) {
             amount = (amount === 0) ? 0 : (amount || 10);
             var hsl = tinycolor(color).toHsl();
             hsl.l += amount / 100;
@@ -1917,13 +1935,13 @@
         function brighten(color, amount) {
             amount = (amount === 0) ? 0 : (amount || 10);
             var rgb = tinycolor(color).toRgb();
-            rgb.r = mathMax(0, mathMin(255, rgb.r - mathRound(255 * - (amount / 100))));
-            rgb.g = mathMax(0, mathMin(255, rgb.g - mathRound(255 * - (amount / 100))));
-            rgb.b = mathMax(0, mathMin(255, rgb.b - mathRound(255 * - (amount / 100))));
+            rgb.r = mathMax(0, mathMin(255, rgb.r - mathRound(255 * -(amount / 100))));
+            rgb.g = mathMax(0, mathMin(255, rgb.g - mathRound(255 * -(amount / 100))));
+            rgb.b = mathMax(0, mathMin(255, rgb.b - mathRound(255 * -(amount / 100))));
             return tinycolor(rgb);
         }
 
-        function darken (color, amount) {
+        function darken(color, amount) {
             amount = (amount === 0) ? 0 : (amount || 10);
             var hsl = tinycolor(color).toHsl();
             hsl.l -= amount / 100;
@@ -1956,8 +1974,8 @@
             var h = hsl.h;
             return [
                 tinycolor(color),
-                tinycolor({ h: (h + 120) % 360, s: hsl.s, l: hsl.l }),
-                tinycolor({ h: (h + 240) % 360, s: hsl.s, l: hsl.l })
+                tinycolor({h: (h + 120) % 360, s: hsl.s, l: hsl.l}),
+                tinycolor({h: (h + 240) % 360, s: hsl.s, l: hsl.l})
             ];
         }
 
@@ -1966,9 +1984,9 @@
             var h = hsl.h;
             return [
                 tinycolor(color),
-                tinycolor({ h: (h + 90) % 360, s: hsl.s, l: hsl.l }),
-                tinycolor({ h: (h + 180) % 360, s: hsl.s, l: hsl.l }),
-                tinycolor({ h: (h + 270) % 360, s: hsl.s, l: hsl.l })
+                tinycolor({h: (h + 90) % 360, s: hsl.s, l: hsl.l}),
+                tinycolor({h: (h + 180) % 360, s: hsl.s, l: hsl.l}),
+                tinycolor({h: (h + 270) % 360, s: hsl.s, l: hsl.l})
             ];
         }
 
@@ -1977,8 +1995,8 @@
             var h = hsl.h;
             return [
                 tinycolor(color),
-                tinycolor({ h: (h + 72) % 360, s: hsl.s, l: hsl.l}),
-                tinycolor({ h: (h + 216) % 360, s: hsl.s, l: hsl.l})
+                tinycolor({h: (h + 72) % 360, s: hsl.s, l: hsl.l}),
+                tinycolor({h: (h + 216) % 360, s: hsl.s, l: hsl.l})
             ];
         }
 
@@ -1990,7 +2008,7 @@
             var part = 360 / slices;
             var ret = [tinycolor(color)];
 
-            for (hsl.h = ((hsl.h - (part * results >> 1)) + 720) % 360; --results; ) {
+            for (hsl.h = ((hsl.h - (part * results >> 1)) + 720) % 360; --results;) {
                 hsl.h = (hsl.h + part) % 360;
                 ret.push(tinycolor(hsl));
             }
@@ -2005,7 +2023,7 @@
             var modification = 1 / results;
 
             while (results--) {
-                ret.push(tinycolor({ h: h, s: s, v: v}));
+                ret.push(tinycolor({h: h, s: s, v: v}));
                 v = (v + modification) % 1;
             }
 
@@ -2015,7 +2033,7 @@
         // Utility Functions
         // ---------------------
 
-        tinycolor.mix = function(color1, color2, amount) {
+        tinycolor.mix = function (color1, color2, amount) {
             amount = (amount === 0) ? 0 : (amount || 50);
 
             var rgb1 = tinycolor(color1).toRgb();
@@ -2041,7 +2059,7 @@
                 r: rgb2.r * w1 + rgb1.r * w2,
                 g: rgb2.g * w1 + rgb1.g * w2,
                 b: rgb2.b * w1 + rgb1.b * w2,
-                a: rgb2.a * p  + rgb1.a * (1 - p)
+                a: rgb2.a * p + rgb1.a * (1 - p)
             };
 
             return tinycolor(rgba);
@@ -2056,7 +2074,7 @@
         // Analyze the 2 colors and returns an object with the following properties:
         //    `brightness`: difference in brightness between the two colors
         //    `color`: difference in color/hue between the two colors
-        tinycolor.readability = function(color1, color2) {
+        tinycolor.readability = function (color1, color2) {
             var c1 = tinycolor(color1);
             var c2 = tinycolor(color2);
             var rgb1 = c1.toRgb();
@@ -2080,7 +2098,7 @@
         // Ensure that foreground and background color combinations provide sufficient contrast.
         // *Example*
         //    tinycolor.isReadable("#000", "#111") => false
-        tinycolor.isReadable = function(color1, color2) {
+        tinycolor.isReadable = function (color1, color2) {
             var readability = tinycolor.readability(color1, color2);
             return readability.brightness > 125 && readability.color > 500;
         };
@@ -2090,11 +2108,11 @@
         // colors for that base, returns the most readable color.
         // *Example*
         //    tinycolor.mostReadable("#123", ["#fff", "#000"]) => "#000"
-        tinycolor.mostReadable = function(baseColor, colorList) {
+        tinycolor.mostReadable = function (baseColor, colorList) {
             var bestColor = null;
             var bestScore = 0;
             var bestIsReadable = false;
-            for (var i=0; i < colorList.length; i++) {
+            for (var i = 0; i < colorList.length; i++) {
 
                 // We normalize both around the "acceptable" breaking point,
                 // but rank brightness constrast higher than hue.
@@ -2103,9 +2121,9 @@
                 var readable = readability.brightness > 125 && readability.color > 500;
                 var score = 3 * (readability.brightness / 125) + (readability.color / 500);
 
-                if ((readable && ! bestIsReadable) ||
+                if ((readable && !bestIsReadable) ||
                     (readable && bestIsReadable && score > bestScore) ||
-                    ((! readable) && (! bestIsReadable) && score > bestScore)) {
+                    ((!readable) && (!bestIsReadable) && score > bestScore)) {
                     bestIsReadable = readable;
                     bestScore = score;
                     bestColor = tinycolor(colorList[i]);
@@ -2279,7 +2297,7 @@
 
         // `{ 'name1': 'val1' }` becomes `{ 'val1': 'name1' }`
         function flip(o) {
-            var flipped = { };
+            var flipped = {};
             for (var i in o) {
                 if (o.hasOwnProperty(i)) {
                     flipped[o[i]] = i;
@@ -2301,7 +2319,9 @@
 
         // Take input from [0, n] and return it as [0, 1]
         function bound01(n, max) {
-            if (isOnePointZero(n)) { n = "100%"; }
+            if (isOnePointZero(n)) {
+                n = "100%";
+            }
 
             var processPercent = isPercentage(n);
             n = mathMin(max, mathMax(0, parseFloat(n)));
@@ -2359,12 +2379,13 @@
         function convertDecimalToHex(d) {
             return Math.round(parseFloat(d) * 255).toString(16);
         }
+
         // Converts a hex value to a decimal
         function convertHexToDecimal(h) {
             return (parseIntFromHex(h) / 255);
         }
 
-        var matchers = (function() {
+        var matchers = (function () {
 
             // <http://www.w3.org/TR/css3-values/#integers>
             var CSS_INTEGER = "[-\\+]?\\d+%?";
@@ -2399,14 +2420,13 @@
         // based on detected format.  Returns `{ r, g, b }` or `{ h, s, l }` or `{ h, s, v}`
         function stringInputToObject(color) {
 
-            color = color.replace(trimLeft,'').replace(trimRight, '').toLowerCase();
+            color = color.replace(trimLeft, '').replace(trimRight, '').toLowerCase();
             var named = false;
             if (names[color]) {
                 color = names[color];
                 named = true;
-            }
-            else if (color == 'transparent') {
-                return { r: 0, g: 0, b: 0, a: 0, format: "name" };
+            } else if (color == 'transparent') {
+                return {r: 0, g: 0, b: 0, a: 0, format: "name"};
             }
 
             // Try to match string input using regular expressions.
@@ -2415,22 +2435,22 @@
             // This way the result will be the same whether the tinycolor is initialized with string or object.
             var match;
             if ((match = matchers.rgb.exec(color))) {
-                return { r: match[1], g: match[2], b: match[3] };
+                return {r: match[1], g: match[2], b: match[3]};
             }
             if ((match = matchers.rgba.exec(color))) {
-                return { r: match[1], g: match[2], b: match[3], a: match[4] };
+                return {r: match[1], g: match[2], b: match[3], a: match[4]};
             }
             if ((match = matchers.hsl.exec(color))) {
-                return { h: match[1], s: match[2], l: match[3] };
+                return {h: match[1], s: match[2], l: match[3]};
             }
             if ((match = matchers.hsla.exec(color))) {
-                return { h: match[1], s: match[2], l: match[3], a: match[4] };
+                return {h: match[1], s: match[2], l: match[3], a: match[4]};
             }
             if ((match = matchers.hsv.exec(color))) {
-                return { h: match[1], s: match[2], v: match[3] };
+                return {h: match[1], s: match[2], v: match[3]};
             }
             if ((match = matchers.hsva.exec(color))) {
-                return { h: match[1], s: match[2], v: match[3], a: match[4] };
+                return {h: match[1], s: match[2], v: match[3], a: match[4]};
             }
             if ((match = matchers.hex8.exec(color))) {
                 return {

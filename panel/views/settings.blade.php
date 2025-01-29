@@ -514,7 +514,7 @@
                         $.post($(form).attr('data-action'), $(form).serialize(), function () {
                         }, 'json');
 
-                    }, 600);
+                    }, 250);
 
                 });
             });

@@ -1,4 +1,4 @@
-(function(root, factory) {
+(function (root, factory) {
     'use strict';
     if (typeof define === 'function' && define.amd) {
         define('RowSorter', factory);
@@ -7,27 +7,26 @@
     } else {
         root.RowSorter = factory();
     }
-})(this, function() {
+})(this, function () {
     'use strict';
 
-    var $ = window.jQuery||false,
+    var $ = window.jQuery || false,
         arrProto = Array.prototype,
         touchSupport = !!('ontouchstart' in document),
         helperAttrName = 'data-rowsorter',
         defaults = {
-            handler         : null,
-            tbody           : true,
-            tableClass      : 'sorting-table',
-            dragClass       : 'sorting-row',
-            stickTopRows    : 0,
-            stickBottomRows : 0,
-            onDragStart     : null,
-            onDragEnd       : null,
-            onDrop          : null
+            handler: null,
+            tbody: true,
+            tableClass: 'sorting-table',
+            dragClass: 'sorting-row',
+            stickTopRows: 0,
+            stickBottomRows: 0,
+            onDragStart: null,
+            onDragEnd: null,
+            onDrop: null
         };
 
-    function RowSorter(table, opts)
-    {
+    function RowSorter(table, opts) {
         if (!(this instanceof RowSorter)) {
             return new RowSorter(table, opts);
         }
@@ -40,8 +39,8 @@
             throw new Error('Table not found.');
         }
 
-        if (table[ helperAttrName ] instanceof RowSorter) {
-            return table[ helperAttrName ];
+        if (table[helperAttrName] instanceof RowSorter) {
+            return table[helperAttrName];
         }
 
         this._options = extend(defaults, opts);
@@ -63,12 +62,11 @@
         this._touchend = bind(touchend, this);
         this._touchId = null;
 
-        this._table[ helperAttrName ] = this;
+        this._table[helperAttrName] = this;
         this.init();
     }
 
-    RowSorter.prototype.init = function()
-    {
+    RowSorter.prototype.init = function () {
         if (this._options.tbody) {
             var bodies = this._table.getElementsByTagName('tbody');
             if (bodies.length > 0) {
@@ -108,8 +106,8 @@
         // if document has onselectstart event (old-ie)
         if ('onselectstart' in document) {
             var that = this;
-            addEvent(document, 'selectstart', function(e) {
-                var ev = e||window.event;
+            addEvent(document, 'selectstart', function (e) {
+                var ev = e || window.event;
                 // if dragging status is true
                 if (that._draggingRow !== null) {
                     // prevent default
@@ -124,8 +122,7 @@
         }
     };
 
-    function mousedown(ev)
-    {
+    function mousedown(ev) {
         ev = ev || window.event;
         if (this._start(ev.target || ev.srcElement, ev.clientY)) {
             if (ev.preventDefault) {
@@ -138,8 +135,7 @@
         return true;
     }
 
-    function touchstart(ev)
-    {
+    function touchstart(ev) {
         if (ev.touches.length === 1) {
             var touch = ev.touches[0],
                 target = document.elementFromPoint(touch.clientX, touch.clientY);
@@ -157,8 +153,7 @@
         return true;
     }
 
-    RowSorter.prototype._start = function(target, clientY)
-    {
+    RowSorter.prototype._start = function (target, clientY) {
         if (this._draggingRow) {
             this._end();
         }
@@ -230,15 +225,13 @@
         return true;
     };
 
-    function mousemove(ev)
-    {
+    function mousemove(ev) {
         ev = ev || window.event;
         this._move(ev.target || ev.srcElement, ev.clientY);
         return true;
     }
 
-    function touchmove(ev)
-    {
+    function touchmove(ev) {
         if (ev.touches.length === 1) {
             var touch = ev.touches[0],
                 target = document.elementFromPoint(touch.clientX, touch.clientY);
@@ -250,8 +243,7 @@
         return true;
     }
 
-    RowSorter.prototype._move = function(target, clientY)
-    {
+    RowSorter.prototype._move = function (target, clientY) {
         // if there is not a draggingRow, kill the event.
         if (!this._draggingRow) {
             return;
@@ -295,20 +287,17 @@
         }
     };
 
-    function mouseup()
-    {
+    function mouseup() {
         this._end();
     }
 
-    function touchend(ev)
-    {
+    function touchend(ev) {
         if (ev.changedTouches.length > 0 && this._touchId === ev.changedTouches[0].identifier) {
             this._end();
         }
     }
 
-    RowSorter.prototype._end = function()
-    {
+    RowSorter.prototype._end = function () {
         // if there is not a draggingRow, kill the event.
         if (!this._draggingRow) {
             return true;
@@ -361,8 +350,7 @@
 
     // @deprecated
     // bad method name, use undo instead
-    RowSorter.prototype.revert = function()
-    {
+    RowSorter.prototype.revert = function () {
         if (this._lastSort !== null) {
             var lastSort = this._lastSort,
                 old_index = lastSort.oldIndex,
@@ -372,9 +360,9 @@
 
             if (rows.length > 1) {
                 if (old_index < max_index) {
-                    this._tbody.insertBefore(rows[ new_index ], rows[ old_index + (new_index > old_index ? 0 : 1) ]);
+                    this._tbody.insertBefore(rows[new_index], rows[old_index + (new_index > old_index ? 0 : 1)]);
                 } else {
-                    this._tbody.appendChild(rows[ new_index ]);
+                    this._tbody.appendChild(rows[new_index]);
                 }
             }
 
@@ -384,9 +372,8 @@
 
     RowSorter.prototype.undo = RowSorter.prototype.revert;
 
-    RowSorter.prototype.destroy = function()
-    {
-        this._table[ helperAttrName ] = null;
+    RowSorter.prototype.destroy = function () {
+        this._table[helperAttrName] = null;
 
         if (this._ended === false) {
             this._end();
@@ -413,8 +400,7 @@
 
     // @deprecated
     // bad method name, use undo instead
-    RowSorter.revert = function(table, suppressError)
-    {
+    RowSorter.revert = function (table, suppressError) {
         var sorter = getSorterObject(table);
 
         if (sorter === null && suppressError === false) {
@@ -428,8 +414,7 @@
 
     RowSorter.undo = RowSorter.revert;
 
-    RowSorter.destroy = function(table, suppressError)
-    {
+    RowSorter.destroy = function (table, suppressError) {
         var sorter = getSorterObject(table);
 
         if (sorter === null && suppressError === false) {
@@ -447,8 +432,7 @@
      * @param  {Element}        table
      * @return {RowSorter|null}
      */
-    function getSorterObject(table)
-    {
+    function getSorterObject(table) {
         if (table instanceof RowSorter) {
             return table;
         }
@@ -457,8 +441,8 @@
             table = findTable(table);
         }
 
-        if (is(table, 'table') && helperAttrName in table && table[ helperAttrName ] instanceof RowSorter) {
-            return table[ helperAttrName ];
+        if (is(table, 'table') && helperAttrName in table && table[helperAttrName] instanceof RowSorter) {
+            return table[helperAttrName];
         }
         return null;
     }
@@ -469,8 +453,7 @@
      * @param  {string}     query
      * @return {mixed|null}
      */
-    function findTable(query)
-    {
+    function findTable(query) {
         var elements = qsa(document, query);
         if (elements.length > 0 && is(elements[0], 'table')) {
             return elements[0];
@@ -485,8 +468,7 @@
      * @param  {string}  tag
      * @return {boolean}
      */
-    function is(obj, tag)
-    {
+    function is(obj, tag) {
         return obj && typeof obj === 'object' &&
             'nodeName' in obj && obj.nodeName === tag.toUpperCase();
     }
@@ -498,8 +480,7 @@
      * @param {Element} reference
      * @param {Number}  direction
      */
-    function moveRow(row, reference, direction)
-    {
+    function moveRow(row, reference, direction) {
         var parent = row.parentNode;
         // 1 = down, -1 = up
         if (direction === 1) {
@@ -520,11 +501,10 @@
      * @param  {Element} row
      * @return {Number}
      */
-    function rowIndex(tbody, row)
-    {
+    function rowIndex(tbody, row) {
         var rows = tbody.rows, length = rows.length, i = 0;
         for (; i < length; i++) {
-            if (row === rows[ i ]) {
+            if (row === rows[i]) {
                 return i;
             }
         }
@@ -538,8 +518,7 @@
      * @param {string}   type
      * @param {Function} fn
      */
-    function addEvent(obj, type, fn)
-    {
+    function addEvent(obj, type, fn) {
         if (obj.attachEvent) {
             obj.attachEvent('on' + type, fn);
         } else {
@@ -554,8 +533,7 @@
      * @param {string}   type
      * @param {Function} fn
      */
-    function removeEvent(obj, type, fn)
-    {
+    function removeEvent(obj, type, fn) {
         if (obj.detachEvent) {
             obj.detachEvent('on' + type, fn);
         } else {
@@ -563,8 +541,7 @@
         }
     }
 
-    function trim(str)
-    {
+    function trim(str) {
         return str.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
     }
 
@@ -575,8 +552,7 @@
      * @param  {string}  cls
      * @return {boolean}
      */
-    function hasClass(element, cls)
-    {
+    function hasClass(element, cls) {
         cls = trim(cls);
         if (cls === '') {
             return false;
@@ -586,7 +562,7 @@
             var classes = cls.replace(/\s+/g, ' ').split(' '),
                 i = 0, len = classes.length;
             for (; i < len; i++) {
-                if (hasClass(element, classes[ i ]) === false) {
+                if (hasClass(element, classes[i]) === false) {
                     return false;
                 }
             }
@@ -606,8 +582,7 @@
      * @param {Element} element
      * @param {string}  cls
      */
-    function addClass(element, cls)
-    {
+    function addClass(element, cls) {
         cls = trim(cls);
         if (cls === '') {
             return;
@@ -617,7 +592,7 @@
             var classes = cls.replace(/\s+/g, ' ').split(' '),
                 i = 0, len = classes.length;
             for (; i < len; i++) {
-                addClass(element, classes[ i ]);
+                addClass(element, classes[i]);
             }
             return;
         }
@@ -637,8 +612,7 @@
      * @param {Element} element
      * @param {string}  cls
      */
-    function removeClass(element, cls)
-    {
+    function removeClass(element, cls) {
         cls = trim(cls);
         if (cls === '') {
             return;
@@ -648,7 +622,7 @@
             var classes = cls.replace(/\s+/g, ' ').split(' '),
                 i = 0, len = classes.length;
             for (; i < len; i++) {
-                removeClass(element, classes[ i ]);
+                removeClass(element, classes[i]);
             }
             return;
         }
@@ -662,8 +636,7 @@
         }
     }
 
-    function bind(fn, context)
-    {
+    function bind(fn, context) {
         if (Function.prototype.bind) {
             return fn.bind(context);
         }
@@ -679,8 +652,7 @@
      * @param  {Object} from Extender Object
      * @return {Object}      New extended Object
      */
-    function extend(base, from)
-    {
+    function extend(base, from) {
         if ($) {
             return $.extend({}, base, from);
         }
@@ -688,14 +660,14 @@
         var obj = {}, key;
         for (key in base) {
             if (base.hasOwnProperty(key)) {
-                obj[ key ] = base[ key ];
+                obj[key] = base[key];
             }
         }
 
         if (from && '[object Object]' === Object.prototype.toString.call(from)) {
             for (key in from) {
                 if (from.hasOwnProperty(key)) {
-                    obj[ key ] = from[ key ];
+                    obj[key] = from[key];
                 }
             }
         }
@@ -709,8 +681,7 @@
      * @param  {string}  query
      * @return {Array}
      */
-    function qsa(element, query)
-    {
+    function qsa(element, query) {
         if ($) {
             return $.makeArray($(element).find(query));
         }
@@ -724,8 +695,7 @@
      * @param  {string}  tag
      * @return {Element|null}
      */
-    function closest(element, tag)
-    {
+    function closest(element, tag) {
         var c = 1, max = 20, found = element;
         tag = tag.toLowerCase();
         while (found.tagName && found.tagName.toLowerCase() !== tag) {
@@ -745,14 +715,13 @@
      * @param  {mixed}  search
      * @return {Number}
      */
-    function inArray(arr, search)
-    {
+    function inArray(arr, search) {
         if (arrProto.indexOf) {
             return arrProto.indexOf.call(arr, search);
         }
 
         for (var i = 0, len = arr.length; i < len; i++) {
-            if (search === arr[ i ]) {
+            if (search === arr[i]) {
                 return i;
             }
         }
@@ -762,9 +731,9 @@
     // if jQuery, register plugin.
     if ($) {
         $.fn.extend({
-            rowSorter: function(options) {
+            rowSorter: function (options) {
                 var sorters = [];
-                this.each(function(index, element) {
+                this.each(function (index, element) {
                     sorters.push(new RowSorter(element, options));
                 });
                 return sorters.length === 1 ? sorters[0] : sorters;
