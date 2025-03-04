@@ -39,8 +39,8 @@ $form         = new Forms;
 // Attempt to delete logo from existing channel
 if ( ! empty($_GET['logo']) && $_GET['logo'] === 'delete' && isset($channels[$_GET['channel']]['logo'])) {
 
-    @unlink($channels[$_GET['e']]['logo']);
-    exit;
+    @unlink($channels[$_GET['channel']]['logo']);
+    die("Deleted logo");
 
 }
 
@@ -72,8 +72,8 @@ if ( ! empty($_POST)) {
             $filename = "logo.".time();
 
             // Before continue, delete old image
-            if ($_GET['action'] !== 'add' && ! empty($channels[$_GET['e']]['logo'])) {
-                @unlink("{$channels[$_GET['e']]['logo']}"); // Delete old image
+            if ($_GET['action'] !== 'add' && ! empty($channels[$_GET['channel']]['logo'])) {
+                @unlink($channels[$_GET['channel']]['logo']); // Delete old image
             }
 
             // Attempt to save
