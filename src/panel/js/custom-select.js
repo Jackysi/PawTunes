@@ -8,7 +8,6 @@
  * This file is part of the PawTunes open-source project.
  * Feel free to contribute or provide feedback via the project URL.
  */
-
 (function ($) {
 
     "use strict";

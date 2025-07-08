@@ -15,7 +15,7 @@
  * Hint IDE already defined variables from parent (this file is included)
  * Returns default image if not found
  *
- * @var \lib\PawTunes $pawtunes
+ * @var lib\PawTunes $pawtunes
  */
 
 if ( ! isset($panel)) {

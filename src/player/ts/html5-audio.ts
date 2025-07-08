@@ -8,7 +8,6 @@
  * This file is part of the PawTunes open-source project.
  * Contributions and feedback are welcome! Visit the repository or website for more details.
  */
-
 import {AudioStatus, Format, PawMediaSource} from './types';
 import {PawTunesEvents} from "./pawtunes-events";
 
@@ -158,7 +157,7 @@ export default class HTML5Audio extends PawTunesEvents {
 
         super();
 
-        // Default if not specified
+        // Default if isn't specified
         if (elm === "")
             elm = this.selectorsPrefix;
 
@@ -558,11 +557,11 @@ export default class HTML5Audio extends PawTunesEvents {
                 // UI should react based on Media Volume, not internal value
                 if (!this.audio) return;
                 this.volume = Math.round(this.audio.volume * 100);
+                console.warn(this.volume);
 
                 // If volume is 0, mute else unmute
-                this.audio.muted = this.volume === 0;
+                this.audio.muted = this.volume < 1;
                 this.updateUI('volumechange');
-
                 break;
 
             default:

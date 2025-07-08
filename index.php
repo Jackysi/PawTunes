@@ -63,7 +63,6 @@ try {
         exit;
     }
 
-
     // Template loader
     if ( ! is_file("{$templates[ $pawtunes->config( 'template' ) ][ 'path' ]}/{$templates[ $pawtunes->config( 'template' ) ][ 'template' ]}")) {
         die('Unable to find the template file!');
@@ -76,7 +75,7 @@ try {
     // Vars
     $output = $pawtunes->template($output, $pawtunes->getTemplateEngineOpts());
 
-} catch (Throwable|Exception $e) {
+} catch (Throwable $e) {
 
     // Catch errors, incl. PHP ones
     $pawtunes->writeLog('player_errors', "FATAL ERROR: {$e->getMessage()}");

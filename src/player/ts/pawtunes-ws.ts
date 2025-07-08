@@ -8,7 +8,6 @@
  * This file is part of the PawTunes open-source project.
  * Contributions and feedback are welcome! Visit the repository or website for more details.
  */
-
 import PawTunes from "./pawtunes";
 
 export default class PawtunesWS {

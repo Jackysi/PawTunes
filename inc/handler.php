@@ -14,7 +14,7 @@
 /**
  * Hint IDE already defined variables from parent (this file is included)
  *
- * @var \lib\PawTunes $pawtunes
+ * @var lib\PawTunes $pawtunes
  * @var array $templates
  * @var lib\Cache $cache
  */

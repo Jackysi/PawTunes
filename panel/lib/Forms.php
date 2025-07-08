@@ -9,7 +9,7 @@
  * @repository   https://github.com/Jackysi/pawtunes
  * This file is part of the PawTunes open-source project.
  * Contributions and feedback are welcome! Visit the repository or website for more details.
- * @TODO         needs a rewrite sometime
+ * @TODO         needs a rewrite
  */
 class Forms
 {
@@ -18,6 +18,7 @@ class Forms
      * @var array List of form inputs.
      */
     public array $fields = [];
+
     /**
      * @var string|null Stores the generated HTML.
      */
@@ -34,7 +35,6 @@ class Forms
     public function append($field): void
     {
         $this->fields[] = $field;
-
     }
 
 
@@ -47,7 +47,6 @@ class Forms
     {
         $this->fields = [];
         $this->html   = null;
-
     }
 
 
@@ -87,7 +86,6 @@ class Forms
         $this->html .= $output;
 
         return $output;
-
     }
 
 
@@ -158,7 +156,6 @@ class Forms
         $output .= '</div>';
 
         return $output;
-
     }
 
 
@@ -285,7 +282,6 @@ class Forms
         }
 
         return $output;
-
     }
 
 
@@ -323,7 +319,6 @@ class Forms
         }
 
         return implode(' ', $attributes);
-
     }
 
 }
