@@ -68,24 +68,31 @@ pre .text-label {
     &.history {
         overflow-y: scroll;
         max-height: 80vh;
+        margin-top: .4rem;
     }
 
     .changelog-heading {
         background: #fafafa;
-        padding: 1.2rem 1rem;
+        padding: 1rem;
         margin-bottom: .5rem;
         cursor: pointer;
         box-shadow: 0 .1rem 0 rgba(#000, .05);
         border-radius: .3rem;
         border-bottom: .1rem solid #fff;
+        transition: background-color 120ms;
 
         &:hover {
             background-color: #f5f5f5;
+            transition: none;
         }
 
         h3 {
             padding: 0;
             margin: 0;
+        }
+
+        i {
+            transition: transform 150ms ease;
         }
 
         &.open {
