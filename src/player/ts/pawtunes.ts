@@ -1607,7 +1607,7 @@ export default class PawTunes extends HTML5Audio {
 
                 // If volume is 0, mute
                 if (!this.isNoVolume) {
-                    if (this.volume === 0) {
+                    if (this.volume < 1) {
 
                         this._('mute', (el: HTMLElement) => el.classList.add('hidden'))
                         this._('unmute', (el: HTMLElement) => el.classList.remove('hidden'))
