@@ -69,6 +69,41 @@ pre .text-label {
         overflow-y: scroll;
         max-height: 80vh;
     }
+
+    .changelog-heading {
+        background: #fafafa;
+        padding: 1.2rem 1rem;
+        margin-bottom: .5rem;
+        cursor: pointer;
+        box-shadow: 0 .1rem 0 rgba(#000, .05);
+        border-radius: .3rem;
+        border-bottom: .1rem solid #fff;
+
+        &:hover {
+            background-color: #f5f5f5;
+        }
+
+        h3 {
+            padding: 0;
+            margin: 0;
+        }
+
+        &.open {
+            i {
+                transform: rotate(180deg);
+            }
+        }
+    }
+
+    .changelog-content {
+        overflow: hidden;
+        display: none;
+        padding: 0 1.2rem 2rem;
+
+        &.open {
+            display: block;
+        }
+    }
 }
 
 .text-label.fixed {

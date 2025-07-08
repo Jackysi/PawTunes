@@ -8,7 +8,6 @@
  * This file is part of the PawTunes open-source project.
  * Contributions and feedback are welcome! Visit the repository or website for more details.
  */
-
 import {OnAir, PawMediaSource, Channel} from "./types";
 import PawTunesWS from "./pawtunes-ws";
 import HTML5Audio from "./html5-audio";
@@ -135,7 +134,7 @@ export default class PawTunes extends HTML5Audio {
     url = window.location.href.split('#')[0];
 
     /**
-     * Websocket class, used as reference for open web socket session
+     * Websocket class, used as a reference for open web socket session
      *
      * @var {object} ws
      */
@@ -788,7 +787,7 @@ export default class PawTunes extends HTML5Audio {
         this.on('volumechange', () => {
 
             // Change main volume icons
-            if (this.volume <= 1) {
+            if (this.volume < 1) {
 
                 this.toast(this.translate('status_muted'));
 

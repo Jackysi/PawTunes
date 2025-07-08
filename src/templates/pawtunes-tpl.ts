@@ -8,7 +8,6 @@
  * This file is part of the PawTunes open-source project.
  * Contributions and feedback are welcome! Visit the repository or website for more details.
  */
-
 import AudioMotionAnalyzer from 'audiomotion-analyzer';
 import PawTunes from "../player/ts/pawtunes";
 
@@ -23,9 +22,12 @@ export default class PawTunesTpl {
     constructor(PawTunes: PawTunes) {
 
         this.pawtunes = PawTunes;
-        this.pawtunes.on('ready', () => this.pawtunes._('.preloader', (el: HTMLElement) => el.classList.add('hidden')));
+        this.pawtunes.on('ready', () => {
+                this.pawtunes._('.preloader', (el: HTMLElement) => el.classList.add('hidden'))
+            }
+        );
 
-        // Initially happens in init method
+        // Initially happens in the init method
         this.pawtunes.on('theme.change', () => {
             this.changeSpectrumColor();
         })
