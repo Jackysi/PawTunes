@@ -34,7 +34,15 @@
         </div>
     </div>
     <div class="panel update-history" style="display:none">
-        <div class="heading"><i class="fas fa-history"></i> Update History</div>
+        <div class="heading">
+            <a href="#" title="Expand all" class="pull-right d-flex toggle-all">
+                <div class="fa-xs" style="display: inline-flex; flex-direction: column;">
+                    <i class="fas fa-chevron-up"></i>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </a>
+            <i class="fas fa-history"></i> Update History
+        </div>
         <div class="content">
             <div class="changelog history">
                 Loading...
@@ -256,6 +264,32 @@
 
                 // Open first
                 changeLog.first('.changelog-heading').trigger('click');
+
+                // Toggle all
+                $('.toggle-all').on('click', function (e) {
+
+                    e.preventDefault();
+
+                    let elm = $(this);
+
+                    let changeLogContents = $('.changelog.history .changelog-content')
+                    const allOpen = changeLogContents.toArray().every(el => $(el).hasClass('open'));
+
+                    if (allOpen) {
+
+                        changeLogContents.toArray().every(el => $(el).removeClass('open'))
+                        elm.find('.fa-chevron-up').removeClass('fa-rotate-180');
+                        elm.find('.fa-chevron-down').removeClass('fa-rotate-180');
+                        elm.attr('title', 'Expand all');
+                        return true;
+                    }
+
+                    changeLogContents.toArray().every(el => $(el).addClass('open'))
+                    elm.find('.fa-chevron-up').addClass('fa-rotate-180');
+                    elm.find('.fa-chevron-down').addClass('fa-rotate-180');
+                    elm.attr('title', 'Collapse all');
+
+                })
 
             });
         };
