@@ -150,3 +150,5 @@ The player itself uses only one lightweight library:
 - **AudioMotion Analyzer**: [https://www.npmjs.com/package/audiomotion-analyzer](https://www.npmjs.com/package/audiomotion-analyzer)
 
 If I’ve missed crediting any library, please let me know, and I will update this list promptly.
+
+This project is tested with BrowserStack
