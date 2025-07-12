@@ -31,7 +31,7 @@ class Artwork extends Base
 
         $art = $this->pawtunes->getArtwork($text, '', '', $skip);
         if ( ! $art) {
-            http_send_status(404);
+            http_response_code(404);
             exit;
         }
 
