@@ -74,7 +74,7 @@ if (isset($_GET['advanced-options'])) {
 
 if (isset($_GET['delete']) && $_GET['delete'] === 'override-share-image') {
 
-    @unlink($pawtunes->config('override_share_image'));
+    $pawtunes::deleteFile($pawtunes->config('override_share_image'));
 
     $pawtunes->setConfig('override_share_image', '');
     $panel->storeConfig('config/general', $pawtunes->getConfigAll());

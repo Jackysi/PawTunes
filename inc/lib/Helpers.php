@@ -44,7 +44,7 @@ abstract class Helpers
         // Build full URL
         $url = $protocol.$host.$_SERVER['REQUEST_URI'];
 
-        return strtok($url, '?'); // Ex
+        return strtok($url, '?'); // Exclude query parameters
 
     }
 
@@ -263,7 +263,7 @@ abstract class Helpers
 
 
     /**
-     * @return string
+     * @return string|null
      */
     protected function defaultArtwork(): ?string
     {
@@ -592,6 +592,23 @@ abstract class Helpers
 
         return $files;
 
+    }
+
+    /**
+     * Replaces unsafe @unlink calls that ignore PHP errors (may cause performance & security issues)
+     *
+     * @param $path
+     *
+     * @return bool
+     */
+    public static function deleteFile($path): bool
+    {
+
+        if (file_exists($path)) {
+            return unlink($path);
+        }
+
+        return false;
     }
 
 

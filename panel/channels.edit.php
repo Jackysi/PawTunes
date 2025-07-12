@@ -39,7 +39,7 @@ $form         = new Forms;
 // Attempt to delete logo from existing channel
 if ( ! empty($_GET['logo']) && $_GET['logo'] === 'delete' && isset($channels[$_GET['channel']]['logo'])) {
 
-    @unlink($channels[$_GET['channel']]['logo']);
+    $pawtunes::deleteFile($channels[$_GET['channel']]['logo']);
     die("Deleted logo");
 
 }
@@ -73,7 +73,7 @@ if ( ! empty($_POST)) {
 
             // Before continue, delete old image
             if ($_GET['action'] !== 'add' && ! empty($channels[$_GET['channel']]['logo'])) {
-                @unlink($channels[$_GET['channel']]['logo']); // Delete old image
+                $pawtunes::deleteFile($channels[$_GET['channel']]['logo']);
             }
 
             // Attempt to save
@@ -85,7 +85,7 @@ if ( ! empty($_POST)) {
             } elseif ( ! in_array($pawtunes->extGet($up['path']), $logo_ext)) {
 
                 $error = $panel->alert("Invalid image format! You can only upload JPEG, JPG, PNG, WEBP and SVG images!", 'error');
-                @unlink($up['path']);
+                $pawtunes::deleteFile($up['path']);
 
             } else { // Save success, now do tell!
 

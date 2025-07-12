@@ -158,7 +158,7 @@ if ( ! empty($_POST) && $_POST['form'] === 'artwork') {
 
     } elseif ( ! extension_loaded('gd')) {
 
-        @unlink($up['path']);
+        $pawtunes::deleteFile($up['path']);
         $panel->sendError('Cropping image failed because GD extension is not available!');
 
     } else {

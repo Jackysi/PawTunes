@@ -38,7 +38,7 @@ class Debug extends Base
 
     public function deleteLog()
     {
-        $this->sendJSON(['success' => @unlink('data/logs/player_errors.log')]);
+        $this->sendJSON(['success' => $this->pawtunes::deleteFile('data/logs/player_errors.log')]);
     }
 
 

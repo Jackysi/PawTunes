@@ -86,7 +86,7 @@ If you encounter any issues during installation, please refer to the [Installati
 I also offer installation and customization services. For more details, feel free to reach out via the [Prahec - Contact Me](https://prahec.com/contact) page.
 
 ### 📦 Docker
-For system insulation and ease of start I would suggest Docker image. It's super easy to start with single command:
+For system isolation and ease of start, I would suggest Docker image. It's super easy to start with single command:
 ```
 docker run -d -p 80:80 jackyprahec/pawtunes:latest
 ```
