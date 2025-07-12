@@ -358,7 +358,7 @@ class Panel
 
                     // Delete file
                     if (is_file("data/images/".$this->pawtunes->extDel($file).".{$ext}")) {
-                        @unlink("data/images/".$this->pawtunes->extDel($file).".{$ext}");
+                        $this->pawtunes::deleteFile("data/images/".$this->pawtunes->extDel($file).".{$ext}");
                     }
 
                 }

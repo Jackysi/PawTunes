@@ -69,7 +69,7 @@ class Themes extends Base
             }
 
             if ($valid) {
-                $this->sendJSON(['success' => @unlink($_GET['path'])]);
+                $this->sendJSON(['success' => $this->pawtunes::deleteFile($_GET['path'])]);
             }
 
             $this->sendJSON(['success' => false]);

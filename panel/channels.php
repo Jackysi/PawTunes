@@ -42,7 +42,7 @@ if (isset($_GET['delete'])) {
 
         // Attempt to delete Logo of channel
         if (isset($channels[$_GET['id']]['logo']) && is_file($channels[$_GET['id']]['logo'])) {
-            @unlink($channels[$_GET['id']]['logo']);
+            $pawtunes::deleteFile($channels[$_GET['id']]['logo']);
         }
 
         // Delete channel
@@ -149,7 +149,7 @@ if (isset($_GET['delete'])) {
 
         // Get list of caches (remove cache)
         $files = $pawtunes->browse($cachePath);
-        foreach ($files as $file): @unlink($cachePath.'/'.$file); endforeach;
+        foreach ($files as $file): $pawtunes::deleteFile($cachePath.'/'.$file); endforeach;
         $message = $panel->alert('Successfully cleaned whole cache including artist images!', 'success');
 
     } else {

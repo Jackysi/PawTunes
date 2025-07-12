@@ -94,8 +94,8 @@ class Updates extends Base
             $this->postUpdate($this->path);
 
             // Delete zip file & temp file
-            @unlink($this->path.'/data/updates/update.zip');
-            @unlink($this->path.'/data/updates/lock');
+            $this->pawtunes::deleteFile($this->path.'/data/updates/update.zip');
+            $this->pawtunes::deleteFile($this->path.'/data/updates/lock');
 
             $this->closeSSE();
 
@@ -120,7 +120,7 @@ class Updates extends Base
         $saveHandle = fopen($this->path.'/data/updates/update.zip', 'wb+');
         if ( ! $saveHandle) {
 
-            @unlink($this->path.'/data/updates/lock');
+            $this->pawtunes::deleteFile($this->path.'/data/updates/lock');
             $this->sendSSE('<div class="text-red">Saving an update file failed, it\'s possible that directory <b>/data/update/</b> is not writable!</div>');
             $this->closeSSE();
 
@@ -156,7 +156,7 @@ class Updates extends Base
 
         if ( ! empty($curl_error)) {
 
-            @unlink($this->path.'/data/updates/lock');
+            $this->pawtunes::deleteFile($this->path.'/data/updates/lock');
             $this->sendSSE('<div class="text-red">Downloading the latest update failed! '.$curl_error.'.</div>');
             $this->closeSSE();
 
@@ -253,7 +253,7 @@ class Updates extends Base
     public function handleError($e)
     {
         if (is_file($this->path.'/data/updates/lock')) {
-            @unlink($this->path.'/data/updates/lock');
+            $this->pawtunes::deleteFile($this->path.'/data/updates/lock');
         }
 
         $this->sendSSE('<b><span class="text-danger">FATAL ERROR: '.$e->getMessage().'</span></b>');
