@@ -76,7 +76,7 @@ try {
 
     }
 
-    http_send_status(404);
+    http_response_code(404);
     die("404 - Not Found");
 
 } catch (Throwable|Exception $e) {
@@ -88,7 +88,7 @@ try {
     $pawtunes->writeLog('panel_errors', $e->getMessage());
     $pawtunes->writeLog('panel_errors', $e->getTraceAsString());
 
-    http_send_status(500);
+    http_response_code(500);
     die("500 - Internal Server Error");
 
 }
