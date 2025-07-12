@@ -23,7 +23,7 @@ while (ob_get_level()) {
 }
 
 if ( ! isset($_GET['artist'])) {
-    http_send_status(404);
+    http_response_code(404);
     exit;
 }
 
