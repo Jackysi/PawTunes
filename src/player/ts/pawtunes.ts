@@ -448,6 +448,11 @@ export default class PawTunes extends HTML5Audio {
             return;
         }
 
+        // Modify the artwork URL if Lazy Load is enabled
+        if (this.settings.trackInfo.lazyLoadArtworks) {
+            data.artwork = this.pawArtworkURL(data.artist, data.title);
+        }
+
         // Set ON AIR
         this.onAir = {
             artist: data.artist,
