@@ -279,6 +279,7 @@ class PawTunes extends Helpers
         }
 
         return [
+            'debug'         => ($this->config('debugging') && $this->config('debugging') === 'enabled'),
             'channels'      => $channels,
             'analytics'     => (! empty($this->config('google_analytics')) ? $this->config('google_analytics') : false),
             'defaults'      => [
