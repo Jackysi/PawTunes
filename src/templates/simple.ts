@@ -21,7 +21,7 @@ export default class PawTunesTpl {
     constructor(PawTunes: PawTunes) {
 
         this.pawtunes = PawTunes;
-        this.pawtunes.on('ready', () => {
+        this.pawtunes.on('init', () => {
 
             this.pawtunes._('.preloader', (el: HTMLElement) => el.classList.add('hidden'))
             if (this.pawtunes.channels.length <= 1) {
@@ -189,7 +189,7 @@ export default class PawTunesTpl {
             const singleDistance = contentWidth + gap;
             el.style.setProperty('--single-distance', `${singleDistance}px`);
 
-            // Set animation duration based on single content width plus gap
+            // Set animation duration based on a single content width plus gap
             const duration = singleDistance / 20; // Adjust the divisor to change speed
 
             // Add animation styles
@@ -218,7 +218,7 @@ export default class PawTunesTpl {
 
 
     /**
-     * Create Audio Motion Analyzer
+     * Create Audio Motion Analyser
      */
     initSpectrum() {
 
@@ -231,7 +231,7 @@ export default class PawTunesTpl {
         // set the crossOrigin property in the media element
         this.pawtunes.audio.crossOrigin = 'anonymous';
 
-        // create the analyzer using the media element as a source
+        // create the analyser using the media element as a source
         const audioMotion = new AudioMotionAnalyzer(element, {
             source         : this.pawtunes.audio,
             frequencyScale : 'linear',

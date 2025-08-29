@@ -273,7 +273,7 @@ export class PawTunesEvents {
 
         } else {
 
-            // Convert single listener to array
+            // Convert a single listener to array
             this._events[evt] = [this._events[evt] as EventListener, listener];
 
         }

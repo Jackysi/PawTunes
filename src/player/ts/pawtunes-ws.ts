@@ -104,7 +104,7 @@ export default class PawtunesWS {
             this.pawtunes.hideLoading();
             console.log("Websocket connection established");
 
-            // Azura cast requires sending "subscribe" message on open
+            // Azura cast requires sending a "subscribe" message on open
             if (this.pawtunes.channel.ws.method === 'azuracast') {
 
                 const stationName = `station:${this.pawtunes.channel.ws.station}`;
