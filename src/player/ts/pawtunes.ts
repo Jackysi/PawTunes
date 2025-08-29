@@ -393,6 +393,12 @@ export default class PawTunes extends HTML5Audio {
 
         }
 
+        // Disabled? Don't do anything but reset the loading status
+        if (this.settings.trackInfo.disabled) {
+            this.loadArtwork(null);
+            return;
+        }
+
         // Every other method
         let pawTunesAPI = () => {
 
