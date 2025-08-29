@@ -22,7 +22,7 @@ export default class PawTunesTpl {
     constructor(PawTunes: PawTunes) {
 
         this.pawtunes = PawTunes;
-        this.pawtunes.on('ready', () => {
+        this.pawtunes.on('init', () => {
                 this.pawtunes._('.preloader', (el: HTMLElement) => el.classList.add('hidden'))
             }
         );
@@ -58,7 +58,7 @@ export default class PawTunesTpl {
             this.initSpectrum();
         }
 
-        // If history Disabled, delete button and page
+        // If history Disabled, delete the button and page
         if (!this.pawtunes.settings.history) {
 
             this.pawtunes._('.open-history', (el: HTMLElement) => el.remove());
@@ -109,7 +109,7 @@ export default class PawTunesTpl {
         this.pawtunes.on('status.change', (status: string) => this.updateStatusInfo(status))
 
         /**
-         * When Artwork is loaded, also replace background blur image
+         * When Artwork is loaded, also replace the background blur image
          */
         this.pawtunes._('.artwork', (el: HTMLElement) => {
             el.addEventListener('load', () => {
@@ -198,7 +198,7 @@ export default class PawTunesTpl {
      */
     updateChannelName(channel: any) {
 
-        // If we're using channel logos, let's not show channel name
+        // If we're using channel logos, let's not show the channel name
         if (this.pawtunes.settings.tpl.useChannelLogos && this.pawtunes.settings.tpl.useChannelLogos === true) {
 
             this.pawtunes._('.onair .current-channel', (el: HTMLElement) => {
@@ -277,7 +277,7 @@ export default class PawTunesTpl {
 
 
     /**
-     * Create Audio Motion Analyzer
+     * Create Audio Motion Analyser
      */
     initSpectrum() {
 
@@ -290,7 +290,7 @@ export default class PawTunesTpl {
         // set the crossOrigin property in the media element
         this.pawtunes.audio.crossOrigin = 'anonymous';
 
-        // create the analyzer using the media element as a source
+        // create the analyser using the media element as a source
         this.audioMotion = new AudioMotionAnalyzer(element, {
             source: this.pawtunes.audio,
             //  mirror         : -1,
@@ -339,7 +339,7 @@ export default class PawTunesTpl {
         let totalPages = pages.length;
         let pageNumber = 0;
 
-        // For Loop to find proper page
+        // For Loop to find the proper page
         for (let i = 0; i < totalPages; i++) {
             if (pages[i].classList.contains(pageClass)) {
                 pageNumber = i;

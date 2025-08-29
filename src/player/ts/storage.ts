@@ -36,7 +36,7 @@ export default class Storage {
     /**
      * Set localStorage value
      * If expires is set, it will be set as timestamp
-     * Note: This has a bit of a blind spot, if you previously set expiration and then set new value without expiration, it will still be expired
+     * Note: This has a bit of a blind spot, if you previously set expiration and then set a new value without expiration, it will still be expired
      *
      * @param key
      * @param value
@@ -85,7 +85,7 @@ export default class Storage {
         // Add prefix to key (if set)
         key = this.prefix + key;
 
-        // Check if key exists
+        // Check if the key exists
         if (localStorage.getItem(key) == null) {
             return false;
         }

@@ -120,7 +120,7 @@ export default class PawTunes extends HTML5Audio {
     temp: any = [];
 
     /**
-     * References to timers for global control, like a stop of track info interval
+     * References to timers for global control, like a stop of a track info interval
      *
      * @var {object} timers
      */
@@ -201,6 +201,7 @@ export default class PawTunes extends HTML5Audio {
         tpl: {},
         title: "PawTunes",
         trackInfo: {
+            disabled: false,
             artistMaxLen: 24,
             titleMaxLen: 28,
             lazyLoadArtworks: false,
@@ -263,7 +264,7 @@ export default class PawTunes extends HTML5Audio {
 
         }
 
-        // No streams in channel defined
+        // No streams in a channel defined
         if (this.channels.length >= 1) {
 
             let foundStream: boolean = false;
@@ -307,7 +308,7 @@ export default class PawTunes extends HTML5Audio {
         let hashChannel = this.getDecodedHash();
         window.addEventListener('hashchange', () => this.hashChange());
 
-        // Channel, if hash detected use that as priority
+        // Channel, if hash detected, use that as a priority
         this.setChannel(hashChannel);
         this.setStream();
 
@@ -331,7 +332,7 @@ export default class PawTunes extends HTML5Audio {
             return;
         }
 
-        // Exit if "start" time is empty
+        // Exit if the "start" time is empty
         if (this.onAir.time <= 0) {
             return;
         }
@@ -361,7 +362,7 @@ export default class PawTunes extends HTML5Audio {
     }
 
     /**
-     * Starts interval to request track info from API or sets up websocket
+     * Starts an interval to request track info from API or sets up websocket
      * If overridden, this function can use anything to request track info
      *
      * @return {void}
@@ -424,8 +425,8 @@ export default class PawTunes extends HTML5Audio {
     }
 
     /**
-     * Handles track information, works with API calls, web sockets or anything else.
-     * Updates player with new data if it has changed since last check.
+     * Handles track information, works with API calls, web sockets, or anything else.
+     * Updates player with new data if it has changed since the last check.
      *
      * @param data
      */
@@ -436,7 +437,7 @@ export default class PawTunes extends HTML5Audio {
             return;
         }
 
-        // Nothing has changed since last call/check
+        // Nothing has changed since the last call /check
         if (data.artist == this.onAir.artist && data.title == this.onAir.title && data.artwork == this.onAir.artwork) {
             return;
         }
@@ -459,7 +460,7 @@ export default class PawTunes extends HTML5Audio {
             `<span class="pointer css-hint" data-title="${this.onAir.title}">${this.shorten(this.onAir.title, this.settings.trackInfo.titleMaxLen)}</span>`
         );
 
-        // If enabled, we will also update window title on each song change
+        // If enabled, we will also update the window title on each song change
         if (this.settings.dynamicTitle) {
 
             if (this.temp.title == null) this.temp.title = document.title;
@@ -647,7 +648,7 @@ export default class PawTunes extends HTML5Audio {
         let totalPages = pages.length;
         let pageNumber = 0;
 
-        // For Loop to find proper page
+        // For Loop to find the proper page
         for (let i = 0; i < totalPages; i++) {
             if (pages[i].classList.contains(page)) {
                 this.currentPage = page;
@@ -722,7 +723,7 @@ export default class PawTunes extends HTML5Audio {
      */
     protected async bindPlayerEvents(): Promise<void> {
 
-        // PLAY: This is called when "play" button is clicked
+        // PLAY: This is called when the "play" button is clicked
         this.on('play', () => {
 
             if ('mediaSession' in navigator) {
@@ -750,7 +751,7 @@ export default class PawTunes extends HTML5Audio {
 
         })
 
-        // STOPPED: Custom PawTunes event when player is stopped
+        // STOPPED: Custom PawTunes event when the player is stopped
         this.on('stopped', () => {
 
             this.toast(this.translate('status_stopped'), false);
@@ -1043,7 +1044,7 @@ export default class PawTunes extends HTML5Audio {
 
         })
 
-        // Update time-ago every 5 seconds
+        // Updated time-ago every 5 seconds
         this.timers.historyTimeAgo = setInterval(() => this.historyTimeTrack(), 1000);
 
     }
@@ -1104,7 +1105,7 @@ export default class PawTunes extends HTML5Audio {
     }
 
     /**
-     * Populate a history list with parsed data from server.
+     * Populate a history list with parsed data from the server.
      *
      * @returns {void}
      */
@@ -1113,7 +1114,7 @@ export default class PawTunes extends HTML5Audio {
         let historyItems = this._(' .history-content .history-list-container .history-item');
         if (historyItems.length > 0) {
 
-            // Update whole table
+            // Update the whole table
             historyItems.forEach((element: Element) => {
 
                 const elm = element as HTMLElement;
@@ -1166,7 +1167,7 @@ export default class PawTunes extends HTML5Audio {
     }
 
     /**
-     * Create a script element and load Google Analytics with specified tag ID
+     * Create a script element and load Google Analytics with the specified tag ID
      */
     protected createGoogleAnalytics() {
 
@@ -1365,7 +1366,7 @@ export default class PawTunes extends HTML5Audio {
     }
 
     /**
-     * Write HTML is a simple method that checks if an element exists prior attempting to write
+     * Write HTML is a simple method that checks if an element exists before attempting to write
      *
      * @param element
      * @param content
@@ -1380,7 +1381,7 @@ export default class PawTunes extends HTML5Audio {
     }
 
     /**
-     * Write Text is a simple method that checks if an element exists prior attempting to write
+     * Write Text is a simple method that checks if an element exists before attempting to write
      *
      * @param element
      * @param content
@@ -1418,7 +1419,7 @@ export default class PawTunes extends HTML5Audio {
             return;
         }
 
-        // Make sure stream exists
+        // Make sure a stream exists
         if (specific === '' || !this.channel.streams[specific]) {
 
             // Maybe storage?
@@ -1604,7 +1605,7 @@ export default class PawTunes extends HTML5Audio {
                 this._('volumeValue', (el: HTMLElement) => el.style.width = `${this.volume}%`)
                 this._('volumeHandle', (el: HTMLElement) => el.setAttribute('aria-valuenow', `${this.volume}`))
 
-                // If volume is 0, mute
+                // If the volume is 0, mute
                 if (!this.isNoVolume) {
                     if (this.volume < 1) {
 
@@ -1762,7 +1763,7 @@ export default class PawTunes extends HTML5Audio {
     }
 
     /**
-     * Find specific channel used to play on air
+     * Find a specific channel used to play on air
      */
     private findAndSetChannel(specific: string = ''): Channel {
 
