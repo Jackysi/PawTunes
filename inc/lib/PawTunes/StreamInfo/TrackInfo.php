@@ -115,7 +115,7 @@ abstract class TrackInfo implements TrackInfoInterface
     protected function handleTrack($text, $track = null): array
     {
         // Extract track info using regex if not provided
-        if (empty($track)) {
+        if (empty($track) && ! empty($text)) {
             preg_match('/'.$this->pawtunes->config('track_regex').'/', $this->pawtunes->strToUTF8($text), $track);
         }
 

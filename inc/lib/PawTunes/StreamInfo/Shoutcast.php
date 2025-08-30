@@ -69,15 +69,15 @@ class Shoutcast extends TrackInfo
         $track = $this->handleTrack($parsed['songtitle']);
 
         // Handle history
-        if ($this->channel['stats']['sc-history'] && isset($parsed['songhistory']) && count($parsed['songhistory']['SONG']) >= 1) {
+        if ($this->channel['stats']['sc-history'] && isset($parsed['songhistory']) && count($parsed['songhistory']['song']) >= 1) {
 
             $track['history'] = [];
-            foreach ($parsed['songhistory']['SONG'] as $song) {
+            foreach ($parsed['songhistory']['song'] as $song) {
 
                 // Parse as you would any track, but add the time it was played
                 $track['history'][] = array_merge(
-                    $this->handleTrack($song['TITLE']),
-                    ['time' => ((int) $song['PLAYEDAT'] * 1000)]
+                    $this->handleTrack($song['title']),
+                    ['time' => ((int) $song['playedat'] * 1000)]
                 );
 
             }
