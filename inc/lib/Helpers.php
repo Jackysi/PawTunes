@@ -17,7 +17,7 @@ use RuntimeException;
 use Throwable;
 
 /**
- * Class Helpers - used across entire player for functionality
+ * Abstract class containing utility helper methods for various functionalities.
  */
 abstract class Helpers
 {
@@ -288,27 +288,108 @@ abstract class Helpers
     /**
      * Simple function to parse XML files into arrays
      *
-     * @param      $data
+     * @param  string  $xml
      * @param  bool  $lower
      *
      * @return array|mixed
-     * @throws \JsonException
      */
-    public function xml2array($data, bool $lower = false)
+    public function xml2array(string $xml, bool $lower = false): array
     {
-
-        $vals = json_decode(
-            json_encode((array) simplexml_load_string($data), JSON_THROW_ON_ERROR), true, 512,
-            JSON_THROW_ON_ERROR
-        );
-
-        // Lower / Uppercase array keys
-        if ($lower === true && is_array($vals)) {
-            return array_change_key_case($vals);
+        $sxe = simplexml_load_string($xml, 'SimpleXMLElement', LIBXML_NOCDATA);
+        if ($sxe === false) {
+            return [];
         }
 
-        return $vals;
+        $arr = $this->xmlToArray($sxe);
 
+        return $lower ? $this->array_change_key_case_recursive($arr, CASE_LOWER) : $arr;
+    }
+
+    /**
+     * Convert XML node to array. Important: this function is recursive.
+     * It will convert a node to an array, including its children.
+     * It will also convert attributes to an array.
+     * The important part is that null strings are NOT converted to arrays
+     *
+     * @param $node
+     *
+     * @return array|string
+     */
+    private function xmlToArray($node)
+    {
+        if ($node instanceof \SimpleXMLElement) {
+
+            $children = $node->children();
+            $attrs    = $node->attributes();
+            $text     = trim((string) $node);
+
+            if (count($children) === 0 && count($attrs) === 0) {
+                return $text === '' ? null : $text;
+            }
+
+            $out = [];
+
+            // attributes (optional: comment this block out if you don't need them)
+            foreach ($attrs as $k => $v) {
+                $out['@'.$k] = (string) $v;
+            }
+
+            // children
+            foreach ($children as $k => $child) {
+
+                $value = $this->xmlToArray($child);
+                if (array_key_exists($k, $out)) {
+
+                    // Ensure $out[$k] is a list before appending
+                    if ( ! is_array($out[$k]) || array_keys($out[$k]) !== range(0, count($out[$k]) - 1)) {
+                        $out[$k] = [$out[$k]];
+                    }
+
+                    $out[$k][] = $value;
+
+                } else {
+
+                    $out[$k] = $value;
+
+                }
+
+            }
+
+            // if node has both text and children, you can keep text under '#text'
+            if ($text !== '' && count($children) > 0) {
+                $out['#text'] = $text;
+            }
+
+            return $out;
+        }
+
+        // arrays (from repeated children)
+        if (is_array($node)) {
+            return array_map(fn($n) => $this->xmlToArray($n), $node);
+        }
+
+        // scalars
+        return $node;
+    }
+
+    /**
+     * Helper function to recursively change array keys case
+     *
+     * @param  array  $arr
+     * @param  int  $case
+     *
+     * @return array
+     */
+    private function array_change_key_case_recursive(array $arr, int $case): array
+    {
+        $arr = array_change_key_case($arr, $case);
+        foreach ($arr as $k => $v) {
+            if (is_array($v)) {
+                $arr[$k] = $this->array_change_key_case_recursive($v, $case);
+            }
+        }
+
+        return $arr;
     }
 
 

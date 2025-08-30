@@ -103,9 +103,7 @@ class Direct extends TrackInfo
 
                     // OGG Codec (start is 0)
                     if ($header === 'Content-Type: application/ogg') {
-
                         $icy_metaint = 0;
-
                     }
 
                 }

@@ -53,6 +53,7 @@ class Icecast extends TrackInfo
     {
         $ice    = [];
         $parsed = $this->pawtunes->xml2array($data, true);
+        var_dump($parsed);
 
         // Throw exception if XML parsing failed
         if (empty($parsed) || ! is_array($parsed) || ! is_array($parsed['source'])) {
@@ -63,22 +64,12 @@ class Icecast extends TrackInfo
         if (isset($parsed['source'][0]) && is_array($parsed['source'][0])) {
 
             foreach ($parsed['source'] as $mount) {
-
-                // Get the mount name
-                $mountName = $mount['@attributes']['mount'];
-                unset($mount['@attributes']);
-
-                $ice[$mountName] = $mount;
-
+                $ice[$mount['@mount']] = $mount;
             }
 
         } else { // Handle single mount setup
 
-            // Get the mount name
-            $mountName = $parsed['source']['@attributes']['mount'];
-            unset($parsed['source']['@attributes']);
-
-            $ice[$mountName] = $parsed['source'];
+            $ice[$parsed['source']['@mount']] = $parsed['source'];
 
         }
 
