@@ -78,7 +78,9 @@ class Direct extends TrackInfo
                     'user_agent'    => 'Mozilla/5.0 (PawTunes) AppleWebKit/537.36 (KHTML, like Gecko)',
                     'timeout'       => 15,
                     'ignore_errors' => true,
-                    'cafile'        => __DIR__.'/bundle.crt',
+                ],
+                'ssl'  => [
+                    'cafile' => __DIR__.'/../../bundle.crt',
                 ],
             ]
         );
