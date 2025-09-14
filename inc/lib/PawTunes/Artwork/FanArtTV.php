@@ -77,7 +77,17 @@ class FanArtTV extends Artwork
 
         // We have ID, now access FanArt API and get our image!!!
         $data = null;
-        $api  = $this->pawtunes->get($this->pawtunes->template($this->fanArtAPI, ['id' => $id, 'apiKey' => $this->apiKey], false));
+        $api  = $this->pawtunes->get(
+            $this->pawtunes->template(
+                $this->fanArtAPI,
+                [
+                    'id'     => $id,
+                    'apiKey' => $this->apiKey,
+                ],
+                false
+            )
+        );
+
         if ($api) {
             $data = json_decode($api, true);
         }
@@ -110,7 +120,15 @@ class FanArtTV extends Artwork
     private function getArtistID(string $artist)
     {
         // Get MusicBrainz ID of an artist
-        $getID = $this->pawtunes->get($this->pawtunes->template($this->brainzAPI, ['rawArtist' => rawurlencode($artist)], false));
+        $getID = $this->pawtunes->get(
+            $this->pawtunes->template(
+                $this->brainzAPI,
+                [
+                    'rawArtist' => rawurlencode($artist),
+                ],
+                false
+            )
+        );
 
         // API Response was success
         if ($getID) {

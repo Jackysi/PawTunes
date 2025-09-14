@@ -37,7 +37,11 @@ class SAM extends TrackInfo
 
         // Query database
         $sam = mysqli_fetch_assoc(
-            $this->mysql->query("SELECT songID, artist, title, date_played, duration FROM {$this->channel['stats']['db']}.historylist ORDER BY `historylist`.`date_played` DESC LIMIT 0,1"
+            $this->mysql->query(
+                "SELECT songID, artist, title, date_played, duration 
+                FROM {$this->channel['stats']['db']}.historylist 
+                ORDER BY `historylist`.`date_played` DESC 
+                LIMIT 0,1"
             )
         );
 

@@ -31,7 +31,12 @@ class Icecast extends TrackInfo
              ->requireAuth();
 
         // Attempt getting the XML data from the Icecast server
-        $xml = $this->pawtunes->get("{$this->channel['stats']['url']}/admin/stats", null, "{$this->channel['stats']['auth-user']}:{$this->channel['stats']['auth-pass']}");
+        $xml = $this->pawtunes->get(
+            "{$this->channel['stats']['url']}/admin/stats",
+            null,
+            "{$this->channel['stats']['auth-user']}:{$this->channel['stats']['auth-pass']}"
+        );
+
         if ( ! $xml) {
             throw new PawException("Connection to the Icecast server failed!");
         }
