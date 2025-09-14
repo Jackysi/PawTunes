@@ -60,7 +60,7 @@ class LastFM extends Artwork
             return null;
         }
 
-        $data = xml2array(
+        $data = $this->pawtunes->xml2array(
             $this->pawtunes->get(
                 $this->pawtunes->template($this->url, ['rawArtist' => rawurlencode($artist), 'apiKey' => $this->apiKey], false),
                 null,
