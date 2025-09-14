@@ -130,6 +130,9 @@ class Debug extends Base
                         CURLOPT_RANGE   => '0-500',
                         CURLOPT_VERBOSE => $this->pawtunes->config('debugging') === 'enabled',
                         CURLOPT_STDERR  => $verbose,
+                        CURLOPT_HTTPHEADER  => [
+                            'Icy-MetaData: 1',
+                        ],
                     ],
                     false
                 );

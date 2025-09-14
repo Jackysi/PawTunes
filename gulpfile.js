@@ -25,7 +25,7 @@ const scssFiles = [
 
 /**
  * SCSS Files
- * Initial color schemes for different players
+ * Initial colour schemes for different players
  */
 const templateScss = [
     {

@@ -9,7 +9,7 @@
     "url": "git+https://github.com/Jackysi/PawTunes.git"
   },
   "license": "MPL-2.0",
-  "version": "1.0.2",
+  "version": "1.0.7",
   "type": "module",
   "scripts": {
     "dev": "gulp dev",

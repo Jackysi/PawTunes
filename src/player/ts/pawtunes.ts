@@ -10,7 +10,7 @@
  */
 import {OnAir, PawMediaSource, Channel} from "./types";
 import PawTunesWS from "./pawtunes-ws";
-import HTML5Audio from "./html5-audio";
+import HTML5Audio from "./html5-audio-mse";
 import Storage from "./storage";
 
 export default class PawTunes extends HTML5Audio {
