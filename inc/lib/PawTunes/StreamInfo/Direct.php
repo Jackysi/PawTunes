@@ -19,22 +19,6 @@ class Direct extends TrackInfo
 {
 
     /**
-     * @return $this
-     * @throws \lib\PawException
-     */
-    private function requireURLFopen()
-    {
-
-        if ( ! ini_get('allow_url_fopen')) {
-            throw new PawException("Unable to connect to the stream because required PHP option \"allow_url_fopen\" is disabled!");
-        }
-
-        return $this;
-
-    }
-
-
-    /**
      * Make sure extensions are loaded and stream URL is set
      * Then get info, parse it and return
      *
@@ -43,16 +27,12 @@ class Direct extends TrackInfo
     public function getInfo()
     {
         $this->requireURLSet()
-             ->requireURLFopen();
+             ->requireCURLExt();
 
         $get_info = $this->readStream($this->channel['stats']['url']);
 
         if ((empty($get_info)) && ! empty($this->channel['fallback'])) {
             $get_info = $this->readStream($this->channel['fallback']);
-        }
-
-        if (empty($get_info)) {
-            throw new PawException(" Connection to remote stream {$this->channel['stats']['url']} failed!");
         }
 
         return $this->handleTrack($get_info);
@@ -68,84 +48,124 @@ class Direct extends TrackInfo
      */
     private function readStream($url)
     {
-        $result         = false;
-        $icy_metaint    = false;
-        $stream_context = stream_context_create(
+        $result      = false;
+        $buf         = '';
+        $icyMetaint  = null;
+        $contentType = null;
+        $headers     = [];
+        $err         = null;
+
+        // Heavy lifting here
+        $this->pawtunes->get(
+            $url,
+            null,
+            null,
+            false,
+            10,
+            $err,
             [
-                'http' => [
-                    'method'        => 'GET',
-                    'header'        => 'Icy-MetaData: 1',
-                    'user_agent'    => 'Mozilla/5.0 (PawTunes) AppleWebKit/537.36 (KHTML, like Gecko)',
-                    'timeout'       => 15,
-                    'ignore_errors' => true,
+                // Request ICY METADATA
+                CURLOPT_HTTPHEADER     => [
+                    'Icy-MetaData: 1',
                 ],
-                'ssl'  => [
-                    'cafile' => __DIR__.'/../../bundle.crt',
-                ],
-            ]
+                // We search for icy-metaint header to get refresh time
+                CURLOPT_HEADERFUNCTION => static function ($ch, $headerLine) use (&$headers, &$icyMetaint, &$contentType) {
+
+                    $len   = strlen($headerLine);
+                    $parts = explode(':', $headerLine, 2);
+                    if (count($parts) === 2) {
+
+                        $name           = strtolower(trim($parts[0]));
+                        $value          = trim($parts[1]);
+                        $headers[$name] = $value;
+
+                        if ($name === 'icy-metaint') {
+                            $icyMetaint = is_numeric($value) ? (int) $value : null;
+                        }
+                        if ($name === 'content-type') {
+                            $contentType = strtolower($value);
+                        }
+
+                    }
+
+                    return $len;
+
+                },
+                CURLOPT_WRITEFUNCTION  => static function ($ch, $chunk) use (&$buf, &$icyMetaint) {
+
+                    $buf .= $chunk;
+
+                    // Abort, otherwise this will go indefinitely
+                    if ($icyMetaint === null) {
+                        return 0;
+                    }
+
+                    // Once we have at least $icyMetaint + 600 bytes, stop
+                    if (strlen($buf) >= $icyMetaint + 600) {
+                        return 0;
+                    }
+
+                    return strlen($chunk);
+
+                },
+            ],
+            false // Always err, because we abort on 0
         );
 
-        // Attempt to open stream, read it and close connection (all here)
-        if ($stream = @fopen($url, 'r', false, $stream_context)) {
+        // OGG without metaint → treat as 0 (prefix match!)
+        if ($icyMetaint === null && $contentType && str_starts_with($contentType, 'application/ogg')) {
+            $icyMetaint = 0;
+        }
 
-            // Find refresh time and/or check if this is OGG codec
-            if (($meta_data = stream_get_meta_data($stream)) && isset($meta_data['wrapper_data'])) {
+        // Something broke
+        if (empty($buf)) {
+            throw new PawException($err ?: 'Empty response from stream.');
+        }
 
-                // Loop headers searching something to indicate codec
-                foreach ($meta_data['wrapper_data'] as $header) {
+        // We have metaint, let's parse it
+        if ($icyMetaint !== null && $icyMetaint >= 0) {
 
-                    // Expected something like: string(17) "icy-metaint:16000" for MP3
-                    if (stripos($header, 'icy-metaint') !== false) {
+            $slice = strlen($buf) < ($icyMetaint + 600)
+                ? substr($buf, $icyMetaint)
+                : substr($buf, $icyMetaint, 600);
 
-                        $tmp         = explode(":", $header);
-                        $icy_metaint = trim($tmp[1]); // Should be interval value
-                        break;
+            if ($slice !== false && $slice !== '') {
 
-                    }
+                // Shoutcast: StreamTitle='...';
+                if (strpos($slice, 'StreamTitle=') !== false) {
 
-                    // OGG Codec (start is 0)
-                    if ($header === 'Content-Type: application/ogg') {
-                        $icy_metaint = 0;
-                    }
+                    $parts = explode('StreamTitle=', $slice, 2);
+                    $title = trim($parts[1]);
 
-                }
-            }
-
-            // Stream returned metadata refresh time, use it to get streamTitle info.
-            if ($icy_metaint !== false && is_numeric($icy_metaint)) {
-
-                $buffer = stream_get_contents($stream, 600, $icy_metaint);
-
-                // Attempt to find string "StreamTitle" in stream with length of 600 bytes and $icy_metaint is offset where to start
-                if (strpos($buffer, 'StreamTitle=') !== false) {
-
-                    $title = explode('StreamTitle=', $buffer);
-                    $title = trim($title[1]);
-
-                    // Use regex to match 'Song name - Title'; from StreamTitle='format'; (use "U" for ungreedy matching of .*)
-                    if (preg_match("/^'(.*)';/U", $title, $m)) {
+                    if (preg_match("/^'(.*?)';/s", $title, $m)) {
                         $result = $m[1];
                     }
 
-                    // Icecast method ( only works if stream title / artist are on beginning )
-                } elseif (strpos($buffer, 'TITLE=') !== false && strpos($buffer, 'ARTIST=') !== false) {
-
-                    // This is not the best solution, it doesn't parse binary it just removes control characters after regex
-                    preg_match('/TITLE=(?P<title>.*)ARTIST=(?P<artist>.*)ENCODEDBY/s', $buffer, $m);
-
-                    // Remove control characters like '\u10'...
-                    $result = preg_replace('/[\x00-\x09\x0B\x0C\x0E-\x1F\x7F]/', '', $m['artist'].' - '.$m['title']);
-
                 }
 
+                // Icecast KV: TITLE=... ARTIST=...
+                if ( ! $result && strpos($slice, 'TITLE=') !== false && strpos($slice, 'ARTIST=') !== false) {
+
+                    // tolerate noise and line breaks between fields
+                    if (preg_match('/TITLE=(?P<title>.*?)ARTIST=(?P<artist>.*?)(?:ENCODEDBY|$)/s', $slice, $m)) {
+
+                        $clean  = static fn($s) => preg_replace('/[\x00-\x09\x0B\x0C\x0E-\x1F\x7F]/', '', (string) $s);
+                        $artist = $clean($m['artist'] ?? '');
+                        $title  = $clean($m['title'] ?? '');
+                        $combo  = trim($artist) !== '' && trim($title) !== '' ? "$artist - $title" : ($artist ?: $title);
+                        $result = trim($combo, " \t\n\r\0\x0B-");
+
+                    }
+                }
             }
-
-            fclose($stream);
-
         }
 
-        // Handle information gathered so far
-        return (! $stream ? false : $result);
+        if (empty($result)) {
+            throw new PawException("Failed to parse stream info from {$this->channel['stats']['url']}.");
+        }
+
+        return $result;
+
     }
 
 }
