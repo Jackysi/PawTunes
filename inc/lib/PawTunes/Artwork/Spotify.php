@@ -71,14 +71,22 @@ class Spotify extends Artwork
 
         $data = json_decode(
             $this->pawtunes->get(
-                $this->pawtunes->template($this->url, ['rawArtist' => rawurlencode($artist), 'type' => $this->type], false),
+            // Generate URL
+                $this->pawtunes->template($this->url,
+                    [
+                        'rawArtist' => rawurlencode($artist),
+                        'type'      => $this->type,
+                    ], false
+                ),
                 null,
                 null,
                 false,
                 30,
                 $curl_error,
                 [
-                    CURLOPT_HTTPHEADER => ['Authorization: Bearer '.$barrer],
+                    CURLOPT_HTTPHEADER => [
+                        'Authorization: Bearer '.$barrer,
+                    ],
                 ]
             ), true
         );

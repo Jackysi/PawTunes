@@ -40,7 +40,16 @@ class iTunes extends Artwork
             $track .= "+".rawurlencode($title);
         }
 
-        $search = $this->pawtunes->get($this->pawtunes->template($this->url, ['rawTrack' => $track, 'entity' => $entity], false));
+        $search = $this->pawtunes->get(
+            $this->pawtunes->template(
+                $this->url,
+                [
+                    'rawTrack' => $track,
+                    'entity'   => $entity,
+                ],
+                false
+            )
+        );
 
         // If there is an response
         if ($search !== false) {
