@@ -58,11 +58,6 @@ const templateScss = [
         dest: 'templates/pawtunes/css/',
         outputName: 'pawtunes-dark.css',
     },
-    {
-        src: 'templates/modern/scss/modern.scss',
-        dest: 'templates/modern/css/',
-        outputName: 'modern.css',
-    },
 ];
 
 /**
