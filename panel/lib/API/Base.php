@@ -13,6 +13,7 @@
 
 namespace API;
 
+use JsonException;
 use lib\PawTunes;
 use Panel;
 
@@ -78,7 +79,7 @@ abstract class Base
      * @param $data
      *
      * @return void
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function sendJSON($data): void
     {

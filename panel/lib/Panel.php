@@ -29,7 +29,7 @@ class Panel
      */
     public string $updateDownloadURL = 'https://prahec.com/api/release/pawtunes/{version}';
     /**
-     * @var \lib\PawTunes
+     * @var PawTunes
      */
     public PawTunes $pawtunes;
     private string $prefix;
@@ -87,7 +87,7 @@ class Panel
 
 
     /**
-     * @param  \lib\PawTunes  $pawtunes
+     * @param  PawTunes  $pawtunes
      * @param  string  $prefix
      * @param  array  $vars
      */
@@ -286,7 +286,7 @@ class Panel
     /**
      * Simple function to generate HTML view
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function view($view, $vars = []): void
     {

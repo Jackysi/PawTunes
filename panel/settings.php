@@ -86,6 +86,7 @@ if ( ! empty($_POST)) {
 
     // Map a few fields which we will store
     $store = [
+        'cache'           => $pawtunes->config('cache'),
         'tplOptions'      => $pawtunes->config('tplOptions'),
         'artwork_sources' => $panel->mapArtworkSourcesPost($_POST),
     ];
@@ -156,7 +157,8 @@ if ( ! empty($_POST)) {
         }
 
         // Cache path is bit different, due to allowing different caching methods
-        if (isset($_POST['cache_path'])) {
+        if ( ! empty($_POST['cache_path'])) {
+            $store['cache']['path'] = $_POST['cache_path'];
             $_POST['cache']['path'] = $_POST['cache_path'];
             unset($_POST['cache_path']);
         }

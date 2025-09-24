@@ -14,6 +14,7 @@
 namespace API;
 
 use Exception;
+use JsonException;
 use ZipArchive;
 
 class Updates extends Base
@@ -262,7 +263,7 @@ class Updates extends Base
 
 
     /**
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function checkForUpdates()
     {

@@ -127,10 +127,10 @@ class Debug extends Base
                     15,
                     $curl_error,
                     [
-                        CURLOPT_RANGE   => '0-500',
-                        CURLOPT_VERBOSE => $this->pawtunes->config('debugging') === 'enabled',
-                        CURLOPT_STDERR  => $verbose,
-                        CURLOPT_HTTPHEADER  => [
+                        CURLOPT_RANGE      => '0-500',
+                        CURLOPT_VERBOSE    => $this->pawtunes->config('debugging') === 'enabled',
+                        CURLOPT_STDERR     => $verbose,
+                        CURLOPT_HTTPHEADER => [
                             // 'Icy-MetaData: 1',
                         ],
                     ],

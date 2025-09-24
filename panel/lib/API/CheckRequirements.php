@@ -13,13 +13,14 @@
 
 namespace API;
 
+use JsonException;
 use RuntimeException;
 
 class CheckRequirements extends Base
 {
 
     /**
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function __invoke()
     {
