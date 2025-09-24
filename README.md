@@ -96,17 +96,34 @@ If you encounter any issues during installation, please refer to the [Installati
 I also offer installation and customization services. For more details, feel free to reach out via the [Prahec - Contact Me](https://prahec.com/contact) page.
 
 ### 📦 Docker
-For system insulation and ease of start, I would suggest Docker image. It's super easy to start with a single command:
-```
+The easiest way to run **PawTunes** is with Docker.  
+You can get started in seconds:
+```bash
 docker run -d -p 80:80 jackyprahec/pawtunes:latest
 ```
 
-To persist data and configuration files through different docker images, you can mount/copy these folders:
+#### Persisting Data
+To keep your configuration and data across container updates, you should mount the following paths:
+
+- **/var/www/html/inc/config** → holds `general.php` and other config
+- **/var/www/html/inc/locale** → translations/locales
+- **/var/www/html/data** -> Holds Artworks, cache, images
+
+Example:
+```bash
+docker run \
+  --name=pawtunes \
+  -p 80:80 \
+  -v /local/folder/config:/var/www/html/inc/config \
+  -v /local/folder/locale:/var/www/html/inc/locale \
+  -v /local/folder/data:/var/www/html/data \
+  jackyprahec/pawtunes:latest
 ```
-/var/www/html/inc/config
-/var/www/html/inc/locale
-/var/www/html/data
-```
+
+Since **PawTunes 1.0.7**, the `entrypoint.sh` script will automatically copy default config/locale/data files into empty volumes on first run.
+
+PawTunes includes an Nginx server by default, but for TLS/HTTPS you’ll usually want to put it behind a reverse proxy (e.g. Traefik, NGINX Proxy Manager, Caddy, etc...).  
+You _can_ modify the bundled Nginx config for TLS directly, but that’s out of scope here.
 
 ---
 
@@ -114,7 +131,7 @@ To persist data and configuration files through different docker images, you can
 **PawTunes** is designed to be easily extended, upgraded, and customized.
 The codebase is straightforward, well-commented, and structured for simplicity.
 Full documentation for all player classes and functions is coming soon.
-In the meantime, you can find practical code examples for integrating the player into your website using the **External API (JSONP)** here:
+In the meantime, you can find practical code examples for integrating the player into your website using the **External API (JSONP)** here:
 [Developer Documentation](https://doc.prahec.com/pawtunes#developers).
 
 #### Experimental feature: ICY Metadata

@@ -113,7 +113,7 @@ class Direct extends TrackInfo
         );
 
         // OGG without metaint → treat as 0 (prefix match!)
-        if ($icyMetaint === null && $contentType && str_starts_with($contentType, 'application/ogg')) {
+        if ($icyMetaint === null && $contentType && substr_compare($contentType, 'application/ogg', 0, 16) === 0) {
             $icyMetaint = 0;
         }
 
