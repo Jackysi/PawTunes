@@ -104,6 +104,11 @@ abstract class Artwork
      */
     public function __invoke($artist, $title = '', string $override = '', bool $skipCache = false): ?string
     {
+        // Default artist/title, we already return false here
+        if ($this->isDefaultTrack($artist, $title)) {
+            return false;
+        }
+
         // If we already have an image, stop here.
         $existing = $this->getExistingImage($artist, $title, $skipCache);
         if ($existing || empty($artist)) {
@@ -147,7 +152,7 @@ abstract class Artwork
         $trackName   = $this->pawtunes->parseTrack("{$artist} - {$title}");
 
         // Empty Artist, Too sort or default artist-title returned
-        if (empty($trackArtist) || strlen($trackArtist) < 3 || $this->isDefaultTrack($artist, $title)) {
+        if (empty($trackArtist) || strlen($trackArtist) < 3) {
             return false;
         }
 
