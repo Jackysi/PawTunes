@@ -58,7 +58,6 @@ class Icecast extends TrackInfo
     {
         $ice    = [];
         $parsed = $this->pawtunes->xml2array($data, true);
-        var_dump($parsed);
 
         // Throw exception if XML parsing failed
         if (empty($parsed) || ! is_array($parsed) || ! is_array($parsed['source'])) {
