@@ -64,7 +64,7 @@ class Direct extends TrackInfo
             10,
             $err,
             [
-                // Request ICY METADATA
+                // Request ICY METADATA (Shoutcast/MP3)
                 CURLOPT_HTTPHEADER     => [
                     'Icy-MetaData: 1',
                 ],
@@ -95,14 +95,19 @@ class Direct extends TrackInfo
 
                     $buf .= $chunk;
 
-                    // Abort, otherwise this will go indefinitely
-                    if ($icyMetaint === null) {
-                        return 0;
-                    }
+                    // MP3/Shoutcast logic: We know exactly where metadata is
+                    if ($icyMetaint !== null && $icyMetaint > 0) {
 
-                    // Once we have at least $icyMetaint + 600 bytes, stop
-                    if (strlen($buf) >= $icyMetaint + 600) {
-                        return 0;
+                        if (strlen($buf) >= $icyMetaint + 4000) {
+                            return 0;
+                        }
+
+                    } else { // Ogg/General logic: Read up to 32KB to capture header comments
+
+                        if (strlen($buf) >= 32768) {
+                            return 0;
+                        }
+
                     }
 
                     return strlen($chunk);
@@ -112,49 +117,57 @@ class Direct extends TrackInfo
             false // Always err, because we abort on 0
         );
 
-        // OGG without metaint → treat as 0 (prefix match!)
-        if ($icyMetaint === null && $contentType && substr_compare($contentType, 'application/ogg', 0, 16) === 0) {
-            $icyMetaint = 0;
-        }
-
         // Something broke
         if (empty($buf)) {
             throw new PawException($err ?: 'Empty response from stream.');
         }
 
-        // We have metaint, let's parse it
-        if ($icyMetaint !== null && $icyMetaint >= 0) {
+        // Handle Ogg/Vorbis/Opus where icyMetaint is missing
+        if ($icyMetaint === null) {
+            $isOgg = str_contains($contentType ?? '', 'ogg')
+                     || str_contains($contentType ?? '', 'vorbis')
+                     || str_contains($contentType ?? '', 'opus')
+                     || str_starts_with($buf, 'OggS');
 
-            $slice = strlen($buf) < ($icyMetaint + 600)
-                ? substr($buf, $icyMetaint)
-                : substr($buf, $icyMetaint, 600);
+            if ($isOgg) {
+                $icyMetaint = 0; // Use start of buffer
+            }
+        }
+
+        // We have metaint (or forced Ogg 0), let's parse it
+        if (is_int($icyMetaint) && $icyMetaint >= 0) {
+
+            // For Ogg we scan the whole buffer, for MP3 we scan the interval
+            $slice = ($icyMetaint === 0)
+                ? $buf
+                : substr($buf, $icyMetaint, 4000);
 
             if ($slice !== false && $slice !== '') {
 
                 // Shoutcast: StreamTitle='...';
-                if (strpos($slice, 'StreamTitle=') !== false) {
-
-                    $parts = explode('StreamTitle=', $slice, 2);
-                    $title = trim($parts[1]);
-
-                    if (preg_match("/^'(.*?)';/s", $title, $m)) {
+                if (str_contains($slice, 'StreamTitle=')) {
+                    if (preg_match("/StreamTitle='(.*?)';/s", $slice, $m)) {
                         $result = $m[1];
                     }
-
                 }
 
-                // Icecast KV: TITLE=... ARTIST=...
-                if ( ! $result && strpos($slice, 'TITLE=') !== false && strpos($slice, 'ARTIST=') !== false) {
+                // Icecast/Ogg: TITLE=... ARTIST=...
+                if ( ! $result && (stripos($slice, 'TITLE=') !== false || stripos($slice, 'ARTIST=') !== false)) {
 
-                    // tolerate noise and line breaks between fields
-                    if (preg_match('/TITLE=(?P<title>.*?)ARTIST=(?P<artist>.*?)(?:ENCODEDBY|$)/s', $slice, $m)) {
+                    // Parse loosely specifically for Ogg where binary nulls exist
+                    $artist = '';
+                    $title  = '';
 
-                        $clean  = static fn($s) => preg_replace('/[\x00-\x09\x0B\x0C\x0E-\x1F\x7F]/', '', (string) $s);
-                        $artist = $clean($m['artist'] ?? '');
-                        $title  = $clean($m['title'] ?? '');
-                        $combo  = trim($artist) !== '' && trim($title) !== '' ? "$artist - $title" : ($artist ?: $title);
+                    if (preg_match('/TITLE=([^\x00-\x1F]+)/i', $slice, $mT)) {
+                        $title = trim($mT[1]);
+                    }
+                    if (preg_match('/ARTIST=([^\x00-\x1F]+)/i', $slice, $mA)) {
+                        $artist = trim($mA[1]);
+                    }
+
+                    if ($title || $artist) {
+                        $combo  = $artist !== '' && $title !== '' ? "$artist - $title" : ($artist ?: $title);
                         $result = trim($combo, " \t\n\r\0\x0B-");
-
                     }
                 }
             }
