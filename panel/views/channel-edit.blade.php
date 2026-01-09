@@ -349,6 +349,7 @@
                         '<option value="mp3">MP3</option>' +
                         '<option value="oga">OGG</option>' +
                         '<option value="m4a">AAC</option>' +
+                        '<option value="flac">FLAC</option>' +
                         '</select>' +
                         '</td>' +
                         '<td style="width: 5%; text-align: center;">' +

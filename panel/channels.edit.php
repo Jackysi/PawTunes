@@ -29,7 +29,7 @@ if ( ! isset($panel)) {
 $trackInfoMethods = include "panel/channels.edit.inc.php";
 
 // Options (might change in future)
-$codecs       = ['mp3' => 'MP3', 'oga' => 'OGG', 'm4a' => 'AAC'];
+$codecs       = ['mp3' => 'MP3', 'oga' => 'OGG', 'm4a' => 'AAC', 'flac' => 'FLAC'];
 $logo_ext     = ['jpeg', 'png', 'webp', 'jpg', 'svg'];
 $streamUrlExt = ['pls', 'm3u', 'xspf'];
 $templates    = $pawtunes->getTemplates();
