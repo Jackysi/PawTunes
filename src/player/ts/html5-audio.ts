@@ -73,12 +73,12 @@ export default class HTML5Audio extends PawTunesEvents {
             codec: 'audio/mpegurl',
             media: 'audio'
         },
-        oga: { // OGG
-            codec: 'audio/ogg; codecs="vorbis, opus"',
+        oga: {
+            codec: 'audio/ogg',
             media: 'audio'
         },
         flac: { // FLAC
-            codec: 'audio/x-flac',
+            codec: 'audio/flac',
             media: 'audio'
         },
         wav: { // PCM
