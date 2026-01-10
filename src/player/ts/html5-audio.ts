@@ -57,11 +57,11 @@ export default class HTML5Audio extends PawTunesEvents {
      * @var {object}
      */
     formats: Record<string, Format> = {
-        mp3: {
+        mp3  : {
             codec: 'audio/mpeg',
             media: 'audio'
         },
-        m4a: { // AAC / MP4
+        m4a  : { // AAC / MP4
             codec: 'audio/mp4; codecs="mp4a.40.2"',
             media: 'audio'
         },
@@ -69,19 +69,19 @@ export default class HTML5Audio extends PawTunesEvents {
             codec: 'application/vnd.apple.mpegurl; codecs="mp4a.40.2"',
             media: 'audio'
         },
-        m3ua: { // M3U
+        m3ua : { // M3U
             codec: 'audio/mpegurl',
             media: 'audio'
         },
-        oga: {
+        oga  : {
             codec: 'audio/ogg',
             media: 'audio'
         },
-        flac: { // FLAC
+        flac : { // FLAC
             codec: 'audio/flac',
             media: 'audio'
         },
-        wav: { // PCM
+        wav  : { // PCM
             codec: 'audio/wav; codecs="1"',
             media: 'audio'
         },
@@ -89,7 +89,7 @@ export default class HTML5Audio extends PawTunesEvents {
             codec: 'audio/webm; codecs="vorbis"',
             media: 'audio'
         },
-        fla: { // FLV / F4A
+        fla  : { // FLV / F4A
             codec: 'audio/x-flv',
             media: 'audio'
         },
@@ -117,12 +117,12 @@ export default class HTML5Audio extends PawTunesEvents {
         play: '.play',
         stop: '.stop',
 
-        mute: '.volume-icon .volume',
-        unmute: '.volume-icon .muted',
+        mute           : '.volume-icon .volume',
+        unmute         : '.volume-icon .muted',
         volumeContainer: '.volume-control',
-        volumeBar: '.volume-slider .vol-progress',
-        volumeValue: '.volume-slider .vol-progress .vol-bar',
-        volumeHandle: '.volume-slider .vol-progress .vol-bar .circle-control',
+        volumeBar      : '.volume-slider .vol-progress',
+        volumeValue    : '.volume-slider .vol-progress .vol-bar',
+        volumeHandle   : '.volume-slider .vol-progress .vol-bar .circle-control',
     }
 
     /**
@@ -131,16 +131,16 @@ export default class HTML5Audio extends PawTunesEvents {
      * @var {object}
      */
     noVolumeControl: Record<string, RegExp> = {
-        ipad: /ipad/,
-        iphone: /iphone/,
-        ipod: /ipod/,
-        android_pad: /android(?!.*?mobile)/,
+        ipad         : /ipad/,
+        iphone       : /iphone/,
+        ipod         : /ipod/,
+        android_pad  : /android(?!.*?mobile)/,
         android_phone: /android.*?mobile/,
-        blackberry: /blackberry/,
-        windows_ce: /windows ce/,
-        iemobile: /iemobile/,
-        webos: /webos/,
-        playbook: /playbook/
+        blackberry   : /blackberry/,
+        windows_ce   : /windows ce/,
+        iemobile     : /iemobile/,
+        webos        : /webos/,
+        playbook     : /playbook/
     }
 
 
@@ -319,23 +319,23 @@ export default class HTML5Audio extends PawTunesEvents {
         }
 
         return {
-            currentTime: this.audio.currentTime,
-            duration: this.audio.duration,
-            paused: this.audio.paused,
-            ended: this.audio.ended,
+            currentTime : this.audio.currentTime,
+            duration    : this.audio.duration,
+            paused      : this.audio.paused,
+            ended       : this.audio.ended,
             playbackRate: this.audio.playbackRate,
-            volume: this.audio.volume,
-            muted: this.audio.muted,
-            seeking: this.audio.seeking,
-            buffered: this.audio.buffered,
-            readyState: this.audio.readyState,
+            volume      : this.audio.volume,
+            muted       : this.audio.muted,
+            seeking     : this.audio.seeking,
+            buffered    : this.audio.buffered,
+            readyState  : this.audio.readyState,
             networkState: this.audio.networkState,
-            loop: this.audio.loop,
-            preload: this.audio.preload,
-            autoplay: this.audio.autoplay,
-            src: this.audio.currentSrc || this.audio.src,
-            textTracks: this.audio.textTracks,
-            error: this.audio.error,
+            loop        : this.audio.loop,
+            preload     : this.audio.preload,
+            autoplay    : this.audio.autoplay,
+            src         : this.audio.currentSrc || this.audio.src,
+            textTracks  : this.audio.textTracks,
+            error       : this.audio.error,
         };
 
     }
