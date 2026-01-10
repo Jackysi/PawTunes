@@ -604,8 +604,7 @@ export default class PawTunes extends HTML5Audio {
      *
      * @returns array of matching elements
      */
-    public _(selector: string, fn: Function | null = () => {
-    }, elm: HTMLElement | Document = document, usePrefix: boolean = true) {
+    public _(selector: string, fn: Function | null = () => {}, elm: HTMLElement | Document = document, usePrefix: boolean = true) {
 
         // Shortcut for custom selectors
         if (selector in this.selectors) {
