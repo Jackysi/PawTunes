@@ -155,8 +155,10 @@ abstract class Helpers
 
         }
 
-        // Close connection and return data
-        curl_close($CURL);
+        // PHP < 8.0: resource needs explicit closing
+        if (is_resource($CURL)) {
+            curl_close($CURL);
+        }
 
         return $data;
 
