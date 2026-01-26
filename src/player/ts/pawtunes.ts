@@ -19,10 +19,10 @@ export default class PawTunes extends HTML5Audio {
      * @var {object} onAir
      */
     onAir: OnAir = {
-        artist: "",
-        title: "",
+        artist : "",
+        title  : "",
         artwork: null,
-        time: 0
+        time   : 0
     };
 
     /**
@@ -32,11 +32,11 @@ export default class PawTunes extends HTML5Audio {
      */
     artworkTypes = {
         'jpeg': 'image/jpeg',
-        'jpg': 'image/jpeg',
-        'png': 'image/png',
-        'gif': 'image/gif',
+        'jpg' : 'image/jpeg',
+        'png' : 'image/png',
+        'gif' : 'image/gif',
         'webp': 'image/webp',
-        'svg': 'image/svg+xml'
+        'svg' : 'image/svg+xml'
     };
 
     /**
@@ -147,37 +147,37 @@ export default class PawTunes extends HTML5Audio {
      * @var {object} language
      */
     language: { [key: string]: string } = {
-        error: "ERROR",
-        error_create: "Unable to find channels, please create one!",
-        error_defined: "NO CHANNELS DEFINED",
-        error_invalid: "Invalid Channel!",
-        error_network: "ERROR: Network error occurred!",
-        error_playback: "ERROR: Playback failed, loading stream failed!",
-        error_stream: "ERROR: The specified or selected stream does not exist!",
-        history_added: "Added",
+        error               : "ERROR",
+        error_create        : "Unable to find channels, please create one!",
+        error_defined       : "NO CHANNELS DEFINED",
+        error_invalid       : "Invalid Channel!",
+        error_network       : "ERROR: Network error occurred!",
+        error_playback      : "ERROR: Playback failed, loading stream failed!",
+        error_stream        : "ERROR: The specified or selected stream does not exist!",
+        history_added       : "Added",
         history_artist_title: "Artist/Title",
-        history_hour_ago: "hr ago",
-        history_just_now: "just now",
-        history_min_ago: "min ago",
-        history_sec_ago: "sec ago",
-        loading_message: "Loading, please wait...",
-        history_no_history: "No history available at this time.",
-        share: "Share",
-        song_history: "Song History",
-        status_init: "Loading {STREAM}...",
-        status_muted: "Player muted.",
-        status_playing: "Playing {STREAM}...",
-        status_stopped: "Player stopped.",
-        status_volume: "Volume: {LEVEL}",
-        twitter_share: "I am listening to {TRACK}!",
-        ui_back: "Back",
-        ui_channels: "Channels list",
-        ui_history: "Show Track History",
-        ui_play: "Start playing",
-        ui_playlists: "Listen in your favorite player",
-        ui_settings: "Select stream quality",
-        ui_stop: "Stop playing",
-        ui_volume_circle: "Drag to change volume"
+        history_hour_ago    : "hr ago",
+        history_just_now    : "just now",
+        history_min_ago     : "min ago",
+        history_sec_ago     : "sec ago",
+        loading_message     : "Loading, please wait...",
+        history_no_history  : "No history available at this time.",
+        share               : "Share",
+        song_history        : "Song History",
+        status_init         : "Loading {STREAM}...",
+        status_muted        : "Player muted.",
+        status_playing      : "Playing {STREAM}...",
+        status_stopped      : "Player stopped.",
+        status_volume       : "Volume: {LEVEL}",
+        twitter_share       : "I am listening to {TRACK}!",
+        ui_back             : "Back",
+        ui_channels         : "Channels list",
+        ui_history          : "Show Track History",
+        ui_play             : "Start playing",
+        ui_playlists        : "Listen in your favorite player",
+        ui_settings         : "Select stream quality",
+        ui_stop             : "Stop playing",
+        ui_volume_circle    : "Drag to change volume"
     };
 
     /**
@@ -186,33 +186,33 @@ export default class PawTunes extends HTML5Audio {
      * @var {object} settings
      */
     settings: { [p: string]: any } = {
-        api: '',
-        analytics: false,
-        defaults: {
-            autoplay: false,
-            channel: "",
+        api          : '',
+        analytics    : false,
+        defaults     : {
+            autoplay      : false,
+            channel       : "",
             default_volume: 50,
         },
-        dynamicTitle: true,
-        history: true,
+        dynamicTitle : true,
+        history      : true,
         historyMaxLen: 20,
-        refreshRate: 10,
-        template: 'pawtunes',
-        tpl: {},
-        title: "PawTunes",
-        trackInfo: {
-            disabled: false,
-            artistMaxLen: 24,
-            titleMaxLen: 28,
+        refreshRate  : 10,
+        template     : 'pawtunes',
+        tpl          : {},
+        title        : "PawTunes",
+        trackInfo    : {
+            disabled        : false,
+            artistMaxLen    : 24,
+            titleMaxLen     : 28,
             lazyLoadArtworks: false,
-            lazyLoadURL: './index.php?artwork&artist={ARTIST}&title={TITLE}',
-            default: {
-                artist: "Various Artists",
-                title: "Unknown Track",
+            lazyLoadURL     : './index.php?artwork&artist={ARTIST}&title={TITLE}',
+            default         : {
+                artist : "Various Artists",
+                title  : "Unknown Track",
                 artwork: "./data/images/default.png",
             },
         },
-        showTimer: true,
+        showTimer    : true,
     };
 
 
@@ -439,6 +439,7 @@ export default class PawTunes extends HTML5Audio {
     public handleOnAirResponse(data: any): void {
 
         if (!data.artist || !data.title) {
+            this.hideLoading();
             console.error('Invalid data or no data received from the server.');
             return;
         }
@@ -455,10 +456,10 @@ export default class PawTunes extends HTML5Audio {
 
         // Set ON AIR
         this.onAir = {
-            artist: data.artist,
-            title: data.title,
+            artist : data.artist,
+            title  : data.title,
             artwork: data.artwork ?? null,
-            time: new Date().getTime()
+            time   : new Date().getTime()
         };
 
         this.writeHTML(
@@ -515,10 +516,10 @@ export default class PawTunes extends HTML5Audio {
 
         // Set default on air
         this.onAir = {
-            artist: this.settings.trackInfo.default.artist,
-            title: this.settings.trackInfo.default.title,
+            artist : this.settings.trackInfo.default.artist,
+            title  : this.settings.trackInfo.default.title,
             artwork: this.settings.trackInfo.default.artwork,
-            time: new Date().getTime()
+            time   : new Date().getTime()
         };
 
         this.writeText('.onair .artist', this.onAir.artist);
@@ -539,7 +540,7 @@ export default class PawTunes extends HTML5Audio {
      */
     public loadArtwork(URL: string | null): void {
 
-        if (!URL && !this.settings.trackInfo.default.artwork) {
+        if ((!URL || !URL.length) && !this.settings.trackInfo.default.artwork) {
             this.hideLoading();
             return;
         }
@@ -604,7 +605,8 @@ export default class PawTunes extends HTML5Audio {
      *
      * @returns array of matching elements
      */
-    public _(selector: string, fn: Function | null = () => {}, elm: HTMLElement | Document = document, usePrefix: boolean = true) {
+    public _(selector: string, fn: Function | null = () => {
+    }, elm: HTMLElement | Document = document, usePrefix: boolean = true) {
 
         // Shortcut for custom selectors
         if (selector in this.selectors) {
@@ -1322,9 +1324,9 @@ export default class PawTunes extends HTML5Audio {
                 // Define images
                 for (let i = 0; i < sizes.length; i++) {
                     images.push({
-                        src: url,
+                        src  : url,
                         sizes: sizes[i],
-                        type: (imageMime !== '' && imageMime !== '/') ? imageMime : null
+                        type : (imageMime !== '' && imageMime !== '/') ? imageMime : null
                     })
                 }
 
@@ -1332,9 +1334,9 @@ export default class PawTunes extends HTML5Audio {
 
             navigator.mediaSession.metadata = new window.MediaMetadata(
                 {
-                    artist: this.onAir.artist,
-                    title: this.onAir.title,
-                    album: '',
+                    artist : this.onAir.artist,
+                    title  : this.onAir.title,
+                    album  : '',
                     artwork: images
                 }
             );
