@@ -59,7 +59,7 @@ if (empty($pawtunes->config('admin_password'))) {
 // Logout user
 if (isset($_GET['logout'])) {
 
-    unset($_SESSION[$prefix]['pawtunes-auth']);
+    $panel->destroyAuth();
     header("Location: index.php?page=login");
     exit;
 

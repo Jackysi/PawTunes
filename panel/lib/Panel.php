@@ -278,24 +278,31 @@ class Panel
      */
     public function isAuthorized(): bool
     {
-        return (isset($this->globals['auth']) && $this->globals['auth'] === $this->authToken());
+        return ! empty($this->globals['auth']);
 
     }
 
 
     /**
+     * Generate a cryptographically secure random auth token
+     *
      * @return string
      */
-    public function authToken(): string
+    public function createAuthToken(): string
     {
-        $algorithm = 'sha256';
-        if (function_exists('sha512')) {
+        return bin2hex(random_bytes(32));
 
-            $algorithm = 'sha512';
+    }
 
-        }
 
-        return hash($algorithm, $_SERVER['HTTP_USER_AGENT'].$this->pawtunes->config('admin_password'));
+    /**
+     * Destroy the current auth session
+     *
+     * @return void
+     */
+    public function destroyAuth(): void
+    {
+        $this->globals['auth'] = null;
 
     }
 
