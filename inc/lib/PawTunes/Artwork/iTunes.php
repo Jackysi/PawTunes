@@ -71,7 +71,7 @@ class iTunes extends Artwork
 
         }
 
-        return false;
+        return null;
 
     }
 
