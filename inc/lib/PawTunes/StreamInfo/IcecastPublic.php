@@ -70,23 +70,29 @@ class IcecastPublic extends TrackInfo
         }
 
         // Do mounts exist?
-        if ( ! isset($ice[$this->channel['stats']['mount']]) && ! is_array($ice[$this->channel['stats']['mount']])) {
+        if ( ! isset($ice[$this->channel['stats']['mount']]) || ! is_array($ice[$this->channel['stats']['mount']])) {
             throw new PawException("Specified mount not found in the response!");
         }
 
-        // Attempt to use main mount, else use backup one
-        if ( ! empty($ice[$this->channel['stats']['mount']]['title']) || ! empty($ice[$this->channel['stats']['mount']]['artist'])) {
+        $mount = $this->channel['stats']['mount'];
 
-            // Determine Artist/Title on PRIMARY Mount
-            if (empty($ice[$this->channel['stats']['mount']]['artist'])) {
+        // Attempt to use main mount — extract artist/title string
+        if ( ! empty($ice[$mount]['title']) || ! empty($ice[$mount]['artist'])) {
 
-                $ice = $ice[$this->channel['stats']['mount']]['title'];
+            if (empty($ice[$mount]['artist'])) {
+
+                $ice = $ice[$mount]['title'];
 
             } else {
 
-                $ice = $ice[$this->channel['stats']['mount']]['artist'].' - '.$ice[$this->channel['stats']['mount']]['title'];
+                $ice = $ice[$mount]['artist'].' - '.$ice[$mount]['title'];
 
             }
+
+        } else {
+
+            // Silent stream or no metadata — return empty string for default fallback
+            $ice = '';
 
         }
 
