@@ -368,9 +368,7 @@ class Panel
      */
     public function flash($message, string $redirect = ""): void
     {
-        if ( ! isset($_SESSION[$this->prefix]['flash'])) {
-            $_SESSION[$this->prefix]['flash'][] = $message;
-        }
+        $_SESSION[$this->prefix]['flash'][] = $message;
 
         // When redirecting, quit
         if ($redirect !== "") {
