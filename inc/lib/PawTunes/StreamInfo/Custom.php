@@ -79,12 +79,12 @@ class Custom extends TrackInfo
 
             foreach ($data['history'] as $key => $value) {
 
-                // Artist or Title not provided
-                if (empty($data['artist']) || empty($data['title'])) {
-
+                // Artist or Title not provided for this history entry
+                if (empty($value['artist'])) {
                     $data['history'][$key]['artist'] = $this->pawtunes->config('artist_default');
-                    $data['history'][$key]['title']  = $this->pawtunes->config('title_default');
-
+                }
+                if (empty($value['title'])) {
+                    $data['history'][$key]['title'] = $this->pawtunes->config('title_default');
                 }
 
                 // Played At provided
