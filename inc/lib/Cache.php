@@ -25,28 +25,28 @@ class Cache
      *
      * @var array
      */
-    protected $options;
+    protected array $options;
 
     /**
      * This is temporary variable with object of a caching method (Memcache, Memcached, APC)
      *
-     * @var
+     * @var mixed
      */
-    protected $object;
+    protected mixed $object = null;
 
     /**
      * Simple bool variable that lets us know if script started properly or not
      *
      * @var bool
      */
-    protected $startup = false;
+    protected bool $startup = false;
 
     /**
      * When the stack is initiated, this variable is filled with cache information
      *
-     * @var bool
+     * @var array
      */
-    private $store = [];
+    private array $store = [];
 
 
     /**

@@ -19,12 +19,12 @@ use lib\PawTunes;
 abstract class TrackInfo implements TrackInfoInterface
 {
 
-    protected $pawtunes;
+    protected PawTunes $pawtunes;
 
-    protected $channel;
+    protected array $channel;
 
 
-    public function __construct(PawTunes $pawtunes, $channel)
+    public function __construct(PawTunes $pawtunes, array $channel)
     {
         $this->pawtunes = $pawtunes;
         $this->channel  = $channel;
