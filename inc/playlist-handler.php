@@ -44,7 +44,7 @@ foreach ($channels as $key => $search) {
 }
 
 ## Make sure that channel exists
-if ($chn_key && ! is_array($channels[$chn_key])) {
+if ($chn_key === null || ! is_array($channels[$chn_key])) {
 
     die('Selected channel does not exist. It may have been deleted or renamed. Please try again later.');
 
