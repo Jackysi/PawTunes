@@ -524,29 +524,28 @@ class Panel
             throw new RuntimeException(sprintf('Directory "%s" was not created', $path));
         }
 
-        // ERR Handler
+        // ERR Handler — keys must be integer constants matching $_FILES[...]['error']
         $errors = [
-            "UPLOAD_ERR_OK"         => "",
-            "UPLOAD_ERR_INI_SIZE"   => "Larger than upload_max_filesize.",
-            "UPLOAD_ERR_FORM_SIZE"  => "Your upload is too big !",
-            "UPLOAD_ERR_PARTIAL"    => "Upload partially completed !",
-            "UPLOAD_ERR_NO_FILE"    => "No file specified !",
-            "UPLOAD_ERR_NO_TMP_DIR" => "Woops, server error. Please contact us! <span style=\"display:none\">UPLOAD_ERR_NO_TMP_DIR</span>",
-            "UPLOAD_ERR_CANT_WRITE" => "Woops, server error. Please contact us! <span style=\"display:none\">UPLOAD_ERR_CANT_WRITE</span>",
-            "UPLOAD_ERR_EXTENSION"  => "Woops, server error. Please contact us! <span style=\"display:none\">UPLOAD_ERR_EXTENSION</span>",
-            "UPLOAD_ERR_EMPTY"      => "File is empty.",
-            "UPLOAD_ERR_NOT_MOVED"  => "Error while saving file !",
+            UPLOAD_ERR_OK         => "",
+            UPLOAD_ERR_INI_SIZE   => "Larger than upload_max_filesize.",
+            UPLOAD_ERR_FORM_SIZE  => "Your upload is too big!",
+            UPLOAD_ERR_PARTIAL    => "Upload partially completed!",
+            UPLOAD_ERR_NO_FILE    => "No file specified!",
+            UPLOAD_ERR_NO_TMP_DIR => "Server error: missing temp directory.",
+            UPLOAD_ERR_CANT_WRITE => "Server error: failed to write to disk.",
+            UPLOAD_ERR_EXTENSION  => "Server error: upload blocked by extension.",
         ];
 
-
-        // Handle results & do last touches
-        if ( ! empty ($_FILES[$form_name]['error'])) {
-            $error = $errors[$_FILES[$form_name]['error']];
+        // Check for upload errors before attempting move
+        $error = null;
+        $uploadError = $_FILES[$form_name]['error'] ?? UPLOAD_ERR_NO_FILE;
+        if ($uploadError !== UPLOAD_ERR_OK) {
+            $error = $errors[$uploadError] ?? "Unknown upload error.";
         }
 
-        // Try to move uploaded file from TEMP directory to our new set directory
-        if ( ! move_uploaded_file($_FILES[$form_name]['tmp_name'], $path.$filename)) {
-            $error = $errors["UPLOAD_ERR_NOT_MOVED"];
+        // Only move file if no upload error occurred
+        if ($error === null && ! move_uploaded_file($_FILES[$form_name]['tmp_name'], $path.$filename)) {
+            $error = "Error while saving file!";
         }
 
         // Handle return array
