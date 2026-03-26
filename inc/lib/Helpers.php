@@ -710,15 +710,13 @@ abstract class Helpers
             return "";
         }
 
-        // Check if multibyte string is installed, if not, run old way
-        if ( ! function_exists('mb_convert_encoding')) {
-
-            return ((preg_match('!!u', $string)) ? $string : utf8_encode($string));
-
+        // Already valid UTF-8? Return as-is
+        if (preg_match('!!u', $string)) {
+            return $string;
         }
 
-        // Convert encoding from XXX to UTF-8
-        $string = mb_convert_encoding($string, "UTF-8");
+        // Convert from ISO-8859-1 (most common non-UTF-8 encoding in radio streams) to UTF-8
+        $string = mb_convert_encoding($string, 'UTF-8', 'ISO-8859-1');
 
         // Escape special characters
         $string = htmlspecialchars($string, ENT_QUOTES, 'UTF-8');
