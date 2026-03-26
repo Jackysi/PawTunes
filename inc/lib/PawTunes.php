@@ -345,8 +345,7 @@ class PawTunes extends Helpers
             foreach ($templates[$template]['extra'] as $index => $extra) {
 
                 // Generate ID for unique fields
-                #$extras[$index]['id'] = "{$extra['name']}_{$index}";
-                $extras[$index]['id'] = "hi";
+                $extras[$index]['id'] = "{$extra['name']}_{$index}";
 
 
                 // If template isset exists and is not checkbox set to default value
