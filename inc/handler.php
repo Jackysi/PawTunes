@@ -111,7 +111,8 @@ if (isset($_GET['channel']) && $_GET['channel'] === 'all') {
 
 }
 
-// Search for our channel in config
+// Search for our channel in config — fallback to first channel if not found
+// (graceful: if admin renamed a channel, returning visitors still get audio)
 $chn_key = 0;
 foreach ($channels as $key => $search) {
     if ($search['name'] === $_GET['channel']) {
