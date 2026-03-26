@@ -104,9 +104,9 @@ abstract class Artwork
      */
     public function __invoke($artist, $title = '', string $override = '', bool $skipCache = false): ?string
     {
-        // Default artist/title, we already return false here
+        // Default artist/title, skip lookup
         if ($this->isDefaultTrack($artist, $title)) {
-            return false;
+            return null;
         }
 
         // If we already have an image, stop here.
@@ -118,7 +118,7 @@ abstract class Artwork
         // Now let's do magic.
         $artworkURL = ( ! empty($override)) ? $override : $this->getArtworkURL($artist, $title);
         if ( ! $artworkURL || ! filter_var($artworkURL, FILTER_VALIDATE_URL)) {
-            return false;
+            return null;
         }
 
         // Not downloading & caching
@@ -129,7 +129,7 @@ abstract class Artwork
         // Download and cache, return new URL
         $fileName = $this->pawtunes->parseTrack("{$artist} - {$title}");
         if ( ! $newImage = $this->downloadArtwork($artworkURL, $fileName)) {
-            return false;
+            return null;
         }
 
         return $newImage;
@@ -151,9 +151,9 @@ abstract class Artwork
         $trackArtist = $this->pawtunes->parseTrack($artist);
         $trackName   = $this->pawtunes->parseTrack("{$artist} - {$title}");
 
-        // Empty Artist, Too sort or default artist-title returned
+        // Empty Artist, Too short or default artist-title returned
         if (empty($trackArtist) || strlen($trackArtist) < 3) {
-            return false;
+            return null;
         }
 
         // Check if we have a cached image (artist - title)
