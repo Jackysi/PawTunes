@@ -651,7 +651,7 @@ class PawTunes
         $localeDir = realpath("{$this->currentDir}/../locale");
         $langFile  = realpath("{$this->currentDir}/../locale/{$lang}.php");
 
-        if ($langFile !== false && str_starts_with($langFile, $localeDir) && is_file($langFile)) {
+        if ($langFile !== false && strpos($langFile, $localeDir) === 0 && is_file($langFile)) {
             return require($langFile);
         }
 
