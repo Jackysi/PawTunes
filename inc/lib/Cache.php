@@ -32,7 +32,8 @@ class Cache
      *
      * @var mixed
      */
-    protected mixed $object = null;
+    /** @var mixed */
+    protected $object = null;
 
     /**
      * Simple bool variable that lets us know if script started properly or not
