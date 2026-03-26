@@ -12,10 +12,8 @@
  */
 
 /**
- * Hint IDE already defined variables from parent (this file is included)
- * Returns default image if not found
- *
- * @var lib\PawTunes $pawtunes
+ * Dynamic playlist generation handler (M3U/PLS/ASX).
+ * Required scope: $pawtunes (PawTunes)
  */
 
 if ( ! ob_get_level()) {

@@ -12,10 +12,8 @@
  */
 
 /**
- * Hint IDE already defined variables from parent (this file is included)
- * Returns default image if not found
- *
- * @var lib\PawTunes $pawtunes
+ * Artwork proxy/resize handler.
+ * Required scope: $pawtunes (PawTunes)
  */
 
 while (ob_get_level()) {

@@ -12,11 +12,8 @@
  */
 
 /**
- * Hint IDE already defined variables from parent (this file is included)
- *
- * @var lib\PawTunes $pawtunes
- * @var array $templates
- * @var lib\Cache $cache
+ * Track info request handler.
+ * Required scope: $pawtunes (PawTunes), $templates (array)
  */
 
 use lib\PawException;
@@ -41,10 +38,7 @@ function outputJson(string $json, $pawtunes): void
     exit($json);
 }
 
-$channels = [];
-if (is_file('inc/config/channels.php')) {
-    $channels = include('inc/config/channels.php');
-}
+$channels = $pawtunes->getChannels();
 
 // Start few functions and init objects
 header("Content-Type: application/json; charset=utf-8");
