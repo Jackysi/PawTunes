@@ -21,6 +21,26 @@
 
 use lib\PawException;
 
+/**
+ * Output JSON or JSONP response safely
+ *
+ * @param  string  $json  Encoded JSON string
+ * @param  lib\PawTunes  $pawtunes
+ */
+function outputJson(string $json, $pawtunes): void
+{
+    if ( ! empty($_GET['callback']) && $pawtunes->config('api') === true) {
+        $callback = $_GET['callback'];
+        if ( ! preg_match('/^[a-zA-Z_$][a-zA-Z0-9_$.]*$/', $callback)) {
+            http_response_code(400);
+            exit(json_encode(['error' => 'Invalid callback parameter']));
+        }
+        header('Content-Type: application/javascript; charset=utf-8');
+        exit("{$callback}({$json});");
+    }
+    exit($json);
+}
+
 $channels = [];
 if (is_file('inc/config/channels.php')) {
     $channels = include('inc/config/channels.php');
@@ -88,7 +108,7 @@ if (isset($_GET['channel']) && $_GET['channel'] === 'all') {
 
         // Output data into JSON array (or JSONP)
         $json_data = json_encode($out);
-        exit(( ! empty($_GET['callback']) && $pawtunes->config('api') === true) ? "{$_GET['callback']}({$json_data});" : $json_data);
+        outputJson($json_data, $pawtunes);
 
     }
 
@@ -237,5 +257,5 @@ switch ($channel['stats']['method']) {
 
 $jsonData = json_encode(empty($info) ? [] : $info, JSON_THROW_ON_ERROR);
 
-// Show output (if this is JSONP request, adapt response to its requirements
-echo(( ! empty($_GET['callback']) && $pawtunes->config('api') === true) ? "{$_GET['callback']}({$jsonData});" : $jsonData);
+// Show output (if this is JSONP request, adapt response to its requirements)
+outputJson($jsonData, $pawtunes);
