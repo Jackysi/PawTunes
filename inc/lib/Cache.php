@@ -406,7 +406,7 @@ class Cache
 
                         $cache_data = file_get_contents("{$this->options[ 'path' ]}/{$name}{$this->options[ 'ext' ]}");             ## Read file into variable
                         $cache_data = (($this->options['encrypt'] === true) ? base64_decode($cache_data) : $cache_data);      ## Encryption
-                        $serialized = @unserialize($cache_data, ['allowed_classes' => true]);
+                        $serialized = @unserialize($cache_data, ['allowed_classes' => false]);
 
                         // If un-serialize function returned ANY sort of data, return it
                         if ($serialized !== false) {
