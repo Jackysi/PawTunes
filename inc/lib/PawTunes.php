@@ -13,13 +13,20 @@
 
 namespace lib;
 
-class PawTunes extends Helpers
+use RuntimeException;
+use Throwable;
+
+class PawTunes
 {
 
     /**
      * @var \lib\Cache
      */
     public Cache $cache;
+    /**
+     * @var \lib\HttpClient
+     */
+    public HttpClient $http;
     /**
      * List of allowed extensions
      *
@@ -99,6 +106,14 @@ class PawTunes extends Helpers
             ] + $this->settings['cache']
         );
 
+        // HTTP client with error logging callback
+        $this->http = new HttpClient(
+            $this->currentDir.DIRECTORY_SEPARATOR.'bundle.crt',
+            function (string $message) {
+                $this->writeLog('player_errors', $message);
+            }
+        );
+
     }
 
 
@@ -139,94 +154,6 @@ class PawTunes extends Helpers
     }
 
 
-    /**
-     * @throws \Exception
-     */
-    public function outputBufferHandler($buffer)
-    {
-        // Array with replacement matching (regex)
-        $regex = [
-            ## REGEX					  ## REPLACE WITH
-            "/<!--.*?-->|\t/s" => "",
-            //"/\>([\s\t]+)?([ ]{2,}+)?\</s" => "><",
-        ];
-
-        // Replace tabs, empty spaces etc etc...
-        $html_out = preg_replace(array_keys($regex), $regex, $buffer);
-
-        // Optimize <style> tags
-        $html_out = preg_replace_callback('#<style(.*?)>(.*?)</style>#is', static function ($m) {
-
-            // Minify the css
-            $css = $m[2];
-            $css = preg_replace('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '', $css);
-
-            $css = str_replace(["\r\n", "\r", "\n", "\t", '  ', '    ', '     '], '', $css);
-
-            $css = preg_replace(['(( )+{)', '({( )+)'], '{', $css);
-            $css = preg_replace(['(( )+})', '(}( )+)', '(;( )*})'], '}', $css);
-            $css = preg_replace(['(;( )+)', '(( )+;)'], ';', $css);
-
-            return '<style>'.$css.'</style>';
-
-        }, $html_out);
-
-
-        // Optimize <script> tags
-        return preg_replace_callback('#<script(.*?)>(.*?)</script>#is', static function ($m) {
-
-            // Minify the js
-            $js = $m[2];
-            $js = preg_replace('/\/\*(?:[^*]|\*+[^*\/])*\*+\/|(?<!:|\|\')\/\/.*/', '', $js);
-            $js = str_replace(["\r\n", "\r", "\n", "\t", '  ', '    ', '     '], '', $js);
-
-            return "<script{$m[1]}>".$js."</script>";
-
-        }, $html_out);
-
-    }
-
-
-    /**
-     * @throws \JsonException
-     */
-    public function getTemplateEngineOpts(): array
-    {
-        ## Handle URL to the player generation
-        $this->settings['host'] = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https://' : 'http://').$_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'];
-        $this->settings['url']  = "{$this->settings['host']}{$_SERVER['REQUEST_URI']}";
-
-        ## Facebook share image
-        if (empty($this->settings['share_image_override'])) {
-            $facebookShare = $this->settings['host'].dirname($_SERVER['PHP_SELF']).'/'.$this->defaultArtwork();
-        }
-
-        // Expose config keys:
-        $pass       = [];
-        $configKeys = ['autoplay', 'site_title', 'title', 'description', 'google_analytics', 'template', 'artist_default', 'title_default'];
-        foreach ($configKeys as $key) {
-            $pass[$key] = $this->config($key);
-        }
-
-        $json = $this->generateConfigJSON();
-        $tpl  = ['tpl' => $this->arrayKeysCaseToSnakeCase($json['tpl'])];
-
-        // Others
-        $opts = [
-            'url'             => $this->config('url'),
-            'indexing'        => ($this->config('disable_index') ? 'NOINDEX, NOFOLLOW' : 'INDEX, FOLLOW'),
-            'default_artwork' => $json['trackInfo']['default']['artwork'],
-            'og_image'        => $facebookShare ?? $this->settings['share_image_override'],
-            'og_site_title'   => (( ! empty($this->config('site_title'))) ? '<meta property="og:site_name" content="'.$this->config('site_title').'">' : ' '),
-            'timestamp'       => time(),
-            'json_settings'   => json_encode($json, JSON_THROW_ON_ERROR),
-        ];
-
-        return array_merge($opts, $pass, $this->getLanguage(), $tpl);
-
-    }
-
-
     public function config($key)
     {
         return $this->settings[$key] ?? null;
@@ -234,246 +161,260 @@ class PawTunes extends Helpers
     }
 
 
-    /**
-     * @throws \JsonException
-     */
-    private function generateConfigJSON(): array
-    {
-        $channels = [];
-        if (count($this->channels) >= 1) {
-            foreach ($this->channels as $channel) {
-
-                $chn = [
-                    'name'    => $channel['name'],
-                    'logo'    => $channel['logo'] ?? null,
-                    'skin'    => isset($channel['skin']) && is_file("templates/{$this->settings['template']}/{$channel['skin']}") ? $channel['skin'] : null,
-                    'streams' => $channel['streams'],
-                ];
-
-                // Check if we need to use websocket
-                if (
-                    ! empty($channel['stats']['url'])
-                    && in_array($channel['stats']['method'], ['azuracast', 'custom'])
-                ) {
-
-                    $statsURL = parse_url($channel['stats']['url']);
-
-                    // Set websocket info
-                    $chn['ws']['method'] = $channel['stats']['method'];
-                    $chn['ws']['url']    = ($statsURL['scheme'] === 'wss') ? $channel['stats']['url'] : false;
-
-                    // Azura Cast has additional parameters
-                    if ($channel['stats']['method'] === 'azuracast') {
-
-                        $chn['ws']['station']         = $channel['stats']['station'];
-                        $chn['ws']['history']         = $channel['stats']['azura-history'];
-                        $chn['ws']['useRemoteCovers'] = $channel['stats']['use-cover'];
-
-                    }
-
-                }
-
-                $channels[] = $chn;
-
-            }
-        }
-
-        return [
-            'debug'         => ($this->config('debugging') && $this->config('debugging') === 'enabled'),
-            'channels'      => $channels,
-            'analytics'     => (! empty($this->config('google_analytics')) ? $this->config('google_analytics') : false),
-            'defaults'      => [
-                'channel'        => $this->strToUTF8($this->config('default_channel')),
-                'default_volume' => (($this->config('default_volume') >= 1 && $this->config('default_volume') <= 100) ? (int) $this->config('default_volume') : 50),
-                'autoplay'       => (isset($_GET['autoplay']) && $_GET['autoplay'] === 'false') ? false : $this->config('autoplay'),
-            ],
-            'dynamicTitle'  => $this->config('dynamic_title') ?? false,
-            'prefix'        => $this->prefix,
-            'history'       => $this->config('history'),
-            'historyMaxLen' => $this->config('historyLength') ?? 20,
-            'language'      => $this->getLanguage(),
-            'refreshRate'   => (is_numeric($this->config('stats_refresh')) && $this->config('stats_refresh') >= 3) ? (int) $this->config('stats_refresh') : 15,
-            'template'      => $this->config('template'),
-            'tpl'           => $this->getAdvancedTemplateOptions($this->config('template')),
-            'title'         => $this->strToUTF8($this->config('title')),
-            'trackInfo'     => [
-                'artistMaxLen'     => $this->config('artist_maxlength'),
-                'titleMaxLen'      => $this->config('title_maxlength'),
-                'lazyLoadArtworks' => $this->config('artwork_lazy_loading'),
-                'default'          => [
-                    'artist'  => $this->strToUTF8($this->config('artist_default')),
-                    'title'   => $this->strToUTF8($this->config('title_default')),
-                    'artwork' => $this->defaultArtwork(),
-                ],
-            ],
-        ];
-
-    }
-
-
-    private function getLanguage()
-    {
-        $lang = empty($_GET['language'])
-            ? strtolower(substr($_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '', 0, 2))
-            : $_GET['language'];
-
-        // Sanitize to alphanumeric/dash/underscore only — prevents path traversal
-        $lang = preg_replace('/[^a-z0-9_-]/i', '', $lang);
-
-        $localeDir = realpath("{$this->currentDir}/../locale");
-        $langFile  = realpath("{$this->currentDir}/../locale/{$lang}.php");
-
-        // Validate resolved path stays within locale directory
-        if ($langFile !== false && str_starts_with($langFile, $localeDir) && is_file($langFile)) {
-            return require($langFile);
-        }
-
-        return require("{$this->currentDir}/../locale/{$this->config('default_lang')}");
-
-    }
-
+    /* ============================================================================
+     * HTTP — delegates to HttpClient
+     * ============================================================================ */
 
     /**
-     * @param $template
+     * HTTP GET/POST request (delegates to HttpClient)
      *
-     * @return array
-     * @throws \JsonException
+     * @param  string  $url
+     * @param  array|null  $post
+     * @param  string|null  $auth
+     * @param  bool|callable  $progress
+     * @param  int  $timeout
+     * @param  string|int  $error
+     * @param  array  $options
+     * @param  boolean  $log
+     *
+     * @return bool|string
      */
-    public function getAdvancedTemplateOptions($template): array
+    public function get(
+        string $url,
+        ?array $post = null,
+        ?string $auth = null,
+        $progress = false,
+        int $timeout = 5,
+        &$error = false,
+        array $options = [],
+        bool $log = true
+    ) {
+        return $this->http->get($url, $post, $auth, $progress, $timeout, $error, $options, $log);
+    }
+
+
+    /* ============================================================================
+     * Logging & Error Handling
+     * ============================================================================ */
+
+    /**
+     * Write to log file
+     *
+     * @param        $file
+     * @param        $text
+     * @param  string  $path
+     *
+     * @return bool|int
+     */
+    public function writeLog($file, $text, string $path = 'data/logs/')
     {
-        // Get templates
-        $templates = $this->getTemplates();
 
-        // Check if template exists
-        if ( ! empty($templates[$template]) && ! empty($templates[$template]['extra'])) {
+        ## Logging is disabled!
+        if ($this->settings['debugging'] === 'disabled') {
+            return false;
+        }
 
-            $extras = [];
-            foreach ($templates[$template]['extra'] as $index => $extra) {
+        ## Check if path is writable
+        if (is_writable($path)) {
+            return file_put_contents($path.$file.".log", "[".date("j.n.Y-G:i")."] {$text}\n", FILE_APPEND);
+        }
 
-                // Generate ID for unique fields
-                $extras[$index]['id'] = "{$extra['name']}_{$index}";
+        return false;
+
+    }
 
 
-                // If template isset exists and is not checkbox set to default value
-                if ( ! isset($this->settings['tplOptions'][$template][$index])) {
+    /**
+     * @param  \Throwable  $e
+     *
+     * @return void
+     */
+    protected function handleException(Throwable $e): void
+    {
 
-                    $extras[$index] = ($extra['type'] !== 'checkbox') ? $extra['default'] : (bool) ($extra['default']);
-                    continue;
+        if ($this->config('debugging') !== 'disabled') {
 
-                }
+            $this->writeLog('player_errors', "FATAL ERROR: {$e->getMessage()}");
 
-                $extras[$index] = $this->settings['tplOptions'][$template][$index] ?? null;
-
+            if ($this->config('debugging') === 'enabled') {
+                $this->writeLog('player_errors', $e->getTraceAsString());
             }
 
-            return $extras;
-
         }
-
-        return [];
 
     }
 
 
-    /**
-     * Simple and good function to handle templates (we read jsons)
-     *
-     * @return array|mixed
-     * @throws \JsonException
-     */
-    public function getTemplates()
-    {
-        // Use cache
-        if (($templates = $this->cache->get('templates')) === false) {
-
-            // New list
-            $templates = [];
-
-            // Handle themes here
-            $list = $this->browse("templates/", false, true, false);
-
-            // Loop
-            foreach ($list as $dir) {
-
-                // Definitions?
-                if (is_file("templates/{$dir}/manifest.json")) {
-
-                    // Get json
-                    $loadedFile = json_decode(file_get_contents("templates/{$dir}/manifest.json"), true, 512, JSON_THROW_ON_ERROR);
-
-                    // Verify List - Do not append unless manifest is correct
-                    if ( ! empty($loadedFile['name']) && is_file("templates/{$dir}/{$loadedFile['template']}")) {
-
-                        // This is JSON from the template
-                        $templates[$dir] = $loadedFile;
-
-                        // Add full path to the variable
-                        $templates[$dir]['path'] = "templates/{$dir}";
-
-                    }
-
-                }
-
-            }
-
-            // Sort them ascending
-            asort($templates);
-
-            // Store cache
-            $this->cache->set('templates', $templates, 0);
-
-        }
-
-        return $templates;
-
-    }
-
+    /* ============================================================================
+     * Template Engine
+     * ============================================================================ */
 
     /**
-     * Transforms track name to a simplified string (Used for Artworks)
+     * Replace {{$VARIABLE}} placeholders with values from array.
+     * Supports dot notation: {{$VAR.DEEPER.DEEPER}}.
      *
-     * @param $string
+     * @param  string  $content
+     * @param  array  $array
+     * @param  bool  $uppercase
      *
      * @return string
+     * @throws \Exception
      */
-    public function parseTrack($string): string
+    public function template(string $content, array $array, bool $uppercase = false): string
     {
-        // Replace some known characters/strings with text
-        $string = str_replace(
-            ['&', 'ft.'],
-            ['and', 'feat'],
-            empty($string) ? '' : $string
-        );
 
-        // Rep
-        $rep_arr = [
-            '/[^a-z0-9\p{L}\.]+/iu' => '.',    // Replace all non-standard strings with dot
-            '/[\.]{1,}/'            => '.',    // Replace multiple dots in same string
-        ];
+        if ($uppercase) {
+            $array = $this->arrayKeysToUppercase($array);
+        }
 
-        // Replace bad characters
-        $string = preg_replace(array_keys($rep_arr), $rep_arr, trim($string));
+        $replace_count = preg_match_all("/{{\\$(.*?)}}/", $content, $matches);
 
-        return strtolower(rtrim($string, '.'));
+        for ($i = 0; $i < $replace_count; $i++) {
+
+            $full_match    = $matches[0][$i];
+            $variable_path = $matches[1][$i];
+
+            $variable = $this->getNestedValue($array, $variable_path, $uppercase);
+
+            if (isset($variable)) {
+                $content = str_replace($full_match, $variable, $content);
+                continue;
+            }
+
+            if ($this->settings['debugging'] === 'enabled') {
+                throw new RuntimeException("Variable not found: {$variable_path}");
+            }
+
+        }
+
+        return $content;
 
     }
 
 
     /**
-     * Very small function to exit JSON with grace
+     * @param  array  $array
      *
-     * @throws \JsonException
+     * @return array
      */
-    public function exitJSON(): void
+    private function arrayKeysToUppercase(array $array): array
     {
-        // Clean buffer and every thing above
-        if (ob_get_level()) {
-            ob_end_clean();
+
+        $result = [];
+        foreach ($array as $key => $value) {
+
+            $key = strtoupper($key);
+            if (is_array($value)) {
+                $value = $this->arrayKeysToUppercase($value);
+            }
+
+            $result[$key] = $value;
+
         }
 
-        // Empty array
-        echo json_encode([], JSON_THROW_ON_ERROR);
-        exit;
+        return $result;
+
+    }
+
+
+    /**
+     * @param  array  $array
+     * @param  string  $path
+     * @param  bool  $uppercase
+     *
+     * @return mixed|null
+     */
+    private function getNestedValue(array $array, string $path, bool $uppercase = false)
+    {
+
+        $keys  = explode('.', $path);
+        $value = $array;
+        foreach ($keys as $key) {
+
+            $key = ($uppercase) ? strtoupper($key) : $key;
+            if (isset($value[$key])) {
+                $value = $value[$key];
+                continue;
+            }
+
+            return null;
+
+        }
+
+        return $value;
+
+    }
+
+
+    /* ============================================================================
+     * Artwork
+     * ============================================================================ */
+
+    /**
+     * Get artwork for artist/title, iterating through configured sources
+     *
+     * @param        $artist
+     * @param  string  $title
+     * @param  string  $override
+     * @param  bool  $skipCache
+     *
+     * @return string|null
+     */
+    public function getArtwork($artist, string $title = "", string $override = "", bool $skipCache = false): ?string
+    {
+
+        $sources = $this->getSortedArtworkSourcesList();
+
+        $found = null;
+        foreach ($sources as $source) {
+            try {
+
+                if ( ! isset($this->artworkMethods[$source['method']])) {
+                    continue;
+                }
+
+                $seeker = "lib\PawTunes\Artwork\\{$this->artworkMethods[ $source['method']]}";
+
+                $art             = new $seeker($this);
+                $art->path       = $this->artworkPath;
+                $art->cachePath  = $this->settings['cache']['path'] ?? './data/cache';
+                $art->extensions = $this->artworkExtensions;
+                $artwork         = $art($artist, $title, $override, $skipCache);
+
+                if ($artwork) {
+                    $found = $artwork;
+                    break;
+                }
+
+            } catch (Throwable $e) {
+
+                $this->handleException($e);
+
+            }
+        }
+
+        return ( ! $found) ? $this->defaultArtwork() : $found;
+
+    }
+
+
+    /**
+     * @return string|null
+     */
+    protected function defaultArtwork(): ?string
+    {
+
+        if ($this->foundDefaultArtwork !== null) {
+            return $this->foundDefaultArtwork;
+        }
+
+        foreach ($this->artworkExtensions as $ext) {
+            if (is_file("{$this->artworkPath}/default.{$ext}")) {
+                return $this->foundDefaultArtwork = "{$this->artworkPath}/default.{$ext}";
+            }
+        }
+
+        return null;
 
     }
 
@@ -503,4 +444,362 @@ class PawTunes extends Helpers
         return $list;
 
     }
+
+
+    /**
+     * Transforms track name to a simplified string (Used for Artworks)
+     *
+     * @param $string
+     *
+     * @return string
+     */
+    public function parseTrack($string): string
+    {
+        $string = str_replace(
+            ['&', 'ft.'],
+            ['and', 'feat'],
+            empty($string) ? '' : $string
+        );
+
+        $rep_arr = [
+            '/[^a-z0-9\p{L}\.]+/iu' => '.',
+            '/[\.]{1,}/'            => '.',
+        ];
+
+        $string = preg_replace(array_keys($rep_arr), $rep_arr, trim($string));
+
+        return strtolower(rtrim($string, '.'));
+
+    }
+
+
+    /* ============================================================================
+     * Output & Rendering
+     * ============================================================================ */
+
+    /**
+     * @throws \Exception
+     */
+    public function outputBufferHandler($buffer)
+    {
+        $regex = [
+            "/<!--.*?-->|\t/s" => "",
+        ];
+
+        $html_out = preg_replace(array_keys($regex), $regex, $buffer);
+
+        $html_out = preg_replace_callback('#<style(.*?)>(.*?)</style>#is', static function ($m) {
+
+            $css = $m[2];
+            $css = preg_replace('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '', $css);
+            $css = str_replace(["\r\n", "\r", "\n", "\t", '  ', '    ', '     '], '', $css);
+            $css = preg_replace(['(( )+{)', '({( )+)'], '{', $css);
+            $css = preg_replace(['(( )+})', '(}( )+)', '(;( )*})'], '}', $css);
+            $css = preg_replace(['(;( )+)', '(( )+;)'], ';', $css);
+
+            return '<style>'.$css.'</style>';
+
+        }, $html_out);
+
+        return preg_replace_callback('#<script(.*?)>(.*?)</script>#is', static function ($m) {
+
+            $js = $m[2];
+            $js = preg_replace('/\/\*(?:[^*]|\*+[^*\/])*\*+\/|(?<!:|\|\')\/\/.*/', '', $js);
+            $js = str_replace(["\r\n", "\r", "\n", "\t", '  ', '    ', '     '], '', $js);
+
+            return "<script{$m[1]}>".$js."</script>";
+
+        }, $html_out);
+
+    }
+
+
+    /**
+     * @throws \JsonException
+     */
+    public function getTemplateEngineOpts(): array
+    {
+        $this->settings['host'] = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https://' : 'http://').$_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'];
+        $this->settings['url']  = "{$this->settings['host']}{$_SERVER['REQUEST_URI']}";
+
+        if (empty($this->settings['share_image_override'])) {
+            $facebookShare = $this->settings['host'].dirname($_SERVER['PHP_SELF']).'/'.$this->defaultArtwork();
+        }
+
+        $pass       = [];
+        $configKeys = ['autoplay', 'site_title', 'title', 'description', 'google_analytics', 'template', 'artist_default', 'title_default'];
+        foreach ($configKeys as $key) {
+            $pass[$key] = $this->config($key);
+        }
+
+        $json = $this->generateConfigJSON();
+        $tpl  = ['tpl' => Helpers::arrayKeysCaseToSnakeCase($json['tpl'])];
+
+        $opts = [
+            'url'             => $this->config('url'),
+            'indexing'        => ($this->config('disable_index') ? 'NOINDEX, NOFOLLOW' : 'INDEX, FOLLOW'),
+            'default_artwork' => $json['trackInfo']['default']['artwork'],
+            'og_image'        => $facebookShare ?? $this->settings['share_image_override'],
+            'og_site_title'   => (( ! empty($this->config('site_title'))) ? '<meta property="og:site_name" content="'.$this->config('site_title').'">' : ' '),
+            'timestamp'       => time(),
+            'json_settings'   => json_encode($json, JSON_THROW_ON_ERROR),
+        ];
+
+        return array_merge($opts, $pass, $this->getLanguage(), $tpl);
+
+    }
+
+
+    /**
+     * @throws \JsonException
+     */
+    public function exitJSON(): void
+    {
+        if (ob_get_level()) {
+            ob_end_clean();
+        }
+
+        echo json_encode([], JSON_THROW_ON_ERROR);
+        exit;
+
+    }
+
+
+    /**
+     * @throws \JsonException
+     */
+    private function generateConfigJSON(): array
+    {
+        $channels = [];
+        if (count($this->channels) >= 1) {
+            foreach ($this->channels as $channel) {
+
+                $chn = [
+                    'name'    => $channel['name'],
+                    'logo'    => $channel['logo'] ?? null,
+                    'skin'    => isset($channel['skin']) && is_file("templates/{$this->settings['template']}/{$channel['skin']}") ? $channel['skin'] : null,
+                    'streams' => $channel['streams'],
+                ];
+
+                if (
+                    ! empty($channel['stats']['url'])
+                    && in_array($channel['stats']['method'], ['azuracast', 'custom'])
+                ) {
+
+                    $statsURL = parse_url($channel['stats']['url']);
+
+                    $chn['ws']['method'] = $channel['stats']['method'];
+                    $chn['ws']['url']    = ($statsURL['scheme'] === 'wss') ? $channel['stats']['url'] : false;
+
+                    if ($channel['stats']['method'] === 'azuracast') {
+
+                        $chn['ws']['station']         = $channel['stats']['station'];
+                        $chn['ws']['history']         = $channel['stats']['azura-history'];
+                        $chn['ws']['useRemoteCovers'] = $channel['stats']['use-cover'];
+
+                    }
+
+                }
+
+                $channels[] = $chn;
+
+            }
+        }
+
+        return [
+            'debug'         => ($this->config('debugging') && $this->config('debugging') === 'enabled'),
+            'channels'      => $channels,
+            'analytics'     => (! empty($this->config('google_analytics')) ? $this->config('google_analytics') : false),
+            'defaults'      => [
+                'channel'        => Helpers::strToUTF8($this->config('default_channel')),
+                'default_volume' => (($this->config('default_volume') >= 1 && $this->config('default_volume') <= 100) ? (int) $this->config('default_volume') : 50),
+                'autoplay'       => (isset($_GET['autoplay']) && $_GET['autoplay'] === 'false') ? false : $this->config('autoplay'),
+            ],
+            'dynamicTitle'  => $this->config('dynamic_title') ?? false,
+            'prefix'        => $this->prefix,
+            'history'       => $this->config('history'),
+            'historyMaxLen' => $this->config('historyLength') ?? 20,
+            'language'      => $this->getLanguage(),
+            'refreshRate'   => (is_numeric($this->config('stats_refresh')) && $this->config('stats_refresh') >= 3) ? (int) $this->config('stats_refresh') : 15,
+            'template'      => $this->config('template'),
+            'tpl'           => $this->getAdvancedTemplateOptions($this->config('template')),
+            'title'         => Helpers::strToUTF8($this->config('title')),
+            'trackInfo'     => [
+                'artistMaxLen'     => $this->config('artist_maxlength'),
+                'titleMaxLen'      => $this->config('title_maxlength'),
+                'lazyLoadArtworks' => $this->config('artwork_lazy_loading'),
+                'default'          => [
+                    'artist'  => Helpers::strToUTF8($this->config('artist_default')),
+                    'title'   => Helpers::strToUTF8($this->config('title_default')),
+                    'artwork' => $this->defaultArtwork(),
+                ],
+            ],
+        ];
+
+    }
+
+
+    private function getLanguage()
+    {
+        $lang = empty($_GET['language'])
+            ? strtolower(substr($_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '', 0, 2))
+            : $_GET['language'];
+
+        $lang = preg_replace('/[^a-z0-9_-]/i', '', $lang);
+
+        $localeDir = realpath("{$this->currentDir}/../locale");
+        $langFile  = realpath("{$this->currentDir}/../locale/{$lang}.php");
+
+        if ($langFile !== false && str_starts_with($langFile, $localeDir) && is_file($langFile)) {
+            return require($langFile);
+        }
+
+        return require("{$this->currentDir}/../locale/{$this->config('default_lang')}");
+
+    }
+
+
+    /**
+     * @param $template
+     *
+     * @return array
+     * @throws \JsonException
+     */
+    public function getAdvancedTemplateOptions($template): array
+    {
+        $templates = $this->getTemplates();
+
+        if ( ! empty($templates[$template]) && ! empty($templates[$template]['extra'])) {
+
+            $extras = [];
+            foreach ($templates[$template]['extra'] as $index => $extra) {
+
+                $extras[$index]['id'] = "{$extra['name']}_{$index}";
+
+                if ( ! isset($this->settings['tplOptions'][$template][$index])) {
+
+                    $extras[$index] = ($extra['type'] !== 'checkbox') ? $extra['default'] : (bool) ($extra['default']);
+                    continue;
+
+                }
+
+                $extras[$index] = $this->settings['tplOptions'][$template][$index] ?? null;
+
+            }
+
+            return $extras;
+
+        }
+
+        return [];
+
+    }
+
+
+    /**
+     * @return array|mixed
+     * @throws \JsonException
+     */
+    public function getTemplates()
+    {
+        if (($templates = $this->cache->get('templates')) === false) {
+
+            $templates = [];
+
+            $list = Helpers::browse("templates/", false, true, false);
+
+            foreach ($list as $dir) {
+
+                if (is_file("templates/{$dir}/manifest.json")) {
+
+                    $loadedFile = json_decode(file_get_contents("templates/{$dir}/manifest.json"), true, 512, JSON_THROW_ON_ERROR);
+
+                    if ( ! empty($loadedFile['name']) && is_file("templates/{$dir}/{$loadedFile['template']}")) {
+
+                        $templates[$dir] = $loadedFile;
+                        $templates[$dir]['path'] = "templates/{$dir}";
+
+                    }
+
+                }
+
+            }
+
+            asort($templates);
+            $this->cache->set('templates', $templates, 0);
+
+        }
+
+        return $templates;
+
+    }
+
+
+    /* ============================================================================
+     * Backward-compatible forwarding to Helpers static methods
+     *
+     * Existing callers use $pawtunes->method() — these delegate to Helpers::method().
+     * New code should call Helpers::method() directly.
+     * ============================================================================ */
+
+    public function currentURL(): string
+    {
+        return Helpers::currentURL();
+    }
+
+    public function xml2array(string $xml, bool $lower = false): array
+    {
+        return Helpers::xml2array($xml, $lower);
+    }
+
+    public function strToUTF8($string): string
+    {
+        return Helpers::strToUTF8($string);
+    }
+
+    public function shorten($text, $length)
+    {
+        return Helpers::shorten($text, $length);
+    }
+
+    public function parseURL($url): ?string
+    {
+        return Helpers::parseURL($url);
+    }
+
+    public function extGet($filename): string
+    {
+        return Helpers::extGet($filename);
+    }
+
+    public function extDel($filename)
+    {
+        return Helpers::extDel($filename);
+    }
+
+    public function formatBytes($b, $p = null): string
+    {
+        return Helpers::formatBytes($b, $p);
+    }
+
+    public function browse($path, bool $show_files = true, bool $show_directories = false, bool $directory_append = true): array
+    {
+        return Helpers::browse($path, $show_files, $show_directories, $directory_append);
+    }
+
+    public static function deleteFile($path): bool
+    {
+        return Helpers::deleteFile($path);
+    }
+
+    public function camelCaseToSnakeCase(string $input): string
+    {
+        return Helpers::camelCaseToSnakeCase($input);
+    }
+
+    public function arrayKeysCaseToSnakeCase($input): array
+    {
+        return Helpers::arrayKeysCaseToSnakeCase($input);
+    }
+
 }
