@@ -79,6 +79,14 @@ if ( ! $panel->isAuthorized()) {
 }
 
 
+// CSRF protection — verify token on all authenticated POST requests
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ! $panel->verifyCsrfToken()) {
+    http_response_code(403);
+    $panel->flash($panel->alert('Invalid or expired security token. Please try again.', 'error'));
+    header('Location: ' . $_SERVER['REQUEST_URI']);
+    exit;
+}
+
 // Safety feature, replaces anything but numbers or letters
 $_GET['page'] = preg_replace('/[^0-9a-z_]/i', '', (( ! empty($_GET['page'])) ? $_GET['page'] : 'home'));
 

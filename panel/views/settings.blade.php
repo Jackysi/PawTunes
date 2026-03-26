@@ -230,6 +230,7 @@
 @endphp
 @section('content')
     <form method="POST" action="index.php?page=settings" enctype="multipart/form-data">
+        {!! $panel->csrfField() !!}
 
         {!! $message !!}
         <div class="panel">
@@ -449,6 +450,7 @@
                         @foreach ( $templates as $index => $data )
                             <div role="tabpanel" id="{{$index}}" class="tab-pane{{( ( $index === array_keys( $templates )[ 0 ] ) ? ' active' : '' )}}">
                                 <form method="POST" data-action="index.php?page=settings&advanced-options" class="templateOptions" enctype="multipart/form-data">
+                                    {!! $panel->csrfField() !!}
                                     @if ( empty( $data[ 'extra' ] ) )
                                         {!! $panel->alert( 'Sorry, there are no advanced options available for this template.', 'info' ) !!}
                                     @else

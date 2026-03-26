@@ -1,6 +1,7 @@
 @section('content')
     {!! $error !!}
     <form method="POST" action="index.php?page=channels&action={{($_GET['action'] === 'add') ? 'add' : 'edit&channel='.$_GET['channel']}}" autocomplete="off" enctype="multipart/form-data">
+        {!! $panel->csrfField() !!}
         <div class="panel">
             <div class="content">
                 <p style="margin-bottom: 2rem;">

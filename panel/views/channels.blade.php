@@ -5,6 +5,7 @@
 
     @if ( isset( $mode ) && $mode === 'custom' )
         <form method="POST" action="index.php?page=channels&sort=custom">
+            {!! $panel->csrfField() !!}
             @endif
 
             @if ( count( $channels ) <= 0 )
