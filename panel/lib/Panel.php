@@ -194,7 +194,7 @@ class Panel
             }
 
             if ($value === 'true' || $value === 'false') {
-                $array[$key] = (bool) $value;
+                $array[$key] = ($value === 'true');
             }
 
         }
