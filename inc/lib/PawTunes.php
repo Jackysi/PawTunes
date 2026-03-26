@@ -313,16 +313,22 @@ class PawTunes extends Helpers
 
     private function getLanguage()
     {
-        $lang = ((empty($_GET['language'])) ? strtolower(substr($_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '', 0, 2)) : $_GET['language']);
-        if (file_exists("{$this->currentDir}/.././locale/{$lang}.php")) { // Load if language is found
-            return require("{$this->currentDir}/.././locale/{$lang}.php");
+        $lang = empty($_GET['language'])
+            ? strtolower(substr($_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '', 0, 2))
+            : $_GET['language'];
+
+        // Sanitize to alphanumeric/dash/underscore only — prevents path traversal
+        $lang = preg_replace('/[^a-z0-9_-]/i', '', $lang);
+
+        $localeDir = realpath("{$this->currentDir}/../locale");
+        $langFile  = realpath("{$this->currentDir}/../locale/{$lang}.php");
+
+        // Validate resolved path stays within locale directory
+        if ($langFile !== false && str_starts_with($langFile, $localeDir) && is_file($langFile)) {
+            return require($langFile);
         }
 
-        if ($this->config('multi_lang') || $this->config('multi_lang') !== true) {
-            return require("{$this->currentDir}/.././locale/{$this->config(  'default_lang' )}");
-        }
-
-        return require("{$this->currentDir}/.././locale/{$this->config(  'default_lang' )}");
+        return require("{$this->currentDir}/../locale/{$this->config('default_lang')}");
 
     }
 
