@@ -30,9 +30,26 @@ if ( ! isset($_GET['artist'])) {
 // Important so full images are downloaded!
 ignore_user_abort(true);
 
-$override = (isset($_GET['override'])) ? base64_decode($_GET['override']) : null;
-$title    = ($pawtunes->config('artist_images_only')) ? '' : $_GET['title'] ?? '';
-$art      = $pawtunes->getArtwork($_GET['artist'], $title, $override ?? '');
+$override = null;
+if (isset($_GET['override'])) {
+    $decoded = base64_decode($_GET['override'], true);
+    if ($decoded !== false && filter_var($decoded, FILTER_VALIDATE_URL)) {
+        $scheme = parse_url($decoded, PHP_URL_SCHEME);
+        $host   = parse_url($decoded, PHP_URL_HOST);
+
+        // Only allow http/https and block private/reserved IP ranges
+        if (
+            in_array($scheme, ['http', 'https'], true)
+            && $host !== false
+            && filter_var(gethostbyname($host), FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false
+        ) {
+            $override = $decoded;
+        }
+    }
+}
+
+$title = ($pawtunes->config('artist_images_only')) ? '' : $_GET['title'] ?? '';
+$art   = $pawtunes->getArtwork($_GET['artist'], $title, $override ?? '');
 
 // If default, return 404
 if ( ! $art) {
