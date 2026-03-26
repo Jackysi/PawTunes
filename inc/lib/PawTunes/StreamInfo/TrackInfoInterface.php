@@ -18,7 +18,7 @@ use lib\PawTunes;
 interface TrackInfoInterface
 {
 
-    public function __construct(PawTunes $pawtunes, $channel);
+    public function __construct(PawTunes $pawtunes, array $channel);
 
 
     public function getInfo();

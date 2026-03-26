@@ -406,7 +406,11 @@ class Cache
 
                         $cache_data = file_get_contents("{$this->options[ 'path' ]}/{$name}{$this->options[ 'ext' ]}");             ## Read file into variable
                         $cache_data = (($this->options['encrypt'] === true) ? base64_decode($cache_data) : $cache_data);      ## Encryption
-                        $serialized = @unserialize($cache_data, ['allowed_classes' => false]);
+                        try {
+                            $serialized = unserialize($cache_data, ['allowed_classes' => false]);
+                        } catch (\Throwable $e) {
+                            $serialized = false;
+                        }
 
                         // If un-serialize function returned ANY sort of data, return it
                         if ($serialized !== false) {
@@ -598,7 +602,7 @@ class Cache
                 if (is_file("{$this->options[ 'path' ]}/{$name}{$this->options[ 'ext' ]}")) {
 
                     // Del cache
-                    $deleted = @unlink("{$this->options[ 'path' ]}/{$name}{$this->options[ 'ext' ]}");
+                    $deleted = unlink("{$this->options[ 'path' ]}/{$name}{$this->options[ 'ext' ]}");
 
                 }
 
