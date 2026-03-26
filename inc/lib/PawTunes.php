@@ -519,7 +519,8 @@ class PawTunes
      */
     public function getTemplateEngineOpts(): array
     {
-        $this->settings['host'] = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https://' : 'http://').$_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'];
+        $host = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? 'localhost';
+        $this->settings['host'] = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https://' : 'http://').$host;
         $this->settings['url']  = "{$this->settings['host']}{$_SERVER['REQUEST_URI']}";
 
         if (empty($this->settings['share_image_override'])) {
