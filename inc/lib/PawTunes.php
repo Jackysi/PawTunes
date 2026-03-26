@@ -675,16 +675,12 @@ class PawTunes
             $extras = [];
             foreach ($templates[$template]['extra'] as $index => $extra) {
 
-                $extras[$index]['id'] = "{$extra['name']}_{$index}";
-
-                if ( ! isset($this->settings['tplOptions'][$template][$index])) {
-
+                // Use saved value if available, otherwise use manifest default
+                if (isset($this->settings['tplOptions'][$template][$index])) {
+                    $extras[$index] = $this->settings['tplOptions'][$template][$index];
+                } else {
                     $extras[$index] = ($extra['type'] !== 'checkbox') ? $extra['default'] : (bool) ($extra['default']);
-                    continue;
-
                 }
-
-                $extras[$index] = $this->settings['tplOptions'][$template][$index] ?? null;
 
             }
 
