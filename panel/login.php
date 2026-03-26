@@ -66,7 +66,7 @@ if ( ! empty($_POST)) {
         // Regenerate session ID to prevent session fixation attacks
         session_regenerate_id(true);
 
-        $panel->setOption('auth', $panel->authToken());
+        $panel->setOption('auth', $panel->createAuthToken());
 
         // Set attempts and store them (clear this IP)
         $auth_list[$_SERVER['REMOTE_ADDR']] = 0;
