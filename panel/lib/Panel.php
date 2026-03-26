@@ -101,6 +101,48 @@ class Panel
 
 
     /**
+     * Generate or retrieve the CSRF token for this session
+     *
+     * @return string
+     */
+    public function csrfToken(): string
+    {
+        if (empty($_SESSION[$this->prefix]['csrf_token'])) {
+            $_SESSION[$this->prefix]['csrf_token'] = bin2hex(random_bytes(32));
+        }
+
+        return $_SESSION[$this->prefix]['csrf_token'];
+
+    }
+
+
+    /**
+     * Generate a hidden input field containing the CSRF token
+     *
+     * @return string
+     */
+    public function csrfField(): string
+    {
+        return '<input type="hidden" name="_token" value="' . $this->csrfToken() . '">';
+
+    }
+
+
+    /**
+     * Verify that the submitted CSRF token matches the session token
+     *
+     * @return bool
+     */
+    public function verifyCsrfToken(): bool
+    {
+        $token = $_POST['_token'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+
+        return hash_equals($this->csrfToken(), $token);
+
+    }
+
+
+    /**
      * Short function to speed up deployment of alerts
      *
      * @param        $text

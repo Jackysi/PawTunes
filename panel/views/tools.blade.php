@@ -93,6 +93,7 @@
     <div class="modal fade compile-custom-scheme" tabindex="-1" role="dialog" aria-labelledby="Upload Artwork">
         <div class="modal-dialog modal-lg" role="document">
             <form method="POST" id="compileColorScheme" action="index.php?page=tools#theme-tool">
+                {!! $panel->csrfField() !!}
                 <input type="hidden" name="form" value="compile">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -223,6 +224,7 @@
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <form method="POST" action="index.php?page=tools" id="import-tool">
+                    {!! $panel->csrfField() !!}
                     <input type="hidden" name="form" value="import">
                     <div class="modal-header">
                         <h4 class="modal-title"><i class="icon fa fa-download"></i> Import Artwork</h4>

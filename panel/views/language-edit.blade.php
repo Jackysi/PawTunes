@@ -9,6 +9,7 @@
 @endphp
 @section('content')
     <form action="index.php?page=language&{{( ( isset( $_GET[ 'add' ] ) ) ? 'add' : 'edit=' . $_GET[ 'edit' ] )}}" method="POST" accept-charset="UTF-8">
+        {!! $panel->csrfField() !!}
         <div class="panel">
             <div class="content">
                 <p>
