@@ -728,9 +728,14 @@ class Cache
                     $this->stack('delete', $key);
                     $cleaned[] = $key;
 
-                    // When using disk cache, we can also remove absolute file from drive
+                    // When using disk cache, also remove the file directly
+                    // (don't use $this->delete() — it calls stack('delete') again)
                     if ($this->options['mode'] === 'disk') {
-                        $this->delete($key);
+                        $name = $this->parseKey($key);
+                        $file = "{$this->options['path']}/{$name}{$this->options['ext']}";
+                        if (is_file($file)) {
+                            unlink($file);
+                        }
                     }
 
                 }
