@@ -408,13 +408,13 @@ class Cache
                         $cache_data = file_get_contents("{$this->options[ 'path' ]}/{$name}{$this->options[ 'ext' ]}");             ## Read file into variable
                         $cache_data = (($this->options['encrypt'] === true) ? base64_decode($cache_data) : $cache_data);      ## Encryption
                         try {
-                            $serialized = unserialize($cache_data, ['allowed_classes' => false]);
+                            $serialized = @unserialize($cache_data, ['allowed_classes' => false]);
                         } catch (\Throwable $e) {
                             $serialized = false;
                         }
 
                         // If un-serialize function returned ANY sort of data, return it
-                        if ($serialized !== false) {
+                        if ($serialized !== false || $cache_data === 'b:0;') {
 
                             $data = $serialized;
 
@@ -519,8 +519,8 @@ class Cache
                 // Write cache if its writable
                 if (is_writable($this->options['path']) && is_dir($this->options['path'])) {
 
-                    // Serialize arrays & objects
-                    if (is_array($data) || is_object($data)) {
+                    // Serialize non-string data
+                    if (!is_string($data)) {
                         $data = serialize($data);
                     }
 
