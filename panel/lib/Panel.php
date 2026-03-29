@@ -198,6 +198,9 @@ class Panel
     public function storeConfig(string $file, array $contents): bool
     {
 
+        // Remove CSRF token from stored data
+        unset($contents['_token']);
+
         // Convert array to boolean
         $contents = $this->convertArrayToBool($contents);
 
