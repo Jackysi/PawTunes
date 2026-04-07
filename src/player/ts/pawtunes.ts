@@ -445,7 +445,7 @@ export default class PawTunes extends HTML5Audio {
         }
 
         // Nothing has changed since the last call /check
-        if (data.artist == this.onAir.artist && data.title == this.onAir.title && data.artwork == this.onAir.artwork) {
+        if (data.artist === this.onAir.artist && data.title === this.onAir.title && data.artwork === this.onAir.artwork) {
             return;
         }
 
@@ -529,7 +529,6 @@ export default class PawTunes extends HTML5Audio {
         this.loadArtwork(this.onAir.artwork);
         this.handleMetaChange();
 
-        console.log("Error fetching track info: ", error);
 
     }
 
@@ -552,12 +551,12 @@ export default class PawTunes extends HTML5Audio {
 
             el.addEventListener('load', () => {
                 this.hideLoading();
-            })
+            }, {once: true})
 
             el.addEventListener('error', () => {
-                if (el.getAttribute('src') == this.settings.trackInfo.default.artwork) return;
+                if (el.getAttribute('src') === this.settings.trackInfo.default.artwork) return;
                 el.setAttribute('src', this.settings.trackInfo.default.artwork);
-            })
+            }, {once: true})
 
         });
 
@@ -821,6 +820,35 @@ export default class PawTunes extends HTML5Audio {
             }
 
         })
+
+        // ICY METADATA: real-time track updates from MSE stream
+        this.on('metadata', (icyTitle: string) => {
+
+            if (typeof icyTitle !== 'string') return;
+
+            const trimmed = icyTitle.trim();
+            if (!trimmed) {
+                // Empty StreamTitle — show defaults
+                this.handleOnAirResponse({
+                    artist : this.settings.trackInfo.default.artist,
+                    title  : this.settings.trackInfo.default.title,
+                    artwork: null
+                });
+                return;
+            }
+
+            // Parse "Artist - Title" (standard ICY format)
+            const sep = trimmed.indexOf(' - ');
+            const artist = sep >= 0 ? trimmed.substring(0, sep).trim() : trimmed;
+            const title = sep >= 0 ? trimmed.substring(sep + 3).trim() : '';
+
+            this.handleOnAirResponse({
+                artist : artist || this.settings.trackInfo.default.artist,
+                title  : title || this.settings.trackInfo.default.title,
+                artwork: null
+            });
+
+        });
 
         // Set custom events for media navigation (though not the best solution)
         if ('mediaSession' in navigator) {
@@ -1186,8 +1214,6 @@ export default class PawTunes extends HTML5Audio {
         if (!this.settings.analytics || typeof this.settings.analytics !== 'string')
             return false;
 
-        //console.log("Creating Google Analytics with ID: " + s.analytics );
-
         // @ts-ignore
         window.dataLayer = window.dataLayer || [];
 
@@ -1279,7 +1305,7 @@ export default class PawTunes extends HTML5Audio {
      */
     protected ago(timestamp: number): string {
 
-        let seconds = Math.floor(((new Date().getTime() + new Date().getTimezoneOffset()) - timestamp) / 1000);
+        let seconds = Math.floor((Date.now() - timestamp) / 1000);
 
         // Hours
         if (Math.floor(seconds / 3600) >= 1)
@@ -1458,7 +1484,6 @@ export default class PawTunes extends HTML5Audio {
 
         }
 
-        // @todo ERROR?
         this.toast(this.translate('error_stream'))
 
     }
