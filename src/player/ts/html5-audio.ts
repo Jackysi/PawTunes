@@ -26,7 +26,7 @@ export default class HTML5Audio extends PawTunesEvents {
      *
      * @var {string[]}
      */
-    streamEvents: string[] = [
+    readonly streamEvents: string[] = [
         "loadstart",
         "durationchange",
         "loadedmetadata",
@@ -56,7 +56,7 @@ export default class HTML5Audio extends PawTunesEvents {
      *
      * @var {object}
      */
-    formats: Record<string, Format> = {
+    readonly formats: Record<string, Format> = {
         mp3  : {
             codec: 'audio/mpeg',
             media: 'audio'
@@ -130,7 +130,7 @@ export default class HTML5Audio extends PawTunesEvents {
      *
      * @var {object}
      */
-    noVolumeControl: Record<string, RegExp> = {
+    readonly noVolumeControl: Record<string, RegExp> = {
         ipad         : /ipad/,
         iphone       : /iphone/,
         ipod         : /ipod/,
@@ -147,6 +147,9 @@ export default class HTML5Audio extends PawTunesEvents {
     isAndroid: boolean = this.matchBrowser({mobile: /(android)/});
     isMobile: boolean = this.matchBrowser({mobile: /(mobile)/});
     isNoVolume: boolean = this.matchBrowser(this.noVolumeControl);
+
+    /** Stored references for audio event listeners so they can be removed. */
+    private boundHandlers: Array<{ event: string; handler: () => void }> = [];
 
     /**
      * Creates a new instance of HTML5Audio.
@@ -189,26 +192,21 @@ export default class HTML5Audio extends PawTunesEvents {
         this.audio.controls = false;
         this.audio.crossOrigin = "anonymous";
 
-        // Different for devices with no volume control
-        if (!this.isNoVolume) {
-            if (this.volume >= 1 && this.volume <= 100) {
-
-                this.audio.volume = this.volume / 100;
-
-            } else {
-
-                this.audio.muted = true;
-                this.audio.volume = 0;
-
-            }
-        }
-
-        // No volume control, we set to 100%
+        // Volume initialization
         if (this.isNoVolume) {
 
             this.volume = 100;
             this.audio.volume = 1;
             this.updateUI('disable-volume');
+
+        } else if (this.volume >= 1 && this.volume <= 100) {
+
+            this.audio.volume = this.volume / 100;
+
+        } else {
+
+            this.audio.muted = true;
+            this.audio.volume = 0;
 
         }
 
@@ -255,17 +253,13 @@ export default class HTML5Audio extends PawTunesEvents {
                     continue;
                 }
 
-                /*const sourceElement = document.createElement( 'source' );
-                sourceElement.src = source.src;
-                sourceElement.type = this.formats[ source.type ].codec;
-                this.audio.appendChild( sourceElement );*/
                 this.media.push(source);
                 playable++;
 
             }
         }
 
-        // Hack to append src
+        // Set the first playable source
         if (playable > 0) {
             this.audio.src = this.media[0].src;
         }
@@ -284,16 +278,18 @@ export default class HTML5Audio extends PawTunesEvents {
 
     /**
      * Binds HTML5 audio events to the internal event handler.
+     * Stores references so listeners can be removed on destroy.
      */
     bindStreamEvents() {
 
-        // Add event listeners
+        // Remove any previously bound listeners first
+        this.unbindStreamEvents();
+
         this.streamEvents.forEach(event => {
 
             if (!this.audio) return;
-            this.audio.addEventListener(event, () => {
+            const handler = () => {
 
-                // When ERROR occurs, pass data
                 if (event === 'error') {
                     this.trigger(event, this.audio?.error);
                     return;
@@ -301,9 +297,27 @@ export default class HTML5Audio extends PawTunesEvents {
 
                 this.trigger(event);
 
-            });
+            };
+
+            this.audio.addEventListener(event, handler);
+            this.boundHandlers.push({event, handler});
 
         });
+
+    }
+
+    /**
+     * Removes all previously bound audio event listeners.
+     */
+    unbindStreamEvents() {
+
+        if (!this.audio) return;
+
+        for (const {event, handler} of this.boundHandlers) {
+            this.audio.removeEventListener(event, handler);
+        }
+
+        this.boundHandlers = [];
 
     }
 
@@ -353,10 +367,8 @@ export default class HTML5Audio extends PawTunesEvents {
             if (!this.ready && this.media.length >= 1) {
 
                 this.updateUI('play');
-                await this.setMedia(Object.assign([], this.media));
+                await this.setMedia([...this.media]);
                 this.ready = true;
-
-                await this.play();
 
             }
 
@@ -388,7 +400,7 @@ export default class HTML5Audio extends PawTunesEvents {
             // Special case for radio streams, we stop buffering/loading in the background
             this.clearMedia();
             if (this.media.length >= 1) {
-                await this.setMedia(Object.assign([], this.media));
+                await this.setMedia([...this.media]);
             }
 
         }
@@ -442,17 +454,8 @@ export default class HTML5Audio extends PawTunesEvents {
     clearMedia() {
 
         if (this.audio) {
-
             this.audio.pause();
             this.audio.src = "";
-
-            // Removes all child elements, ignored currently
-            for (const child of this.audio.children) {
-                if (child.tagName === 'SOURCE') {
-                    this.audio.removeChild(child);
-                }
-            }
-
         }
 
         this.ready = false;
@@ -466,7 +469,7 @@ export default class HTML5Audio extends PawTunesEvents {
 
         if (this.audio) {
 
-            // IF HTML ELEMENT: this.container.removeChild( this.audio );
+            this.unbindStreamEvents();
             this.audio.pause();
             this.audio.src = "";
             this.audio.currentTime = 0;
@@ -547,7 +550,7 @@ export default class HTML5Audio extends PawTunesEvents {
 
             case 'error':
                 this.stop();
-                if (data.length < 1) {
+                if (!data) {
                     return;
                 }
                 break;
@@ -557,7 +560,6 @@ export default class HTML5Audio extends PawTunesEvents {
                 // UI should react based on Media Volume, not internal value
                 if (!this.audio) return;
                 this.volume = Math.round(this.audio.volume * 100);
-                console.warn(this.volume);
 
                 // If volume is 0, mute else unmute
                 this.audio.muted = this.volume < 1;
