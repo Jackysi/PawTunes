@@ -1,0 +1,21 @@
+{
+    "name": "jackysi/pawtunes",
+    "description": "PawTunes - Open Source Radio Player",
+    "type": "project",
+    "license": "MIT",
+    "require": {
+        "php": ">=7.4",
+        "scssphp/scssphp": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "lib\\": "inc/lib/",
+            "API\\": "panel/lib/API/"
+        },
+        "classmap": [
+            "panel/lib/BladeOne.php",
+            "panel/lib/Forms.php",
+            "panel/lib/Panel.php"
+        ]
+    }
+}

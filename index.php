@@ -14,7 +14,7 @@
 chdir(__DIR__);
 
 ## Include files & settings
-require 'inc/autoload.php';
+require 'vendor/autoload.php';
 
 use lib\PawTunes;
 

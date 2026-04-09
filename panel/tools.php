@@ -42,8 +42,6 @@ $templates = $pawtunes->getTemplates();
 // Handle compiling new CSS stylesheet
 if ( ! empty($_POST) && $_POST['form'] === 'compile') {
 
-    include 'panel/lib/scss/scss.inc.php';
-
     // Path
     $base_path = $templates[$_POST['template']]['path'];
     $scss_file = '';

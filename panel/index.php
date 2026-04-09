@@ -13,8 +13,7 @@
 
 // Use player directory as chroot
 chdir('./../');
-require 'inc/autoload.php';
-require 'panel/lib/autoload.php';
+require 'vendor/autoload.php';
 
 use lib\PawTunes;
 
