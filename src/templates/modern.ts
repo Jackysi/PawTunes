@@ -42,7 +42,6 @@ export default class ModernTpl {
 
 
     // ── Setup ─────────────────────────────────────────────────────────────────
-
     setup() {
 
         // Channel name
@@ -72,7 +71,7 @@ export default class ModernTpl {
             this.pawtunes._('.page.history', (el: HTMLElement) => el.remove());
         }
 
-        // Hide channels tab if single channel with single stream
+        // Hide channels' tab if single channel with single stream
         const isSingleChannel = this.pawtunes.channels.length <= 1;
         if (isSingleChannel && Object.keys(this.pawtunes.channels[0]?.streams || {}).length <= 1) {
             this.pawtunes._('.tab-bar .nav-channels', (el: HTMLElement) => el.remove());
@@ -105,7 +104,6 @@ export default class ModernTpl {
 
 
     // ── Events ────────────────────────────────────────────────────────────────
-
     bindPawEvents() {
 
         this.pawtunes.on('channel.change', (channel: any) => {
@@ -150,7 +148,6 @@ export default class ModernTpl {
 
 
     // ── Page slides ───────────────────────────────────────────────────────────
-
     switchPage(pageClass: string = '', animation: boolean = true) {
 
         if (pageClass === '') pageClass = this.currentPage;
@@ -195,13 +192,12 @@ export default class ModernTpl {
 
 
     // ── UI updates ────────────────────────────────────────────────────────────
-
     updateChannelName(channel: any) {
 
         // Show logotype instead of channel name
         if (this.pawtunes.settings.tpl?.useChannelLogos) {
             this.pawtunes._('.current-channel', (el: HTMLElement) => {
-                el.innerHTML = '<img alt="Logo" height="40" src="./assets/img/logo.svg">';
+                el.innerHTML = '<img alt="Logo" height="50" src="./assets/img/logo.svg">';
             });
             this.pawtunes.off('channel.change', this.updateChannelName);
             return;
@@ -275,7 +271,6 @@ export default class ModernTpl {
 
 
     // ── Ring Visualizer ───────────────────────────────────────────────────────
-
     initVisualizer() {
 
         if (!this.pawtunes.audio || !this.canvas || !this.ctx) return;
