@@ -1,0 +1,9 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+body { line-height: 1.5; }
+img, svg { display: block; max-width: 100%; }
+button { border: none; background: none; cursor: pointer; font: inherit; color: inherit; }
+a { color: inherit; text-decoration: none; }
+table { border-collapse: collapse; border-spacing: 0; }
+ul, ol { list-style: none; }
+h1, h2, h3, h4 { font-weight: 500; }

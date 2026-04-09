@@ -1,0 +1,38 @@
+// ─── Theme colors (overridable by panel's runtime SCSS compiler) ─────────────
+// The panel prepends: $accent-color: #xxx; $bg-color: #xxx; before @import.
+// !default ensures these are only set if not already defined.
+
+$accent-color:    #6C5CE7 !default;
+$bg-color:        #FAFAFA !default;
+
+// ─── Derived colors ──────────────────────────────────────────────────────────
+$text-color:      #1A1A2E !default;
+$text-secondary:  #71717A !default;
+$surface-color:   #FFFFFF !default;
+$border-color:    rgba(0, 0, 0, .06) !default;
+$overlay-color:   rgba(0, 0, 0, .03) !default;
+
+// ─── Sizes ───────────────────────────────────────────────────────────────────
+$header-height:   3.5rem;
+$bar-count:       64;
+
+// ─── Transitions ─────────────────────────────────────────────────────────────
+$ease-out:        cubic-bezier(0.25, 0.8, 0.25, 1);
+$ease-spring:     cubic-bezier(0.34, 1.56, 0.64, 1);
+$duration-fast:   200ms;
+$duration-normal: 400ms;
+$duration-page:   500ms;
+
+// ─── Typography ──────────────────────────────────────────────────────────────
+$font-family:     'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+$font-size-xs:    .75rem;
+$font-size-sm:    .8125rem;
+$font-size-base:  .9375rem;
+$font-size-lg:    1.125rem;
+$font-size-xl:    1.375rem;
+
+// ─── Radius ──────────────────────────────────────────────────────────────────
+$radius-sm:       .5rem;
+$radius-md:       .75rem;
+$radius-lg:       1rem;
+$radius-full:     9999px;

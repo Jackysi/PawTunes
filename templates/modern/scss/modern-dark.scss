@@ -1,0 +1,29 @@
+// Dark theme — override variables before importing the main stylesheet.
+// The panel's runtime SCSS compiler can further override $accent-color and $bg-color.
+
+$bg-color:        #0F0F14 !default;
+$accent-color:    #7C6BF0 !default;
+$text-color:      #E4E4E7;
+$text-secondary:  #71717A;
+$surface-color:   #1A1A22;
+$border-color:    rgba(255, 255, 255, .08);
+$overlay-color:   rgba(255, 255, 255, .05);
+
+@import "modern";
+
+// ─── Dark-specific overrides ─────────────────────────────────────────────────
+.pawtunes {
+
+    .artwork-circle {
+        box-shadow: 0 8px 40px rgba(0, 0, 0, .4), 0 2px 12px rgba(0, 0, 0, .3);
+    }
+
+    .css-hint:before {
+        background: $surface-color;
+        color: $text-color;
+    }
+
+    .circle-control {
+        box-shadow: 0 1px 6px rgba(0, 0, 0, .5);
+    }
+}

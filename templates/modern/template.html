@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>{{$title}}</title>
+        <meta content="{{$description}}" name="description">
+        <meta content="{{$indexing}}" name="robots">
+        <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+
+        <!-- Fav and touch icons -->
+        <link href="./favicon.ico" rel="shortcut icon">
+        <link href="./assets/img/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180">
+        <link href="./assets/img/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png">
+        <link href="./assets/img/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png">
+        <link href="./site.webmanifest" rel="manifest">
+
+        <!-- OpenGraph -->
+        <meta content="{{$title}}" property="og:title">
+        <meta content="{{$url}}" property="og:url">
+        <meta content="music.radio_station" property="og:type">
+        <meta content="{{$og_image}}" property="og:image">
+        <meta content="{{$description}}" property="og:description">
+        <meta content="{{$timestamp}}" property="og:updated_time">
+        {{$og_site_title}}
+
+        <!-- Preload -->
+        <link as="style" href="./templates/{{$template}}/css/modern.css" rel="preload">
+        <link as="image" href="{{$default_artwork}}" rel="preload">
+
+        <noscript><style>#no-js-hide { display: none; }</style></noscript>
+
+        <!-- Critical inline styles (preloader only) -->
+        <style>
+            html, body { height: 100%; margin: 0; }
+            body { overflow: hidden; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+
+            .pawtunes { --accent-color: #6C5CE7; --bg-color: #FAFAFA; }
+
+            .pawtunes .preloader {
+                position: fixed; inset: 0; z-index: 999;
+                display: flex; align-items: center; justify-content: center;
+                background: var(--bg-color);
+                transition: opacity 400ms ease, visibility 400ms ease;
+            }
+            .pawtunes .preloader.hidden { visibility: hidden; opacity: 0; }
+            .pawtunes .preloader .text_area { text-align: center; color: #666; font-size: .85rem; }
+
+            .preloader-ring {
+                width: 40px; height: 40px; margin: 0 auto 1rem;
+                border: 3px solid rgba(0,0,0,.08); border-top-color: var(--accent-color);
+                border-radius: 50%; animation: spin .8s linear infinite;
+            }
+            @keyframes spin { to { transform: rotate(360deg); } }
+        </style>
+    </head>
+    <body>
+
+        <div class="pawtunes">
+
+            <!-- Preloader -->
+            <div class="preloader">
+                <div class="text_area">
+                    <noscript style="color: #e74c3c;">
+                        <div style="font-weight: 600;">ERROR</div>
+                        This player requires JavaScript.
+                    </noscript>
+                    <div id="no-js-hide">
+                        <div class="preloader-ring"></div>
+                        {{$loading_message}}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Toast / status message -->
+            <div class="player-message hidden">
+                <div class="text"></div>
+            </div>
+
+            <!-- Header -->
+            <header class="header">
+                <div class="current-channel"></div>
+            </header>
+
+            <!-- Page container -->
+            <div class="container">
+                <div class="container-inner">
+
+                    <!-- Page: Player -->
+                    <div class="page main">
+                        <div class="artwork-area">
+                            <canvas class="visualizer-canvas" width="320" height="320"></canvas>
+                            <div class="artwork-circle">
+                                <img class="artwork" src="{{$default_artwork}}" alt="Artwork">
+                                <div class="artwork-preloader hidden"></div>
+                            </div>
+                        </div>
+
+                        <div class="onair">
+                            <div class="artist">{{$artist_default}}</div>
+                            <div class="title">{{$title_default}}</div>
+                        </div>
+
+                        <div class="player">
+                            <div class="playback">
+                                <div class="play" title="{{$ui_play}}">
+                                    <svg width="72" height="72" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <circle cx="36" cy="36" r="35" stroke="currentColor" stroke-width="2"/>
+                                        <path d="M29 22L49 36L29 50V22Z" fill="currentColor"/>
+                                    </svg>
+                                </div>
+                                <div class="stop hidden" title="{{$ui_stop}}">
+                                    <svg width="72" height="72" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <circle cx="36" cy="36" r="35" stroke="currentColor" stroke-width="2"/>
+                                        <rect x="26" y="26" width="20" height="20" rx="2" fill="currentColor"/>
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <!-- Volume (hidden on mobile devices) -->
+                            <div class="volume-control">
+                                <div class="volume-icon">
+                                    <svg class="icon-fill volume" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                                    </svg>
+                                    <svg class="icon-fill muted hidden" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+                                    </svg>
+                                </div>
+                                <div class="volume-slider">
+                                    <div class="vol-progress">
+                                        <div class="vol-bar">
+                                            <div class="circle-control" title="{{$ui_volume_circle}}"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Page: History -->
+                    <div class="page history">
+                        <div class="page-header">
+                            <h3>{{$song_history}}</h3>
+                        </div>
+                        <div class="history-content">
+                            <div class="table-scroll history-list">
+                                <table>
+                                    <tbody class="history-list-container">
+                                        <tr class="history-item css-hint hidden">
+                                            <td class="history-artwork"></td>
+                                            <td class="history-track"></td>
+                                            <td class="history-time-ago"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="text-center history-unavailable hidden"><b>{{$history_no_history}}</b></div>
+                        </div>
+                    </div>
+
+                    <!-- Page: Channels & Streams -->
+                    <div class="page settings-page">
+                        <div class="page-header">
+                            <h3>{{$ui_channels}}</h3>
+                        </div>
+                        <div class="channels hidden">
+                            <div class="channels-list-container">
+                                <ul class="channel-list"></ul>
+                            </div>
+                        </div>
+                        <div class="settings hidden">
+                            <h4>{{$ui_settings}}</h4>
+                            <ul class="streams-list"></ul>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Bottom tab bar -->
+            <nav class="tab-bar">
+                <a class="tab-item nav-home active" href="#">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/>
+                    </svg>
+                    <span>Live</span>
+                </a>
+                <a class="tab-item nav-history" href="#">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    <span>{{$song_history}}</span>
+                </a>
+                <a class="tab-item nav-channels" href="#">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M2 20h.01"/><path d="M7 20v-4"/><path d="M12 20v-8"/><path d="M17 20V8"/><path d="M22 4v16"/>
+                    </svg>
+                    <span>{{$ui_channels}}</span>
+                </a>
+            </nav>
+
+        </div>
+
+        <!-- Theme stylesheet -->
+        <link href="./templates/{{$template}}/css/modern.css" id="main_theme" rel="stylesheet" type="text/css">
+
+        <!-- Player + Template scripts -->
+        <script type="module">
+            import ModernTpl from "./templates/{{$template}}/js/modern-tpl.min.js";
+            import PawPlayer from "./assets/js/pawtunes.min.js";
+
+            const player = new PawPlayer(".pawtunes", /* @formatter:off*/{{$json_settings}}/*@formatter:on*/);
+            new ModernTpl(player);
+        </script>
+
+        <!-- Font -->
+        <link href="//fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" type="text/css">
+    </body>
+</html>

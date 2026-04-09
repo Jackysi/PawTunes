@@ -58,6 +58,16 @@ const templateScss = [
         dest: 'templates/pawtunes/css/',
         outputName: 'pawtunes-dark.css',
     },
+    {
+        src: 'templates/modern/scss/modern.scss',
+        dest: 'templates/modern/css/',
+        outputName: 'modern.css',
+    },
+    {
+        src: 'templates/modern/scss/modern-dark.scss',
+        dest: 'templates/modern/css/',
+        outputName: 'modern-dark.css',
+    },
 ];
 
 /**
@@ -97,6 +107,11 @@ const tsPaths = [
         src: 'src/templates/simple.ts',
         dest: 'templates/simple/js/',
         outputName: 'simple.min.js',
+    },
+    {
+        src: 'src/templates/modern.ts',
+        dest: 'templates/modern/js/',
+        outputName: 'modern-tpl.min.js',
     },
 ];
 

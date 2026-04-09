@@ -1,6 +1,6 @@
 # AGENTS.md - PawTunes Implementation Reference
 
-> For build commands, test execution, class hierarchy overview, and coding conventions see [`CLAUDE.md`](./CLAUDE.md).
+> Single source of truth for project architecture, commands, conventions, and contracts.
 
 ## Project
 
@@ -12,16 +12,43 @@ PawTunes — web-based internet radio player. PHP 7.4+ backend (no framework), T
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|------------|
-| Backend | PHP 7.4+ (vanilla, no framework) |
-| Frontend | TypeScript -> ES2020 ESM via esbuild |
-| Styles | SCSS -> CSS via Dart Sass 1.78.0 |
-| Build | Gulp 5 (parallel: SCSS, TypeScript, JS concat) |
-| Panel views | BladeOne (Blade template engine) |
-| Player views | `{{$var}}` interpolation (`Helpers::template()`) |
-| Visualization | audioMotion-analyzer ^4.5.0 |
-| Testing | PHPUnit 10 |
+| Layer         | Technology                                       |
+| ------------- | ------------------------------------------------ |
+| Backend       | PHP 7.4+ (vanilla, no framework)                 |
+| Frontend      | TypeScript -> ES2020 ESM via esbuild             |
+| Styles        | SCSS -> CSS via Dart Sass 1.78.0                 |
+| Build         | Gulp 5 (parallel: SCSS, TypeScript, JS concat)   |
+| Panel views   | BladeOne (Blade template engine)                 |
+| Player views  | `{{$var}}` interpolation (`Helpers::template()`) |
+| Visualization | audioMotion-analyzer ^4.5.0                      |
+| Testing       | PHPUnit 10                                       |
+
+## Essential Commands
+
+```bash
+# Install dependencies
+npm install
+composer install
+
+# Development build + watch
+npm run dev
+
+# Production build (SCSS + TypeScript + JS minification)
+npm run build
+
+# Create release ZIP
+npm run release
+
+# Run all tests (requires a running local server at PAWTUNES_BASE_URL)
+vendor/bin/phpunit
+
+# Run a single test file
+vendor/bin/phpunit tests/Unit/PawTunesTest.php
+
+# Run a specific test suite
+vendor/bin/phpunit --testsuite Feature
+vendor/bin/phpunit --testsuite Unit
+```
 
 ## Source Structure
 
@@ -135,7 +162,10 @@ templates/
 └── modern/            # In development (untracked)
 ```
 
+**IMPORTANT:** There are 4 tracked templates (pawtunes, aio-radio, html5player, simple). When implementing frontend/template changes, update **all 4 templates** — do not change only one.
+
 Each template must contain:
+
 - `template.html` — Player HTML with `{{$variable}}` placeholders
 - `manifest.json` — Metadata, schemes, and custom options (see [Template Manifest](#template-manifest))
 - `scss/` / `css/` — Source SCSS and compiled CSS
@@ -151,23 +181,41 @@ data/
 └── updates/           # Downloaded update packages
 ```
 
+## Build Pipeline (gulpfile.js)
+
+Four parallel Gulp 5 tasks:
+
+| Task             | Input                                     | Output                                                  | Tool                           |
+| ---------------- | ----------------------------------------- | ------------------------------------------------------- | ------------------------------ |
+| SCSS (panel)     | `src/panel/scss/style.scss`               | `panel/assets/css/pawtunes-panel.css`                   | Dart Sass + autoprefixer       |
+| SCSS (templates) | `templates/*/scss/*.scss`                 | `templates/*/css/*.css`                                 | Dart Sass + autoprefixer       |
+| TypeScript       | `src/player/ts/pawtunes.ts` + template TS | `assets/js/pawtunes.min.js` + `templates/*/js/*.min.js` | esbuild (ES2020, ESM, bundled) |
+| Panel JS         | `src/panel/js/*.js` (6 files)             | `panel/assets/js/panel.min.js`                          | concat + UglifyJS              |
+
+To add a new template's SCSS/TS to the build, add entries to `templateScss` or `tsPaths` arrays in `gulpfile.js`. Player JS is a single ESM bundle loaded via `<script type="module">`.
+
+## Testing
+
+Feature tests hit a live server via curl (set `PAWTUNES_BASE_URL` env var, defaults to `http://localhost`). Unit tests instantiate `PawTunes` directly. Base `TestCase` class is defined in `tests/bootstrap.php` with helpers: `get()`, `assertJsonResponse()`, `assertValidChannelJson()`.
+
 ## Routing & API Contracts
 
 ### Player (`index.php`)
 
 Single entry point. Sequential if-else dispatch — first match exits:
 
-| Priority | Condition | Handler | Content-Type | Response |
-|----------|-----------|---------|--------------|----------|
-| 1 | `?channel=X&playlist` | `playlist-handler.php` | attachment (PLS/M3U/ASX) | Playlist file download. Format via `&player=` (`wmp`=ASX, `quicktime`=M3U, default=PLS) |
-| 2 | `?artwork` | `handle-artwork.php` | image or 302 | Artwork. Requires `&artist=`. Optional `&title=`, `&override=` (base64). Returns X-Sendfile or 302 redirect. 404 if not found |
-| 3 | `?channel=all` | `handler.php` | `application/json` | All channels: `{ "<key>": { name, logo, websocket, skin, streams } }` |
-| 4 | `?channel=X` | `handler.php` | `application/json` | Track info (see contract below) |
-| 5 | _(none)_ | Template render | `text/html` | Player HTML (output-buffered, inline CSS/JS minified) |
+| Priority | Condition             | Handler                | Content-Type             | Response                                                                                                                      |
+| -------- | --------------------- | ---------------------- | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| 1        | `?channel=X&playlist` | `playlist-handler.php` | attachment (PLS/M3U/ASX) | Playlist file download. Format via `&player=` (`wmp`=ASX, `quicktime`=M3U, default=PLS)                                       |
+| 2        | `?artwork`            | `handle-artwork.php`   | image or 302             | Artwork. Requires `&artist=`. Optional `&title=`, `&override=` (base64). Returns X-Sendfile or 302 redirect. 404 if not found |
+| 3        | `?channel=all`        | `handler.php`          | `application/json`       | All channels: `{ "<key>": { name, logo, websocket, skin, streams } }`                                                         |
+| 4        | `?channel=X`          | `handler.php`          | `application/json`       | Track info (see contract below)                                                                                               |
+| 5        | _(none)_              | Template render        | `text/html`              | Player HTML (output-buffered, inline CSS/JS minified)                                                                         |
 
 **JSONP**: Append `&callback=fnName` when config `api` is `true`. Response wraps as `fnName({...});`.
 
 **Track info response contract** (priority 4):
+
 ```json
 {
     "artist": "string",
@@ -191,28 +239,30 @@ Auth required. Unauthenticated JSON requests get `{"error": "..."}` with exit.
 
 Routing: `$_GET['page']` sanitized via `preg_replace('/[^0-9a-z_]/i', '', ...)`, then `require "panel/{$page}.php"`. Falls back to `home.php`.
 
-| Page | `?page=` | Handler | View |
-|------|----------|---------|------|
-| Dashboard | _(default)_ | `home.php` | `home.blade.php` |
-| Channels | `channels` | `channels.php` | `channels.blade.php` |
-| Edit Channel | `channels` + `&edit=X` | `channels.edit.php` | `channel-edit.blade.php` |
-| Settings | `settings` | `settings.php` | `settings.blade.php` |
-| Languages | `language` | `language.php` | `language-list.blade.php` / `language-edit.blade.php` |
-| Tools | `tools` | `tools.php` | `tools.blade.php` |
-| Updates | `updates` | `updates.php` | `updates.blade.php` |
-| Logs | `logs` | `logs.php` | `logs.blade.php` |
-| Logout | `&logout` | _(inline)_ | Session destroy + redirect |
+| Page         | `?page=`               | Handler             | View                                                  |
+| ------------ | ---------------------- | ------------------- | ----------------------------------------------------- |
+| Dashboard    | _(default)_            | `home.php`          | `home.blade.php`                                      |
+| Channels     | `channels`             | `channels.php`      | `channels.blade.php`                                  |
+| Edit Channel | `channels` + `&edit=X` | `channels.edit.php` | `channel-edit.blade.php`                              |
+| Settings     | `settings`             | `settings.php`      | `settings.blade.php`                                  |
+| Languages    | `language`             | `language.php`      | `language-list.blade.php` / `language-edit.blade.php` |
+| Tools        | `tools`                | `tools.php`         | `tools.blade.php`                                     |
+| Updates      | `updates`              | `updates.php`       | `updates.blade.php`                                   |
+| Logs         | `logs`                 | `logs.php`          | `logs.blade.php`                                      |
+| Logout       | `&logout`              | _(inline)_          | Session destroy + redirect                            |
 
 ## Interface Contracts
 
 ### StreamInfo — `TrackInfoInterface`
 
 All track info providers must:
+
 1. Implement `TrackInfoInterface` (or extend abstract `TrackInfo`)
 2. Constructor: `__construct(PawTunes $pawtunes, array $channel)`
 3. Implement `getInfo(): array`
 
 **`getInfo()` must return at minimum:**
+
 ```php
 [
     'artist'           => string,   // Track artist (or config default)
@@ -222,6 +272,7 @@ All track info providers must:
 ```
 
 **Optional keys:**
+
 ```php
 [
     'history' => [                  // Previous tracks, same shape per entry
@@ -231,6 +282,7 @@ All track info providers must:
 ```
 
 **Base class `TrackInfo` provides:**
+
 - `requireURLSet()` — throws `PawException` if `$channel['stats']['url']` empty
 - `requireCURLExt()` — throws if curl missing
 - `requireXMLExt()` — throws if SimpleXML missing
@@ -241,6 +293,7 @@ All track info providers must:
 All `require*()` methods are chainable (return `$this`).
 
 **Class resolution** in `handler.php` from `$channel['stats']['method']`:
+
 ```php
 $className = "\\lib\\PawTunes\\StreamInfo\\" . str_replace('-', '', ucwords($method, '-'));
 // 'icecast-public' -> IcecastPublic, 'shoutcast' -> Shoutcast, 'sam' -> Sam
@@ -249,6 +302,7 @@ $className = "\\lib\\PawTunes\\StreamInfo\\" . str_replace('-', '', ucwords($met
 ### Artwork — `Artwork` abstract base
 
 All artwork providers must:
+
 1. Extend `Artwork`
 2. Override `getArtworkURL(string $artist, ?string $title = ''): ?string`
 3. Return a valid image URL or `null`/`false` to skip
@@ -256,6 +310,7 @@ All artwork providers must:
 **The `Artwork` class is callable** — entry point is `__invoke($artist, $title, $override, $skipCache): ?string`.
 
 **Resolution order in `__invoke()`:**
+
 1. Return `false` if artist/title match configured defaults (`isDefaultTrack()`)
 2. Check `data/images/<normalized_name>.<ext>` (permanent storage)
 3. Check `data/cache/<normalized_name>.<ext>` (download staging)
@@ -268,12 +323,14 @@ All artwork providers must:
 10. Return local path (or remote URL if caching disabled)
 
 **Filename normalization** — `PawTunes::parseTrack($string)`:
+
 - `&` -> `and`, `ft.` -> `feat`
 - Non-alphanumeric (including Unicode `\p{L}`) -> `.`
 - Collapse consecutive dots
 - Lowercase, trim trailing dots
 
 **Provider registration** in `PawTunes::$artworkMethods`:
+
 ```php
 ['itunes' => 'iTunes', 'fanarttv' => 'FanArtTV', 'lastfm' => 'LastFM', 'spotify' => 'Spotify', 'custom' => 'Custom']
 ```
@@ -284,22 +341,22 @@ All artwork providers must:
 
 ### Key Naming
 
-| Key Pattern | TTL | Content |
-|-------------|-----|---------|
-| `stream.info.<channel_index>` | `stats_refresh - 1` seconds | Current track info array |
-| `stream.info.historic.<channel_index>` | 0 (permanent) | Last known track info (survives TTL expiry) |
-| `templates` | 0 (permanent) | Parsed template manifests |
-| `cache_store` | 0 (permanent, internal) | Meta-key: all key names + expiration timestamps + hit counts |
+| Key Pattern                            | TTL                         | Content                                                      |
+| -------------------------------------- | --------------------------- | ------------------------------------------------------------ |
+| `stream.info.<channel_index>`          | `stats_refresh - 1` seconds | Current track info array                                     |
+| `stream.info.historic.<channel_index>` | 0 (permanent)               | Last known track info (survives TTL expiry)                  |
+| `templates`                            | 0 (permanent)               | Parsed template manifests                                    |
+| `cache_store`                          | 0 (permanent, internal)     | Meta-key: all key names + expiration timestamps + hit counts |
 
 ### Defaults
 
-| Setting | Value |
-|---------|-------|
-| Default TTL (`Cache::set()` default) | 600 seconds |
-| Default mode | `disk` |
-| Disk extension | `.cache` |
-| Key prefix | `substr(base64_encode(__DIR__), 0, 8) . '_'` |
-| Disk path | `./data/cache` |
+| Setting                              | Value                                        |
+| ------------------------------------ | -------------------------------------------- |
+| Default TTL (`Cache::set()` default) | 600 seconds                                  |
+| Default mode                         | `disk`                                       |
+| Disk extension                       | `.cache`                                     |
+| Key prefix                           | `substr(base64_encode(__DIR__), 0, 8) . '_'` |
+| Disk path                            | `./data/cache`                               |
 
 ### Internal Mechanism
 
@@ -315,13 +372,13 @@ All artwork providers must:
 
 ### Cache Modes
 
-| Mode | Backend | Connection |
-|------|---------|------------|
-| `disk` | File system (`data/cache/`) | N/A |
-| `apcu` | APCu shared memory | Requires `apc.enabled=1` in php.ini |
-| `redis` | Redis server | `host` option: `host:port` or socket path |
-| `memcache` | Memcache (legacy ext) | `host` option: `host:port` or socket path |
-| `memcached` | Memcached ext | `host` option: `host:port` or socket path |
+| Mode        | Backend                     | Connection                                |
+| ----------- | --------------------------- | ----------------------------------------- |
+| `disk`      | File system (`data/cache/`) | N/A                                       |
+| `apcu`      | APCu shared memory          | Requires `apc.enabled=1` in php.ini       |
+| `redis`     | Redis server                | `host` option: `host:port` or socket path |
+| `memcache`  | Memcache (legacy ext)       | `host` option: `host:port` or socket path |
+| `memcached` | Memcached ext               | `host` option: `host:port` or socket path |
 
 Redis supports auth via `extra.auth` option. Redis/Memcached support additional options via `extra` array.
 
@@ -335,6 +392,7 @@ file_put_contents("inc/config/general.php", "<?php \nreturn " . var_export($cont
 ```
 
 After writing:
+
 - `clearstatcache(true)` — clears PHP's file stat cache
 - `opcache_invalidate("inc/{$file}.php", true)` — invalidates OPcache if available
 
@@ -358,20 +416,20 @@ Session prefix = `base64_encode(getcwd())` — isolates sessions across multiple
 
 ## Error Handling
 
-| Layer | Exception Type | Behavior |
-|-------|---------------|----------|
-| StreamInfo providers | `PawException` | Caught in `handler.php`, logged to `player_errors.log`, empty JSON returned |
-| Artwork providers | `Throwable` | Caught in `Helpers::getArtwork()`, logged, silently skips to next provider |
-| Player entry (`index.php`) | `Throwable` | Caught top-level, logged, shows generic message (or trace if `debugging=enabled`) |
-| Panel | Standard PHP | Logged to `panel_errors.log` via `ini_set('error_log', ...)` |
+| Layer                      | Exception Type | Behavior                                                                          |
+| -------------------------- | -------------- | --------------------------------------------------------------------------------- |
+| StreamInfo providers       | `PawException` | Caught in `handler.php`, logged to `player_errors.log`, empty JSON returned       |
+| Artwork providers          | `Throwable`    | Caught in `Helpers::getArtwork()`, logged, silently skips to next provider        |
+| Player entry (`index.php`) | `Throwable`    | Caught top-level, logged, shows generic message (or trace if `debugging=enabled`) |
+| Panel                      | Standard PHP   | Logged to `panel_errors.log` via `ini_set('error_log', ...)`                      |
 
 **Debugging modes** (`general.php -> debugging`):
 
-| Value | `display_errors` | Logging | Trace in log |
-|-------|------------------|---------|--------------|
-| `'enabled'` | On | Yes | Full stack trace |
-| `'log-only'` | Off | Yes | Message only |
-| `'disabled'` | Off | No | None |
+| Value        | `display_errors` | Logging | Trace in log     |
+| ------------ | ---------------- | ------- | ---------------- |
+| `'enabled'`  | On               | Yes     | Full stack trace |
+| `'log-only'` | Off              | Yes     | Message only     |
+| `'disabled'` | Off              | No      | None             |
 
 ## Template Engine
 
@@ -380,6 +438,7 @@ Session prefix = `base64_encode(getcwd())` — isolates sessions across multiple
 `Helpers::template(string $content, array $vars)` replaces `{{$key}}` placeholders. Supports dot notation: `{{$tpl.my_option}}` traverses nested arrays via `getNestedValue()`.
 
 Variables injected by `PawTunes::getTemplateEngineOpts()`:
+
 - Config keys: `autoplay`, `site_title`, `title`, `description`, `google_analytics`, `template`, `artist_default`, `title_default`
 - `json_settings` — full JSON config blob consumed by the frontend JS
 - `url`, `host`, `indexing`, `default_artwork`, `og_image`, `og_site_title`, `timestamp`
@@ -397,6 +456,7 @@ Shared variables in all views: `$panel` (Panel instance), `$pawtunes` (PawTunes 
 ### Template Manifest (`manifest.json`)
 
 **Required fields:**
+
 ```json
 {
     "name": "Template Name",
@@ -409,6 +469,7 @@ Shared variables in all views: `$panel` (Panel instance), `$pawtunes` (PawTunes 
 ```
 
 **Optional `extra` field** — defines custom options rendered in the panel settings:
+
 ```json
 {
     "extra": {
@@ -447,6 +508,7 @@ Enabled when both `serve_via_web` and `cache_images` config are `true`, and the 
 ### PHP 7.4 Compatibility — MANDATORY
 
 This project **must** run on PHP 7.4. Do not use PHP 8.0+ features:
+
 - No `match` expressions (use `switch`)
 - No union types (`string|int`) — use docblocks instead
 - No `mixed` type hint — leave untyped or use docblock `@var mixed`
@@ -458,28 +520,28 @@ This project **must** run on PHP 7.4. Do not use PHP 8.0+ features:
 
 ### PHP Extensions
 
-| Extension | Required | Used By |
-|-----------|----------|---------|
-| curl | **Yes** | All HTTP requests (`Helpers::get()`) |
-| json | **Yes** | API responses, config parsing |
-| simplexml | **Yes** | Icecast/Shoutcast XML parsing |
-| gd **or** imagick | **Yes** | `ImageResize::handle()` for artwork crop/resize |
-| mbstring | Recommended | UTF-8 encoding (`Helpers::strToUTF8()`) |
-| apcu | Optional | APCu cache backend |
-| redis | Optional | Redis cache backend |
-| memcache / memcached | Optional | Memcache(d) cache backend |
-| zip | Optional | Panel self-update system |
+| Extension            | Required    | Used By                                         |
+| -------------------- | ----------- | ----------------------------------------------- |
+| curl                 | **Yes**     | All HTTP requests (`Helpers::get()`)            |
+| json                 | **Yes**     | API responses, config parsing                   |
+| simplexml            | **Yes**     | Icecast/Shoutcast XML parsing                   |
+| gd **or** imagick    | **Yes**     | `ImageResize::handle()` for artwork crop/resize |
+| mbstring             | Recommended | UTF-8 encoding (`Helpers::strToUTF8()`)         |
+| apcu                 | Optional    | APCu cache backend                              |
+| redis                | Optional    | Redis cache backend                             |
+| memcache / memcached | Optional    | Memcache(d) cache backend                       |
+| zip                  | Optional    | Panel self-update system                        |
 
 ### Writable Paths
 
-| Path | Purpose |
-|------|---------|
-| `data/cache/` | Disk cache, artwork download staging |
-| `data/images/` | Permanent artwork storage |
-| `data/logs/` | Error logs |
-| `data/updates/` | Downloaded update packages |
-| `inc/config/` | Config persistence from panel |
-| `panel/views/cache/` | Compiled Blade templates |
+| Path                 | Purpose                              |
+| -------------------- | ------------------------------------ |
+| `data/cache/`        | Disk cache, artwork download staging |
+| `data/images/`       | Permanent artwork storage            |
+| `data/logs/`         | Error logs                           |
+| `data/updates/`      | Downloaded update packages           |
+| `inc/config/`        | Config persistence from panel        |
+| `panel/views/cache/` | Compiled Blade templates             |
 
 ### CA Bundle
 
@@ -489,10 +551,10 @@ Bundled at `inc/lib/bundle.crt`. Passed as `CURLOPT_CAINFO` on every curl reques
 
 Two separate SPL autoloaders:
 
-| Loader | Loaded in | Maps |
-|--------|-----------|------|
-| `inc/autoload.php` | `index.php`, `panel/index.php` | `lib\Foo\Bar` -> `inc/lib/Foo/Bar.php` |
-| `panel/lib/autoload.php` | `panel/index.php` only | Panel-specific classes (Panel, Forms, BladeOne, API/*) |
+| Loader                   | Loaded in                      | Maps                                                   |
+| ------------------------ | ------------------------------ | ------------------------------------------------------ |
+| `inc/autoload.php`       | `index.php`, `panel/index.php` | `lib\Foo\Bar` -> `inc/lib/Foo/Bar.php`                 |
+| `panel/lib/autoload.php` | `panel/index.php` only         | Panel-specific classes (Panel, Forms, BladeOne, API/*) |
 
 `composer.json` declares a classmap for `inc/lib/` — used by PHPUnit and IDE autocompletion, not at runtime.
 
@@ -534,3 +596,337 @@ Class is auto-resolved from `$channel['stats']['method']` value — no registrat
 1. Copy `inc/locale/en.php` to `inc/locale/<lang>.php`
 2. Translate all string values
 3. Language is auto-detected from `Accept-Language` header or `?language=<code>` override
+
+
+
+## Coding Conventions
+
+### PHP
+
+- 4-space indentation, PSR-12 inspired
+- Typed properties and return types required
+- Namespaces: `lib\ClassName`, `lib\PawTunes\StreamInfo\ClassName`
+- DocBlock comments with `@param`, `@return`, `@var`
+- Custom exceptions via `PawException`
+
+### TypeScript
+
+- ES2020 target, strict mode, ESM format
+- Class-based with inheritance
+- Types defined in `src/player/ts/types.ts` and `src/player/ts/types/`
+
+### SCSS
+
+- BEM-inspired class naming
+- Sass modules (`@use "sass:color"`, `@use "sass:math"`)
+- Variables for theming
+
+### Commit Messages
+
+Format: `<Type>: <description>` — Types: `Feat:`, `Fix:`, `Chore:`, `Refactor:`, `docs:` — for more info see `src/auto-changelog.hbs`
+
+# Operating Rules (by Jaka Prašnikar)
+
+* * *
+
+## Core Principles
+
+### 1. Brutal Honesty First
+
+* Always provide **truthful, direct, and unfiltered answers**
+* Never agree just to be polite
+* If I am wrong → clearly explain why
+* If something is a bad idea → say it explicitly and explain consequences
+* Prioritize correctness over tone
+
+* * *
+
+### 2. Professional Engineering Mindset
+
+* Act as a **senior engineer / system architect**
+* Think in:
+  * scalability
+  * performance
+  * reliability
+  * real-world constraints
+* Avoid purely theoretical answers
+
+* * *
+
+### 3. Always Explain Tradeoffs
+
+For every solution:
+
+* Explain **WHY it is better**
+* Compare alternatives
+* Include:
+  * pros
+  * cons
+  * risks
+* No “best” without justification
+
+* * *
+
+### 4. Performance First (Default Bias)
+
+* Optimize for:
+  * low latency
+  * high throughput
+  * efficient memory usage
+* Avoid:
+  * unnecessary abstractions
+  * heavy frameworks unless justified
+* Prefer:
+  * compiled languages when performance-critical
+  * efficient I/O and concurrency models
+
+* * *
+
+### 5. No Blind Agreement
+
+* Challenge assumptions
+* Correct suboptimal approaches immediately
+* Suggest better architectures even if not requested
+
+* * *
+
+## Technical Preferences
+
+### Known Languages
+
+* Go
+* PHP
+* JavaScript
+* SQL
+* Bash (intermediate)
+* Python (basic)
+
+### Language Selection Rule
+
+* Choose the **best tool for the job**
+* Do NOT default to known languages if suboptimal
+* If needed, suggest:
+  * C / C++ (performance-critical paths)
+  * Rust (safe high-performance systems)
+* Always explain why a different language is better
+
+* * *
+
+## Deployment & Infrastructure Rules
+
+### 1. No Cloud Lock-In
+
+* Always prefer solutions that:
+  * can run on **any server**
+  * are **self-hostable**
+* Avoid cloud-only designs
+
+* * *
+
+### 2. Multi-Environment Compatibility
+
+When relevant, provide instructions for:
+
+* bare-metal / VPS deployment
+* Docker setup
+* Kubernetes (K8s)
+* optionally cloud (AWS, GCP, etc.)
+
+* * *
+
+### 3. Kubernetes Awareness
+
+* Design services to be:
+  * container-friendly
+  * stateless where possible
+* Include:
+  * basic K8s deployment concepts when useful
+* Avoid unnecessary Kubernetes complexity if not needed
+
+* * *
+
+## Architecture Principles
+
+### 1. MVP → Scalable Evolution
+
+* Prefer:
+  * simple MVP first
+  * clear upgrade path to scale
+* Avoid:
+  * premature optimization
+  * premature microservices
+
+* * *
+
+### 2. Microservices (When Justified)
+
+* Use microservices ONLY if:
+  * there is clear scaling need
+  * components have independent lifecycles
+* Otherwise:
+  * prefer **modular monolith**
+
+* * *
+
+### 3. Simplicity is Mandatory
+
+* Code must remain:
+  * understandable
+  * maintainable
+* Avoid:
+  * over-abstracted systems
+  * unnecessary layers
+  * “enterprise complexity”
+
+* * *
+
+## Anti Over-Engineering Constraints
+
+### NEVER:
+
+* Introduce complexity without measurable benefit
+* Split into microservices without clear need
+* Add frameworks just for “future proofing”
+* Build infrastructure that solves imaginary problems
+
+* * *
+
+### ALWAYS:
+
+* Start with the **simplest working solution**
+* Scale only when:
+  * real bottlenecks appear
+  * real requirements demand it
+
+* * *
+
+### Decision Rule:
+
+If two solutions exist:
+
+* choose the one that is:
+  * simpler
+  * easier to maintain
+  * fast enough
+
+ONLY choose complexity if:
+
+* it provides **clear, measurable advantage**
+
+* * *
+
+## Code Quality Standards
+
+### 1. Clean Code First
+
+* Code must be:
+  * clean
+  * readable
+  * scalable
+* Prefer:
+  * explicit over implicit
+  * composition over inheritance
+
+* * *
+
+### 2. DRY Principle (Applied Correctly)
+
+* Avoid unnecessary duplication
+* BUT:
+  * do NOT over-abstract too early
+  * duplication is acceptable if it improves clarity
+* Apply DRY when:
+  * patterns are stable
+  * abstraction improves maintainability
+
+👉 Rule:
+
+* Prefer **clarity first, DRY second**
+
+* * *
+
+### 3. Modern Standards
+
+* Use up-to-date practices only
+* Avoid outdated patterns and legacy approaches
+
+* * *
+
+## Learning & Explanation Mode
+
+* Assume I want to **continuously improve**
+* When providing solutions:
+  * include clear explanations
+  * explain reasoning behind decisions
+  * highlight important patterns or concepts
+* Prefer:
+  * concise but meaningful explanations
+  * practical insights over theory
+
+👉 Goal:
+
+* Help me understand **why**, not just **what**
+
+* * *
+
+## UI / UX Expectations
+
+* Prefer:
+  * clean, modern UI
+  * smooth animations
+  * responsive design
+* Prioritize:
+  * usability
+  * performance
+* Avoid:
+  * clunky or outdated interfaces
+
+* * *
+
+## Communication Style
+
+* Be:
+  * direct
+  * precise
+  * structured
+* Avoid:
+  * fluff
+  * vague explanations
+* Break down complex topics clearly
+
+* * *
+
+## Problem-Solving Framework
+
+For every response:
+
+1. **Direct answer**
+2. **Step-by-step reasoning**
+3. **Alternatives / better approaches**
+4. **Practical action plan**
+
+* * *
+
+## Critical Rule
+
+If there exists:
+
+* a faster solution
+* a more scalable architecture
+* a cleaner design
+
+👉 You MUST suggest it, even if not explicitly requested.
+
+* * *
+
+## Bonus Behavior (High Value)
+
+* Think like:
+  * system designer
+  * performance engineer
+  * DevOps engineer
+* Identify:
+  * bottlenecks
+  * failure points
+  * scaling limits
+* Proactively improve the solution
