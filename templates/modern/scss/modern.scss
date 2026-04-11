@@ -11,10 +11,10 @@ html {
 }
 
 body {
-    height: 100%;
-    overflow: hidden;
     font-family: $font-family;
     font-size: $font-size-base;
+    overflow: hidden;
+    height: 100%;
     color: $text-color;
     background: $bg-color;
 }
@@ -24,33 +24,33 @@ body {
 // PAWTUNES ROOT
 // ═══════════════════════════════════════════════════════════════════════════════
 .pawtunes {
-    --accent-color: #{$accent-color};
     position: relative;
+    overflow: hidden;
     width: 100%;
     height: 100%;
     margin: 0 auto;
-    overflow: hidden;
     background: $bg-color;
+    --accent-color: #{$accent-color};
 
 
     // ═════════════════════════════════════════════════════════════════════════
     // TOAST MESSAGE
     // ═════════════════════════════════════════════════════════════════════════
     .player-message {
+        font-size: $font-size-sm;
         position: fixed;
+        z-index: 100;
         bottom: 1.5rem;
         left: 50%;
-        transform: translateX(-50%);
-        z-index: 100;
         padding: .5rem 1.25rem;
+        user-select: none;
+        transition: opacity $duration-normal $ease-out, visibility $duration-normal $ease-out;
+        transform: translateX(-50%);
+        white-space: nowrap;
+        opacity: 1;
+        color: $bg-color;
         border-radius: $radius-full;
         background: $text-color;
-        color: $bg-color;
-        font-size: $font-size-sm;
-        white-space: nowrap;
-        user-select: none;
-        opacity: 1;
-        transition: opacity $duration-normal $ease-out, visibility $duration-normal $ease-out;
 
         &.hidden {
             visibility: hidden;
@@ -74,12 +74,12 @@ body {
     }
 
     .current-channel {
-        font-weight: 600;
         font-size: $font-size-lg;
-        white-space: nowrap;
+        font-weight: 600;
         overflow: hidden;
-        text-overflow: ellipsis;
         text-align: center;
+        white-space: nowrap;
+        text-overflow: ellipsis;
 
         img {
             height: 50px;
@@ -95,37 +95,39 @@ body {
 
     .tab-bar {
         position: absolute;
+        z-index: 20;
+        right: 0;
         bottom: 0;
         left: 0;
-        right: 0;
-        z-index: 20;
         display: flex;
         align-items: stretch;
         height: $tab-bar-height;
-        background: $bg-color;
-        border-top: 1px solid rgba(0, 0, 0, .1);
-        box-shadow: 0 -2px 12px rgba(0, 0, 0, .06);
         user-select: none;
+        border-top: 1px solid rgba(0, 0, 0, .1);
+        background: $bg-color;
+        box-shadow: 0 -2px 12px rgba(0, 0, 0, .06);
     }
 
     .tab-item {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: .2rem;
-        color: $text-secondary;
         font-size: $font-size-xs;
-        text-decoration: none;
-        border-right: 1px solid rgba(0, 0, 0, .06);
+        display: flex;
+        align-items: center;
+        flex: 1;
+        flex-direction: column;
+        justify-content: center;
         transition: color $duration-fast ease, background $duration-fast ease;
+        text-decoration: none;
+        color: $text-secondary;
+        border-right: 1px solid rgba(0, 0, 0, .06);
+        gap: .2rem;
 
         &:last-child {
             border-right: none;
         }
 
-        svg { flex-shrink: 0; }
+        svg {
+            flex-shrink: 0;
+        }
 
         &:hover {
             color: $text-color;
@@ -143,8 +145,8 @@ body {
     // ═════════════════════════════════════════════════════════════════════════
     .container {
         position: relative;
-        height: calc(100% - #{$header-height} - #{$tab-bar-height});
         overflow: hidden;
+        height: calc(100% - #{$header-height} - #{$tab-bar-height});
     }
 
     .container-inner {
@@ -154,12 +156,12 @@ body {
 
     .page {
         display: flex;
+        overflow-x: hidden;
+        overflow-y: auto;
         flex-direction: column;
         width: 100%;
         height: 100%;
         background: $bg-color;
-        overflow-x: hidden;
-        overflow-y: auto;
         -webkit-overflow-scrolling: touch;
         touch-action: pan-y;
         overscroll-behavior: contain;
@@ -175,8 +177,8 @@ body {
         }
 
         &::-webkit-scrollbar-thumb {
-            background: rgba(0, 0, 0, .12);
             border-radius: 3px;
+            background: rgba(0, 0, 0, .12);
 
             &:hover {
                 background: rgba(0, 0, 0, .2);
@@ -189,43 +191,42 @@ body {
     // PAGE: MAIN PLAYER
     // ═════════════════════════════════════════════════════════════════════════
     .page.main {
+        overflow: hidden;
         align-items: center;
         justify-content: center;
         padding: 1rem 1.5rem 2rem;
-        overflow: hidden;
     }
 
 
     // ─── Artwork + Visualizer ────────────────────────────────────────────
     .artwork-area {
         position: relative;
+        display: flex;
+        align-items: center;
+        flex-shrink: 0;
+        justify-content: center;
         width: 72%;
         max-width: 360px;
         aspect-ratio: 1;
-        flex-shrink: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
     }
 
     .visualizer-canvas {
         position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        border-radius: 50%;
+        width: 130%;
+        height: 130%;
         pointer-events: none;
+        inset: -15%;
     }
 
     .artwork-circle {
         position: relative;
-        width: 76%;
-        aspect-ratio: 1;
-        border-radius: 50%;
-        overflow: hidden;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, .12), 0 2px 8px rgba(0, 0, 0, .06);
-        transition: transform $duration-normal $ease-spring, opacity $duration-fast ease;
         z-index: 1;
+        overflow: hidden;
+        width: 76%;
+        transition: transform $duration-normal $ease-spring, opacity $duration-fast ease;
+        border-radius: 50%;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, .12), 0 2px 8px rgba(0, 0, 0, .06);
+        aspect-ratio: 1;
 
         &:hover {
             opacity: .8;
@@ -244,44 +245,46 @@ body {
 
     .artwork-preloader {
         position: absolute;
-        inset: 0;
         display: flex;
         align-items: center;
         justify-content: center;
-        background: rgba(0, 0, 0, .15);
         border-radius: 50%;
+        background: rgba(0, 0, 0, .15);
+        inset: 0;
 
         &.hidden {
             display: none;
         }
 
         &::after {
-            content: '';
             width: 2rem;
             height: 2rem;
+            content: "";
+            animation: spin .8s linear infinite;
             border: 2px solid rgba(255, 255, 255, .3);
             border-top-color: #fff;
             border-radius: 50%;
-            animation: spin .8s linear infinite;
         }
     }
 
     @keyframes spin {
-        to { transform: rotate(360deg); }
+        to {
+            transform: rotate(360deg);
+        }
     }
 
 
     // ─── On Air info ─────────────────────────────────────────────────────
     .onair {
-        text-align: center;
-        margin-top: 1.5rem;
         width: 100%;
         max-width: 80%;
+        margin-top: 1.5rem;
+        text-align: center;
 
         .artist, .title {
+            position: relative;
             overflow: hidden;
             white-space: nowrap;
-            position: relative;
 
             // Static (fits): just show text
             span {
@@ -313,22 +316,26 @@ body {
 
         .title {
             font-size: $font-size-base;
-            color: $text-secondary;
             margin-top: .15rem;
+            color: $text-secondary;
         }
     }
 
     @keyframes marquee {
-        0%   { transform: translateX(0); }
-        100% { transform: translateX(-50%); }
+        0% {
+            transform: translateX(0);
+        }
+        100% {
+            transform: translateX(-50%);
+        }
     }
 
 
     // ─── Player controls ─────────────────────────────────────────────────
     .player {
         display: flex;
-        flex-direction: column;
         align-items: center;
+        flex-direction: column;
         width: 100%;
         margin-top: 2rem;
     }
@@ -341,13 +348,13 @@ body {
 
     .play, .stop {
         position: absolute;
-        inset: 0;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        color: $accent-color;
         transition: transform $duration-fast $ease-spring, opacity $duration-fast ease;
+        color: $accent-color;
+        inset: 0;
 
         &:hover {
             transform: scale(1.08);
@@ -358,25 +365,31 @@ body {
         }
 
         &.hidden {
-            opacity: 0;
             visibility: hidden;
             transform: scale(.8);
+            opacity: 0;
         }
     }
 
     // Seeking / loading pulse on stop button
     .player.paw-seeking .stop::after {
-        content: '';
         position: absolute;
-        inset: 0;
-        border-radius: 50%;
-        border: 2.5px solid $accent-color;
+        content: "";
         animation: seek-pulse 1.4s $ease-out infinite;
+        border: 2.5px solid $accent-color;
+        border-radius: 50%;
+        inset: 0;
     }
 
     @keyframes seek-pulse {
-        0%   { transform: scale(1); opacity: .6; }
-        100% { transform: scale(1.45); opacity: 0; }
+        0% {
+            transform: scale(1);
+            opacity: .6;
+        }
+        100% {
+            transform: scale(1.45);
+            opacity: 0;
+        }
     }
 
 
@@ -393,17 +406,22 @@ body {
     .volume-icon {
         display: flex;
         flex-shrink: 0;
-        color: $text-secondary;
         cursor: pointer;
         transition: color $duration-fast ease;
+        color: $text-secondary;
 
         &:hover {
             color: $text-color;
         }
 
-        .muted.hidden { display: none; }
+        .muted.hidden {
+            display: none;
+        }
 
-        svg { width: 20px; height: 20px; }
+        svg {
+            width: 20px;
+            height: 20px;
+        }
     }
 
     .volume-slider {
@@ -415,24 +433,24 @@ body {
     .vol-progress {
         position: relative;
         height: 4px;
-        background: $border-color;
         border-radius: $radius-full;
+        background: $border-color;
 
         // Expand vertical hit area so clicks in the padding zone still register
         &::before {
-            content: '';
             position: absolute;
+            content: "";
             inset: -8px 0;
         }
     }
 
     .vol-bar {
         position: relative;
-        height: 100%;
         width: 50%;
-        background: $accent-color;
-        border-radius: $radius-full;
+        height: 100%;
         transition: none;
+        border-radius: $radius-full;
+        background: $accent-color;
     }
 
     .circle-control {
@@ -443,11 +461,11 @@ body {
         height: 14px;
         margin-top: -7px;
         margin-right: -7px;
-        background: $accent-color;
-        border-radius: 50%;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, .2);
-        opacity: 0;
         transition: opacity $duration-fast ease;
+        opacity: 0;
+        border-radius: 50%;
+        background: $accent-color;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, .2);
     }
 
     .volume-slider:hover .circle-control,
@@ -462,7 +480,9 @@ body {
     }
 
     @media (hover: none) and (pointer: coarse) {
-        .volume-control { display: none; }
+        .volume-control {
+            display: none;
+        }
     }
 
 
@@ -476,13 +496,13 @@ body {
 
     .page-header {
         position: sticky;
+        z-index: 5;
         top: 0;
         display: flex;
         align-items: center;
-        gap: .75rem;
         padding: 1rem 0;
         background: $bg-color;
-        z-index: 5;
+        gap: .75rem;
 
         h3 {
             font-size: $font-size-lg;
@@ -501,7 +521,9 @@ body {
     }
 
     .history-item {
-        &.hidden { display: none; }
+        &.hidden {
+            display: none;
+        }
 
         td {
             padding: .6rem 0;
@@ -510,45 +532,68 @@ body {
         }
 
         .history-artwork {
-            width: 2.5rem;
+            width: 3.25rem;
             padding-right: .75rem;
 
             img {
-                width: 2.5rem;
-                height: 2.5rem;
+                width: 3.25rem;
+                height: 3.25rem;
                 border-radius: $radius-sm;
                 object-fit: cover;
+            }
+
+            .artwork-preloader {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 3.25rem;
+                height: 3.25rem;
+                border-radius: $radius-sm;
+                background: $border-color;
+
+                &::after {
+                    width: 1rem;
+                    height: 1rem;
+                    content: "";
+                    animation: spin .8s linear infinite;
+                    border: 2px solid rgba(0, 0, 0, .1);
+                    border-top-color: $accent-color;
+                    border-radius: 50%;
+                }
             }
         }
 
         .history-track {
             font-size: $font-size-sm;
-            color: $text-color;
             line-height: 1.4;
+            color: $text-color;
         }
 
         .history-time-ago {
-            text-align: right;
             font-size: $font-size-xs;
+            margin-top: .15rem;
+            text-align: left;
             color: $text-secondary;
-            white-space: nowrap;
-            padding-left: .75rem;
         }
     }
 
     .history-unavailable {
-        padding: 3rem 0;
         font-size: $font-size-sm;
-        color: $text-secondary;
+        padding: 3rem 0;
         text-align: center;
+        color: $text-secondary;
 
-        &.hidden { display: none; }
+        &.hidden {
+            display: none;
+        }
     }
 
 
     // ─── Channel & stream lists ──────────────────────────────────────────
     .channels, .settings {
-        &.hidden { display: none; }
+        &.hidden {
+            display: none;
+        }
     }
 
     .settings:not(.hidden) {
@@ -556,10 +601,10 @@ body {
 
         h4 {
             font-size: $font-size-sm;
-            text-transform: uppercase;
-            letter-spacing: .05em;
-            color: $text-secondary;
             margin-bottom: .75rem;
+            letter-spacing: .05em;
+            text-transform: uppercase;
+            color: $text-secondary;
         }
     }
 
@@ -570,15 +615,15 @@ body {
 
         li {
             a {
-                display: block;
-                padding: .75rem 1rem;
-                border-radius: $radius-md;
                 font-size: $font-size-sm;
                 font-weight: 500;
-                color: $text-color;
-                background: $surface-color;
-                border: 1px solid $border-color;
+                display: block;
+                padding: .75rem 1rem;
                 transition: all $duration-fast ease;
+                color: $text-color;
+                border: 1px solid $border-color;
+                border-radius: $radius-md;
+                background: $surface-color;
 
                 &:hover {
                     background: $border-color;
@@ -591,8 +636,8 @@ body {
 
             &.active a {
                 color: #fff;
-                background: $accent-color;
                 border-color: $accent-color;
+                background: $accent-color;
             }
         }
     }
@@ -602,20 +647,20 @@ body {
         position: relative;
 
         &:before {
-            content: attr(data-title);
+            font-size: $font-size-xs;
             position: absolute;
             bottom: 100%;
             left: 50%;
-            transform: translateX(-50%);
             padding: .3rem .6rem;
+            content: attr(data-title);
+            transition: opacity $duration-fast ease;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            color: $bg-color;
             border-radius: $radius-sm;
             background: $text-color;
-            color: $bg-color;
-            font-size: $font-size-xs;
-            white-space: nowrap;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity $duration-fast ease;
         }
 
         &:hover:before {
@@ -624,11 +669,16 @@ body {
     }
 
     // ─── Utility ─────────────────────────────────────────────────────────
-    .hidden { display: none; }
-    .text-center { text-align: center; }
+    .hidden {
+        display: none;
+    }
+
+    .text-center {
+        text-align: center;
+    }
 
     .icon-fill {
         fill: $text-secondary;
     }
 
-} // end .pawtunes
+}

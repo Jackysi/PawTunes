@@ -1,42 +1,56 @@
 {
-    "author":   "Jaka Prasnikar",
-    "name":     "Modern",
+    "author": "Jaka Prasnikar",
+    "name": "Modern",
     "template": "template.html",
-    "size":     "480x700",
-    "url":      "https://prahec.com",
-    "schemes":  [
+    "size": "480x700",
+    "url": "https://prahec.com",
+    "schemes": [
         {
-            "name":    "Light",
+            "name": "Light",
             "compile": "scss/modern.scss",
-            "style":   "./css/modern.css"
+            "style": "./css/modern.css"
         },
         {
-            "name":    "Dark",
+            "name": "Dark",
             "compile": "scss/modern-dark.scss",
-            "style":   "./css/modern-dark.css"
+            "style": "./css/modern-dark.css"
         }
     ],
     "extra": {
         "songSearch": {
-            "default":     "https://music.apple.com/us/search?term={query}",
-            "name":        "songSearch",
+            "default": "https://music.apple.com/us/search?term={query}",
+            "name": "songSearch",
             "description": "{query} - will be replaced by an actual playing song.",
-            "label":       "Song search/purchase URL",
-            "type":        "text"
+            "label": "Song search/purchase URL",
+            "type": "text"
         },
         "songSearchEnable": {
-            "default":     true,
-            "name":        "songSearchEnable",
+            "default": true,
+            "name": "songSearchEnable",
             "description": "Enable song search/purchase when artwork is clicked.",
-            "type":        "checkbox",
-            "value":       "true"
+            "type": "checkbox",
+            "value": "true"
         },
         "useChannelLogos": {
-            "default":     false,
-            "name":        "useChannelLogos",
+            "default": false,
+            "name": "useChannelLogos",
             "description": "Instead of showing channel names, show channel logotypes (images).",
-            "type":        "checkbox",
-            "value":       "true"
+            "type": "checkbox",
+            "value": "true"
+        },
+        "spectrumVisualizer": {
+            "default": true,
+            "name": "spectrumVisualizer",
+            "description": "Audio Spectrum Visualizer",
+            "type": "checkbox",
+            "value": "true"
+        },
+        "alphaBars": {
+            "default": true,
+            "name": "alphaBars",
+            "description": "Spectrum Visualizer bars use alpha transparency for animations as well",
+            "type": "checkbox",
+            "value": "true"
         }
     }
 }
