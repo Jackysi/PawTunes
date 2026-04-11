@@ -88,7 +88,7 @@
                     <!-- Page: Player -->
                     <div class="page main">
                         <div class="artwork-area">
-                            <canvas class="visualizer-canvas" width="320" height="320"></canvas>
+                            <div id="analyzer" class="visualizer-canvas"></div>
                             <div class="artwork-circle">
                                 <img class="artwork" src="{{$default_artwork}}" alt="Artwork">
                                 <div class="artwork-preloader hidden"></div>
@@ -148,8 +148,10 @@
                                     <tbody class="history-list-container">
                                         <tr class="history-item css-hint hidden">
                                             <td class="history-artwork"></td>
-                                            <td class="history-track"></td>
-                                            <td class="history-time-ago"></td>
+                                            <td class="history-track-cell">
+                                                <div class="history-track"></div>
+                                                <div class="history-time-ago"></div>
+                                            </td>
                                         </tr>
                                     </tbody>
                                 </table>

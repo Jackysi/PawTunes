@@ -2,7 +2,7 @@
  * PawTunes Project — Modern Template
  *
  * Mobile-first radio player with circular artwork and ring visualizer.
- * Uses Web Audio API AnalyserNode for radial frequency bars around the artwork.
+ * Uses audioMotion-analyzer for radial frequency visualization around the artwork.
  *
  * @author       Jacky (Jaka Prasnikar)
  * @email        jacky@prahec.com
@@ -10,6 +10,7 @@
  * @repository   https://github.com/Jackysi/pawtunes
  */
 import PawTunes from "../player/ts/pawtunes";
+import AudioMotionAnalyzer from 'audiomotion-analyzer';
 
 export default class ModernTpl {
 
@@ -18,13 +19,7 @@ export default class ModernTpl {
     private statusTimeout: any;
 
     // Visualizer
-    private audioCtx: AudioContext | null = null;
-    private analyser: AnalyserNode | null = null;
-    private animationId: number = 0;
-    private canvas: HTMLCanvasElement | null = null;
-    private ctx: CanvasRenderingContext2D | null = null;
-    private accentColor: string = '';
-    private accentFrame: number = 0;
+    private audioMotion: AudioMotionAnalyzer | null = null;
 
 
     constructor(PawTunes: PawTunes) {
@@ -55,12 +50,6 @@ export default class ModernTpl {
         }
 
         // Visualizer
-        this.canvas = document.querySelector('.visualizer-canvas') as HTMLCanvasElement;
-        if (this.canvas) {
-            this.ctx = this.canvas.getContext('2d');
-            this.resizeCanvas();
-        }
-
         if (this.pawtunes.audio) {
             this.initVisualizer();
         }
@@ -97,7 +86,6 @@ export default class ModernTpl {
 
         window.addEventListener('resize', () => {
             this.switchPage('', false);
-            this.resizeCanvas();
         });
 
     }
@@ -119,9 +107,8 @@ export default class ModernTpl {
             this.updateStatusInfo(status);
         });
 
-        // Start/stop visualizer with playback
-        this.pawtunes.on('playing', () => this.startVisualizerLoop());
-        this.pawtunes.on('stopped', () => this.stopVisualizerLoop());
+        // Update visualizer accent color on channel change
+        this.pawtunes.on('channel.change', () => this.changeSpectrumColor());
 
     }
 
@@ -130,8 +117,8 @@ export default class ModernTpl {
 
         // Tab bar items
         const tabMap: Record<string, string> = {
-            '.nav-home': 'main',
-            '.nav-history': 'history',
+            '.nav-home'    : 'main',
+            '.nav-history' : 'history',
             '.nav-channels': 'settings-page',
         };
 
@@ -177,8 +164,8 @@ export default class ModernTpl {
 
         // Update active tab
         const pageToTab: Record<string, string> = {
-            'main': '.nav-home',
-            'history': '.nav-history',
+            'main'         : '.nav-home',
+            'history'      : '.nav-history',
             'settings-page': '.nav-channels',
         };
 
@@ -273,125 +260,61 @@ export default class ModernTpl {
     // ── Ring Visualizer ───────────────────────────────────────────────────────
     initVisualizer() {
 
-        if (!this.pawtunes.audio || !this.canvas || !this.ctx) return;
+        // Skip if disabled
+        if (this.pawtunes.settings.tpl?.spectrumVisualizer !== true) return;
 
-        try {
-            this.audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-            this.analyser = this.audioCtx.createAnalyser();
-            this.analyser.fftSize = 512;
-            this.analyser.smoothingTimeConstant = 0.8;
+        const element = document.getElementById('analyzer');
+        if (!this.pawtunes.audio || !element) return;
 
-            const source = this.audioCtx.createMediaElementSource(this.pawtunes.audio);
-            source.connect(this.analyser);
-            this.analyser.connect(this.audioCtx.destination);
-        } catch (err) {
-            console.warn('Visualizer init failed:', err);
-        }
+        // Empty
+        this.pawtunes._('#analyzer', (el: HTMLElement) => el.innerHTML = '')
 
+        // set the crossOrigin property in the media element
+        this.pawtunes.audio.crossOrigin = 'anonymous';
+
+        // create the analyser using the media element as a source
+        this.audioMotion = new AudioMotionAnalyzer(element, {
+            source        : this.pawtunes.audio,
+            radial        : true,
+            radius        : 0.78,
+            frequencyScale: 'bark',
+            fftSize       : 8192,
+            mode          : 1,
+            minFreq       : 20,
+            maxFreq       : 20000,
+            minDecibels   : -80,
+            maxDecibels   : -15,
+            smoothing     : 0.9,
+            fillAlpha     : 0.9,
+            barSpace      : 0.25,
+            roundBars     : true,
+            showPeaks     : false,
+            showScaleX    : false,
+            showBgColor   : false,
+            overlay       : true,
+            lineWidth     : .1,
+            roundBars     : true,
+            alphaBars     : this.pawtunes.settings.tpl?.alphaBars ?? false
+        });
+
+        this.changeSpectrumColor();
     }
 
-    startVisualizerLoop() {
 
-        if (!this.analyser || !this.ctx || !this.canvas) return;
+    changeSpectrumColor() {
 
-        // Resume AudioContext if suspended (autoplay policy)
-        if (this.audioCtx?.state === 'suspended') {
-            this.audioCtx.resume();
+        if (!this.audioMotion) return;
+
+        let accent = "";
+        let element = document.querySelector('.pawtunes');
+        if (element) {
+            accent = window.getComputedStyle(element).getPropertyValue('--accent-color');
         }
 
-        const bufferLength = this.analyser.frequencyBinCount;
-        const dataArray = new Uint8Array(bufferLength);
+        if (accent === '') accent = '#6C5CE7';
 
-        const draw = () => {
-            this.animationId = requestAnimationFrame(draw);
-            if (!this.analyser || !this.ctx || !this.canvas) return;
-
-            this.analyser.getByteFrequencyData(dataArray);
-            this.drawRing(dataArray, bufferLength);
-        };
-
-        draw();
-
-    }
-
-    stopVisualizerLoop() {
-
-        if (this.animationId) {
-            cancelAnimationFrame(this.animationId);
-            this.animationId = 0;
-        }
-
-        // Clear canvas
-        if (this.ctx && this.canvas) {
-            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        }
-
-    }
-
-    private drawRing(dataArray: Uint8Array, bufferLength: number) {
-
-        if (!this.ctx || !this.canvas) return;
-
-        const width = this.canvas.width;
-        const height = this.canvas.height;
-        const cx = width / 2;
-        const cy = height / 2;
-
-        const innerRadius = width * 0.39;
-        const maxBarLen = width * 0.1;
-
-        // Use only the meaningful frequency bins (low-mid range has the energy)
-        const usableBins = Math.min(bufferLength, 128);
-        const barWidth = Math.max((2 * Math.PI * innerRadius) / usableBins * 0.6, 1.5);
-
-        // Cache accent color (read once per ~60 frames to avoid layout thrash)
-        if (!this.accentColor || ++this.accentFrame > 60) {
-            const root = document.querySelector('.pawtunes');
-            this.accentColor = root
-                ? getComputedStyle(root).getPropertyValue('--accent-color').trim() || '#6C5CE7'
-                : '#6C5CE7';
-            this.accentFrame = 0;
-        }
-
-        this.ctx.clearRect(0, 0, width, height);
-        this.ctx.strokeStyle = this.accentColor;
-        this.ctx.lineWidth = barWidth;
-        this.ctx.lineCap = 'round';
-
-        // Single pass: each bin spans a portion of the full circle
-        for (let i = 0; i < usableBins; i++) {
-
-            const value = dataArray[i] / 255;
-            const barLen = Math.max(value * maxBarLen, 1);
-            this.ctx.globalAlpha = 0.3 + value * 0.7;
-
-            const angle = (i / usableBins) * 2 * Math.PI - Math.PI / 2;
-            this.ctx.beginPath();
-            this.ctx.moveTo(cx + Math.cos(angle) * innerRadius, cy + Math.sin(angle) * innerRadius);
-            this.ctx.lineTo(cx + Math.cos(angle) * (innerRadius + barLen), cy + Math.sin(angle) * (innerRadius + barLen));
-            this.ctx.stroke();
-
-        }
-
-        this.ctx.globalAlpha = 1;
-
-    }
-
-    resizeCanvas() {
-
-        if (!this.canvas) return;
-
-        const container = this.canvas.parentElement;
-        if (!container) return;
-
-        const size = container.offsetWidth;
-        const dpr = window.devicePixelRatio || 1;
-
-        this.canvas.width = size * dpr;
-        this.canvas.height = size * dpr;
-        this.canvas.style.width = `${size}px`;
-        this.canvas.style.height = `${size}px`;
-
+        this.audioMotion.registerGradient('myGradient', {bgColor: 'transparent', colorStops: [accent]});
+        this.audioMotion.setOptions({gradient: 'myGradient'});
     }
 
 }
