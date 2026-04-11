@@ -20,6 +20,11 @@ export default class ModernTpl {
 
     // Visualizer
     private audioMotion: AudioMotionAnalyzer | null = null;
+    private canvas: HTMLCanvasElement | null = null;
+    private ctx: CanvasRenderingContext2D | null = null;
+    private animationId: number = 0;
+    private accentColor: string = '';
+    private accentFrame: number = 0;
 
 
     constructor(PawTunes: PawTunes) {
@@ -49,7 +54,13 @@ export default class ModernTpl {
             this.updateTrackInfo(this.pawtunes.onAir);
         }
 
-        // Visualizer
+        // Visualizer canvas
+        this.canvas = document.querySelector('.visualizer-canvas') as HTMLCanvasElement;
+        if (this.canvas) {
+            this.ctx = this.canvas.getContext('2d');
+            this.resizeCanvas();
+        }
+
         if (this.pawtunes.audio) {
             this.initVisualizer();
         }
@@ -86,6 +97,7 @@ export default class ModernTpl {
 
         window.addEventListener('resize', () => {
             this.switchPage('', false);
+            this.resizeCanvas();
         });
 
     }
@@ -107,8 +119,9 @@ export default class ModernTpl {
             this.updateStatusInfo(status);
         });
 
-        // Update visualizer accent color on channel change
-        this.pawtunes.on('channel.change', () => this.changeSpectrumColor());
+        // Start/stop visualizer with playback
+        this.pawtunes.on('playing', () => this.startVisualizerLoop());
+        this.pawtunes.on('stopped', () => this.stopVisualizerLoop());
 
     }
 
@@ -263,58 +276,122 @@ export default class ModernTpl {
         // Skip if disabled
         if (this.pawtunes.settings.tpl?.spectrumVisualizer !== true) return;
 
-        const element = document.getElementById('analyzer');
-        if (!this.pawtunes.audio || !element) return;
-
-        // Empty
-        this.pawtunes._('#analyzer', (el: HTMLElement) => el.innerHTML = '')
+        if (!this.pawtunes.audio || !this.canvas || !this.ctx) return;
 
         // set the crossOrigin property in the media element
         this.pawtunes.audio.crossOrigin = 'anonymous';
 
-        // create the analyser using the media element as a source
-        this.audioMotion = new AudioMotionAnalyzer(element, {
+        // audioMotion processes audio only (useCanvas: false), we draw the ring ourselves
+        const container = document.createElement('div');
+        container.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden';
+        document.body.appendChild(container);
+
+        this.audioMotion = new AudioMotionAnalyzer(container, {
             source        : this.pawtunes.audio,
-            radial        : true,
-            radius        : 0.78,
+            useCanvas     : false,
             frequencyScale: 'bark',
             fftSize       : 8192,
-            mode          : 1,
+            mode          : 2,
             minFreq       : 20,
             maxFreq       : 20000,
             minDecibels   : -80,
-            maxDecibels   : -15,
-            smoothing     : 0.9,
-            fillAlpha     : 0.9,
-            barSpace      : 0.25,
-            roundBars     : true,
-            showPeaks     : false,
-            showScaleX    : false,
-            showBgColor   : false,
-            overlay       : true,
-            lineWidth     : .1,
-            roundBars     : true,
-            alphaBars     : this.pawtunes.settings.tpl?.alphaBars ?? false
+            maxDecibels   : -20,
+            smoothing     : 0.8,
         });
 
-        this.changeSpectrumColor();
     }
 
+    startVisualizerLoop() {
 
-    changeSpectrumColor() {
+        if (!this.audioMotion || !this.ctx || !this.canvas) return;
 
-        if (!this.audioMotion) return;
+        const draw = () => {
+            this.animationId = requestAnimationFrame(draw);
+            if (!this.audioMotion || !this.ctx || !this.canvas) return;
 
-        let accent = "";
-        let element = document.querySelector('.pawtunes');
-        if (element) {
-            accent = window.getComputedStyle(element).getPropertyValue('--accent-color');
+            const bars = this.audioMotion.getBars();
+            if (bars.length) this.drawRing(bars);
+        };
+
+        draw();
+
+    }
+
+    stopVisualizerLoop() {
+
+        if (this.animationId) {
+            cancelAnimationFrame(this.animationId);
+            this.animationId = 0;
         }
 
-        if (accent === '') accent = '#6C5CE7';
+        // Clear canvas
+        if (this.ctx && this.canvas) {
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        }
 
-        this.audioMotion.registerGradient('myGradient', {bgColor: 'transparent', colorStops: [accent]});
-        this.audioMotion.setOptions({gradient: 'myGradient'});
+    }
+
+    private drawRing(bars: { value: number[] }[]) {
+
+        if (!this.ctx || !this.canvas) return;
+
+        const width = this.canvas.width;
+        const height = this.canvas.height;
+        const cx = width / 2;
+        const cy = height / 2;
+
+        const innerRadius = width * 0.39;
+        const maxBarLen = width * 0.15;
+        const numBars = bars.length;
+        const barWidth = Math.max((2 * Math.PI * innerRadius) / numBars * 0.6, 1.5);
+
+        // Cache accent color (read once per ~60 frames to avoid layout thrash)
+        if (!this.accentColor || ++this.accentFrame > 60) {
+            const root = document.querySelector('.pawtunes');
+            this.accentColor = root
+                ? getComputedStyle(root).getPropertyValue('--accent-color').trim() || '#6C5CE7'
+                : '#6C5CE7';
+            this.accentFrame = 0;
+        }
+
+        this.ctx.clearRect(0, 0, width, height);
+        this.ctx.strokeStyle = this.accentColor;
+        this.ctx.lineWidth = barWidth;
+        this.ctx.lineCap = 'round';
+
+        for (let i = 0; i < numBars; i++) {
+
+            const value = bars[i].value[0];
+            const barLen = Math.max(value * maxBarLen, 1);
+            this.ctx.globalAlpha = 0.3 + value * 0.7;
+
+            const angle = (i / numBars) * 2 * Math.PI - Math.PI / 2;
+            this.ctx.beginPath();
+            this.ctx.moveTo(cx + Math.cos(angle) * innerRadius, cy + Math.sin(angle) * innerRadius);
+            this.ctx.lineTo(cx + Math.cos(angle) * (innerRadius + barLen), cy + Math.sin(angle) * (innerRadius + barLen));
+            this.ctx.stroke();
+
+        }
+
+        this.ctx.globalAlpha = 1;
+
+    }
+
+    resizeCanvas() {
+
+        if (!this.canvas) return;
+
+        const container = this.canvas.parentElement;
+        if (!container) return;
+
+        const size = container.offsetWidth;
+        const dpr = window.devicePixelRatio || 1;
+
+        this.canvas.width = size * dpr;
+        this.canvas.height = size * dpr;
+        this.canvas.style.width = `${size}px`;
+        this.canvas.style.height = `${size}px`;
+
     }
 
 }
