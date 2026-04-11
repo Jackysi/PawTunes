@@ -78,6 +78,14 @@ export default class ModernTpl {
             this.pawtunes._('.page.settings-page', (el: HTMLElement) => el.remove());
         }
 
+        // Hide entire tab bar if there's only the home tab left
+        const singleStream = isSingleChannel && Object.keys(this.pawtunes.channels[0]?.streams || {}).length <= 1;
+        if (singleStream && !this.pawtunes.settings.history) {
+            console.log("no history)")
+            this.pawtunes._('.tab-bar', (el: HTMLElement) => el.remove());
+            this.pawtunes._('', (el: HTMLElement) => el.classList.add('no-tab-bar'));
+        }
+
         // Artwork search on tap
         if (this.pawtunes.settings.tpl?.songSearchEnable) {
             this.pawtunes._('.artwork-circle', (el: HTMLElement) => {
@@ -345,7 +353,7 @@ export default class ModernTpl {
         const numBars = bars.length;
         const barWidth = Math.max((2 * Math.PI * innerRadius) / numBars * 0.6, 1.5);
 
-        // Cache accent color (read once per ~60 frames to avoid layout thrash)
+        // Cache accent colour (read once per ~60 frames to avoid layout thrash)
         if (!this.accentColor || ++this.accentFrame > 60) {
             const root = document.querySelector('.pawtunes');
             this.accentColor = root
