@@ -33,6 +33,8 @@ Explore the live demo:
 
 [![PawTunes Template](https://cdn.prahec.com/projects/pawtunes/screens/20241129175419.png)](https://cdn.prahec.com/projects/pawtunes/screens/20241129175419.png)
 
+[![PawTunes Template](https://cdn.prahec.com/projects/pawtunes/screens/rj20QUyaCm.jpg)](https://cdn.prahec.com/projects/pawtunes/screens/rj20QUyaCm.jpg)
+
 ---
 
 ## 🚀 Features
