@@ -149,6 +149,10 @@ body {
         height: calc(100% - #{$header-height} - #{$tab-bar-height});
     }
 
+    &.no-tab-bar .container {
+        height: calc(100% - #{$header-height});
+    }
+
     .container-inner {
         height: 100%;
         transition: transform $duration-page $ease-out;
