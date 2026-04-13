@@ -1,36 +1,239 @@
-// Dark theme — override variables before importing the main stylesheet.
+// Dark theme — redesigned with animated gradient, glassmorphism, and refined aesthetics.
 // The panel's runtime SCSS compiler can further override $accent-color and $bg-color.
 
-$bg-color:        #0F0F14 !default;
-$accent-color:    #7C6BF0 !default;
-$text-color:      #E4E4E7;
-$text-secondary:  #71717A;
-$surface-color:   #1A1A22;
-$border-color:    rgba(255, 255, 255, .08);
-$overlay-color:   rgba(255, 255, 255, .05);
+$bg-color:        #08080F !default;
+$accent-color:    #8B5CF6 !default;
+$text-color:      #F0F0F5;
+$text-secondary:  #8B8BA7;
+$surface-color:   lighten($bg-color, 5%);
+$border-color:    rgba(255, 255, 255, .06);
+$overlay-color:   rgba(255, 255, 255, .04);
 
 @import "modern";
 
 // ─── Dark-specific overrides ─────────────────────────────────────────────────
 .pawtunes {
 
-    .artwork-circle {
-        box-shadow: 0 8px 40px rgba(0, 0, 0, .4), 0 2px 12px rgba(0, 0, 0, .3);
+    // JS reads this to switch waveform rendering
+    --waveform-mode: dark;
+
+    // ── Animated gradient background ─────────────────────────────────────
+    // Derived from $bg-color + accent tints — adapts when panel overrides variables
+    background: linear-gradient(
+        -45deg,
+        $bg-color,
+        mix($accent-color, $bg-color, 12%),
+        mix(#fff, $bg-color, 3%),
+        $bg-color,
+        mix($accent-color, $bg-color, 15%)
+    );
+    background-size: 400% 400%;
+    animation: bg-drift 25s ease infinite;
+
+    // Cloud layer — accent color at varying opacities, no hue shifts
+    &::before {
+        content: "";
+        position: absolute;
+        inset: -30%;
+        z-index: 0;
+        background:
+            radial-gradient(ellipse at 35% 28%, rgba($accent-color, .40), transparent 35%),
+            radial-gradient(ellipse at 56% 24%, rgba($accent-color, .28), transparent 30%),
+            radial-gradient(ellipse at 70% 33%, rgba($accent-color, .22), transparent 28%),
+            radial-gradient(ellipse at 48% 21%, rgba($accent-color, .15), transparent 24%),
+            radial-gradient(ellipse at 24% 30%, rgba($accent-color, .30), transparent 32%);
+        animation: blob-drift 25s ease-in-out infinite alternate;
+        pointer-events: none;
     }
 
-    .css-hint:before {
-        background: $surface-color;
-        color: $text-color;
+    // Children above gradient blob layer
+    .container {
+        z-index: 1;
+    }
+
+
+    // ── Header ───────────────────────────────────────────────────────────
+    .header {
+        background: transparent;
+    }
+
+
+    // ── Pages — all transparent ──────────────────────────────────────────
+    .page {
+        background: transparent;
+    }
+
+    .page-header {
+        position: relative;
+        background: transparent;
+    }
+
+
+    // ── Artwork ──────────────────────────────────────────────────────────
+    .artwork-circle {
+        box-shadow:
+            0 0 60px rgba($accent-color, .12),
+            0 8px 40px rgba(0, 0, 0, .4),
+            0 2px 12px rgba(0, 0, 0, .3);
+    }
+
+
+    // ── Play / Stop buttons ──────────────────────────────────────────────
+    .play, .stop {
+        color: #fff;
+        border-radius: 50%;
+        background: linear-gradient(
+            145deg,
+            rgba($accent-color, .22) 0%,
+            rgba($accent-color, .05) 100%
+        );
+        border: 1px solid rgba($accent-color, .25);
+        box-shadow:
+            0 0 28px rgba($accent-color, .15),
+            0 4px 16px rgba(0, 0, 0, .25),
+            inset 0 1px 0 rgba(255, 255, 255, .06);
+
+        &:hover {
+            box-shadow:
+                0 0 40px rgba($accent-color, .28),
+                0 4px 16px rgba(0, 0, 0, .25),
+                inset 0 1px 0 rgba(255, 255, 255, .1);
+        }
+    }
+
+    .player.paw-seeking .stop::after {
+        border-color: rgba($accent-color, .5);
+        box-shadow: 0 0 12px rgba($accent-color, .2);
+    }
+
+
+    // ── Tab bar — glassmorphism ──────────────────────────────────────────
+    .tab-bar {
+        background: rgba($bg-color, .65);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        border-top: 1px solid rgba(255, 255, 255, .06);
+        box-shadow: 0 -4px 24px rgba(0, 0, 0, .3);
+    }
+
+    .tab-item {
+        position: relative;
+        color: rgba(255, 255, 255, .35);
+        border-right: none;
+
+        // Glowing top indicator (hidden by default, shown on active)
+        &::before {
+            content: "";
+            position: absolute;
+            top: -1px;
+            left: 50%;
+            width: 28px;
+            height: 2px;
+            transform: translateX(-50%);
+            transition: opacity 300ms ease;
+            opacity: 0;
+            border-radius: 0 0 2px 2px;
+            background: $accent-color;
+            box-shadow: 0 0 10px rgba($accent-color, .5), 0 2px 8px rgba($accent-color, .3);
+        }
+
+        &:hover {
+            color: rgba(255, 255, 255, .65);
+            background: rgba(255, 255, 255, .04);
+        }
+
+        &.active {
+            color: #fff;
+
+            &::before {
+                opacity: 1;
+            }
+        }
+    }
+
+
+    // ── Volume control ───────────────────────────────────────────────────
+    .vol-bar {
+        background: linear-gradient(90deg, $accent-color, lighten($accent-color, 12%));
     }
 
     .circle-control {
-        box-shadow: 0 1px 6px rgba(0, 0, 0, .5);
+        background: #fff;
+        box-shadow: 0 1px 6px rgba(0, 0, 0, .5), 0 0 8px rgba($accent-color, .3);
     }
 
-    // Scrollbar styling
+    .vol-progress {
+        background: rgba(255, 255, 255, .08);
+    }
+
+
+    // ── On-air text ──────────────────────────────────────────────────────
+    .onair .artist {
+        color: #fff;
+    }
+
+    .onair .title {
+        color: rgba(255, 255, 255, .5);
+    }
+
+
+    // ── Toast ────────────────────────────────────────────────────────────
+    .player-message {
+        background: rgba($surface-color, .9);
+        color: $text-color;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, .08);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, .4);
+    }
+
+
+    // ── Tooltips ─────────────────────────────────────────────────────────
+    .css-hint:before {
+        background: $surface-color;
+        color: $text-color;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, .4);
+    }
+
+
+    // ── Channel / stream lists ───────────────────────────────────────────
+    .channel-list li a,
+    .streams-list li a {
+        background: rgba(255, 255, 255, .03);
+        border-color: rgba(255, 255, 255, .06);
+
+        &:hover {
+            background: rgba(255, 255, 255, .06);
+        }
+    }
+
+    .channel-list li.active a,
+    .streams-list li.active a {
+        background: $accent-color;
+        border-color: $accent-color;
+        box-shadow: 0 2px 12px rgba($accent-color, .25);
+    }
+
+
+    // ── History ──────────────────────────────────────────────────────────
+    .history-item td {
+        border-bottom-color: rgba(255, 255, 255, .05);
+    }
+
+    .history-item .history-artwork .artwork-preloader {
+        background: rgba(255, 255, 255, .05);
+
+        &::after {
+            border-color: rgba(255, 255, 255, .1);
+            border-top-color: $accent-color;
+        }
+    }
+
+
+    // ── Scrollbar ────────────────────────────────────────────────────────
     .page {
         scrollbar-width: thin;
-        scrollbar-color: rgba(255, 255, 255, .15) transparent;
+        scrollbar-color: rgba(255, 255, 255, .12) transparent;
 
         &::-webkit-scrollbar {
             width: 6px;
@@ -41,12 +244,35 @@ $overlay-color:   rgba(255, 255, 255, .05);
         }
 
         &::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, .15);
+            background: rgba(255, 255, 255, .12);
             border-radius: 3px;
 
             &:hover {
-                background: rgba(255, 255, 255, .25);
+                background: rgba(255, 255, 255, .22);
             }
         }
+    }
+}
+
+
+// ─── Keyframes ───────────────────────────────────────────────────────────────
+@keyframes bg-drift {
+    0%, 100% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+}
+
+@keyframes blob-drift {
+    0% {
+        transform: translate(0, 0) scale(1) rotate(0deg);
+    }
+    50% {
+        transform: translate(5%, -4%) scale(1.05) rotate(6deg);
+    }
+    100% {
+        transform: translate(-3%, 3%) scale(0.97) rotate(-4deg);
     }
 }
