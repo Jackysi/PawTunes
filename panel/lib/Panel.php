@@ -104,6 +104,7 @@ class Panel
      * Generate or retrieve the CSRF token for this session
      *
      * @return string
+     * @throws \Random\RandomException
      */
     public function csrfToken(): string
     {
@@ -120,6 +121,7 @@ class Panel
      * Generate a hidden input field containing the CSRF token
      *
      * @return string
+     * @throws \Random\RandomException
      */
     public function csrfField(): string
     {
@@ -132,6 +134,7 @@ class Panel
      * Verify that the submitted CSRF token matches the session token
      *
      * @return bool
+     * @throws \Random\RandomException
      */
     public function verifyCsrfToken(): bool
     {

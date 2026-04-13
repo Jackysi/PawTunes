@@ -81,6 +81,18 @@ if ( ! $panel->isAuthorized()) {
 // CSRF protection — verify token on all authenticated POST requests
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ! $panel->verifyCsrfToken()) {
     http_response_code(403);
+
+    // For AJAX/API requests, return a plain error message instead of a redirect
+    $page    = preg_replace('/[^0-9a-z_]/i', '', $_GET['page'] ?? '');
+    $isAjax  = $page === 'api'
+        || (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')
+        || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false);
+
+    if ($isAjax) {
+        echo 'Invalid or expired security token. Please try again.';
+        exit;
+    }
+
     $panel->flash($panel->alert('Invalid or expired security token. Please try again.', 'error'));
     header('Location: ' . $_SERVER['REQUEST_URI']);
     exit;
