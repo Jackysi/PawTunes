@@ -61,7 +61,7 @@ if (isset($_GET['advanced-options'])) {
 
     $pawtunes->setConfig(
         'tplOptions',
-        array_merge($pawtunes->config('tplOptions'), [$template => $tpl])
+        array_merge(($pawtunes->config('tplOptions') ?: []), [$template => $tpl])
     );
 
     if ($panel->storeConfig('config/general', $pawtunes->getConfigAll())) {
@@ -87,7 +87,7 @@ if ( ! empty($_POST)) {
     // Map a few fields which we will store
     $store = [
         'cache'           => $pawtunes->config('cache'),
-        'tplOptions'      => $pawtunes->config('tplOptions'),
+        'tplOptions'      => ($pawtunes->config('tplOptions') ?: []),
         'artwork_sources' => $panel->mapArtworkSourcesPost($_POST),
     ];
 
