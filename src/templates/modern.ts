@@ -25,6 +25,7 @@ export default class ModernTpl {
     private animationId: number = 0;
     private accentColor: string = '';
     private accentFrame: number = 0;
+    private isDarkMode: boolean = false;
 
 
     constructor(PawTunes: PawTunes) {
@@ -203,11 +204,10 @@ export default class ModernTpl {
     updateChannelName(channel: any) {
 
         // Show logotype instead of channel name
-        if (this.pawtunes.settings.tpl?.useChannelLogos) {
+        if (this.pawtunes.settings.tpl?.useChannelLogos && channel.logo) {
             this.pawtunes._('.current-channel', (el: HTMLElement) => {
-                el.innerHTML = '<img alt="Logo" height="50" src="./assets/img/logo.svg">';
+                el.innerHTML = `<img alt="Logo" height="68" src="./${channel.logo}">`;
             });
-            this.pawtunes.off('channel.change', this.updateChannelName);
             return;
         }
 
@@ -343,6 +343,20 @@ export default class ModernTpl {
 
         if (!this.ctx || !this.canvas) return;
 
+        // Cache accent colour + theme mode (read once per ~60 frames to avoid layout thrash)
+        if (!this.accentColor || ++this.accentFrame > 60) {
+            const root = document.querySelector('.pawtunes');
+            if (root) {
+                const styles = getComputedStyle(root);
+                this.accentColor = styles.getPropertyValue('--accent-color').trim() || '#6C5CE7';
+                this.isDarkMode = styles.getPropertyValue('--waveform-mode').trim() === 'dark';
+            }
+            this.accentFrame = 0;
+        }
+
+        // Dark mode: blob waveform
+        if (this.isDarkMode) return this.drawRingDark(bars);
+
         const width = this.canvas.width;
         const height = this.canvas.height;
         const cx = width / 2;
@@ -352,15 +366,6 @@ export default class ModernTpl {
         const maxBarLen = width * 0.15;
         const numBars = bars.length;
         const barWidth = Math.max((2 * Math.PI * innerRadius) / numBars * 0.6, 1.5);
-
-        // Cache accent colour (read once per ~60 frames to avoid layout thrash)
-        if (!this.accentColor || ++this.accentFrame > 60) {
-            const root = document.querySelector('.pawtunes');
-            this.accentColor = root
-                ? getComputedStyle(root).getPropertyValue('--accent-color').trim() || '#6C5CE7'
-                : '#6C5CE7';
-            this.accentFrame = 0;
-        }
 
         this.ctx.clearRect(0, 0, width, height);
         this.ctx.strokeStyle = this.accentColor;
@@ -382,6 +387,88 @@ export default class ModernTpl {
         }
 
         this.ctx.globalAlpha = 1;
+
+    }
+
+
+    /**
+     * Dark-mode waveform: 3 organic blob-circles around the artwork,
+     * each driven by a different frequency band (bass / mid / treble)
+     * so they deform independently.  White fill with softened edges.
+     */
+    private drawRingDark(bars: { value: number[] }[]) {
+
+        if (!this.ctx || !this.canvas) return;
+
+        const width  = this.canvas.width;
+        const height = this.canvas.height;
+        const cx = width / 2;
+        const cy = height / 2;
+
+        const baseRadius = width * 0.38;
+        const numBars    = bars.length;
+        const bandSize   = Math.floor(numBars / 3);
+
+        this.ctx.clearRect(0, 0, width, height);
+        this.ctx.lineJoin = 'round';
+
+        // Each blob is driven by a separate frequency band
+        const blobs = [
+            { from: 0,            to: bandSize,     fillA: 0.16, bulge: width * 0.18 },  // bass
+            { from: bandSize,     to: bandSize * 2,  fillA: 0.14, bulge: width * 0.14 },  // mids
+            { from: bandSize * 2, to: numBars,       fillA: 0.11, bulge: width * 0.11 },  // treble
+        ];
+
+        for (const blob of blobs) {
+
+            const band      = bars.slice(blob.from, blob.to);
+            const numPoints = Math.min(48, band.length);
+            const step      = band.length / numPoints;
+            const pts: { x: number; y: number }[] = [];
+            let   maxR      = baseRadius;
+
+            for (let i = 0; i < numPoints; i++) {
+                const idx    = Math.min(Math.floor(i * step), band.length - 1);
+                const value  = band[idx].value[0];
+                const radius = baseRadius + value * blob.bulge;
+                if (radius > maxR) maxR = radius;
+                const angle  = (i / numPoints) * 2 * Math.PI - Math.PI / 2;
+                pts.push({
+                    x: cx + Math.cos(angle) * radius,
+                    y: cy + Math.sin(angle) * radius,
+                });
+            }
+
+            // Smooth closed curve via midpoint quadratic bézier
+            const n = pts.length;
+            this.ctx.beginPath();
+            this.ctx.moveTo(
+                (pts[n - 1].x + pts[0].x) / 2,
+                (pts[n - 1].y + pts[0].y) / 2,
+            );
+
+            for (let i = 0; i < n; i++) {
+                const next = (i + 1) % n;
+                this.ctx.quadraticCurveTo(
+                    pts[i].x, pts[i].y,
+                    (pts[i].x + pts[next].x) / 2,
+                    (pts[i].y + pts[next].y) / 2,
+                );
+            }
+
+            this.ctx.closePath();
+
+            // Radial gradient sized to actual blob extent (not theoretical max)
+            const gradOuter = Math.max(maxR, baseRadius + 2);
+            const grad = this.ctx.createRadialGradient(cx, cy, baseRadius * 0.95, cx, cy, gradOuter);
+            grad.addColorStop(0, `rgba(255, 255, 255, ${blob.fillA})`);
+            grad.addColorStop(0.5, `rgba(255, 255, 255, ${blob.fillA * 0.55})`);
+            grad.addColorStop(1, `rgba(255, 255, 255, ${blob.fillA * 0.12})`);
+
+            this.ctx.fillStyle = grad;
+            this.ctx.fill();
+
+        }
 
     }
 
