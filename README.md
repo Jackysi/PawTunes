@@ -1,24 +1,63 @@
 ![PawTunes Logo](https://cdn.prahec.com/projects/pawtunes/pawtunes-dark.png)
-# PawTunes Internet Radio Player (Web App) 🎵
 
-PawTunes is a powerful and versatile web-based internet radio player designed for both radio stations and music enthusiasts.
-Built from the ground up with over 15 years of experience, PawTunes combines cutting-edge technology, elegant design,
-and unparalleled performance to deliver the ultimate radio player experience.
-It integrates templates and knowledge from all my previously created radio players: "Radio Player," "Pro Radio Player," and "AIO Radio Station Player."
+# PawTunes - Open Source Web Radio Player
 
-This is not just a simple JavaScript library for playing music, it's a complete platform/app that fetches Track Information and Artworks for your live radio stream.
-Its versatility allows seamless integration with many APIs, and more can easily be added using the "TrackInfo" class.
-All requests are cached for the refresh time configured, minimizing unnecessary API calls.
-Additionally, there's a small Go app I developed that connects to the stream and provides "Live Info" from a lightweight service,
-including history and HTTPS proxying (if you provide a certificate).
-But more on that later.
+[![PHP 7.4+](https://img.shields.io/badge/PHP-7.4%2B-777BB4?logo=php&logoColor=white)](#requirements)
+[![License](https://img.shields.io/github/license/Jackysi/pawtunes)](LICENSE)
+[![Docker Pulls](https://img.shields.io/docker/pulls/jackyprahec/pawtunes)](https://hub.docker.com/r/jackyprahec/pawtunes)
+[![GitHub Stars](https://img.shields.io/github/stars/Jackysi/pawtunes?style=social)](https://github.com/Jackysi/pawtunes)
+[![Latest Release](https://img.shields.io/github/v/release/Jackysi/pawtunes)](https://github.com/Jackysi/pawtunes/releases)
 
-The great thing is that these images are cropped, optimized, and stored on **PawTunes** for fast access.
-This feature can be disabled in the settings, using only direct API requests, which are also cached.
+**PawTunes** is a free, open-source web radio player with real-time track info, artwork fetching, and multi-channel streaming.
+Supports Shoutcast, Icecast, AzuraCast, direct ICY metadata, and more. Self-hosted PHP backend with Docker support.
+
+Built from the ground up with over 15 years of experience, PawTunes combines modern web technologies, elegant design,
+and high performance to deliver a complete radio player platform.
+It's not just a JavaScript audio library - it's a full-stack app that fetches live track information, manages album artwork from multiple APIs,
+and includes a control panel for managing every aspect of your radio player.
 
 ---
 
-## 🌐 Demo & Screen shots
+## Table of Contents
+
+- [Quick Start](#quick-start)
+- [Demo & Screenshots](#demo--screenshots)
+- [Why PawTunes?](#why-pawtunes)
+- [Features](#features)
+- [Installation](#installation)
+- [Docker](#docker)
+- [Track Info APIs](#track-info-apis)
+- [Artwork APIs](#artwork-apis)
+- [Developer API & Customization](#developer-api--customization)
+- [Scalability & Caching](#scalability--caching)
+- [Requirements](#requirements)
+- [Documentation](#documentation)
+- [Links](#links)
+- [Credits](#credits)
+- [Support the Project](#support-the-project)
+
+---
+
+## Quick Start
+
+### Docker (recommended)
+```bash
+docker run -d -p 80:80 jackyprahec/pawtunes:latest
+```
+Then visit `http://localhost/panel/` - login with `admin` / `password`.
+
+### Manual Upload
+Upload the release ZIP to your web server, then visit:
+```
+http://your-host.com/pawtunes/panel/
+```
+Login: `admin` / `password`
+
+See [Installation](#-installation) for detailed setup instructions.
+
+---
+
+## Demo & Screenshots
 
 Explore the live demo:
 - **Control Panel**: [https://prahec.com/projects/pawtunes/demo/panel/](https://prahec.com/projects/pawtunes/demo/panel/)  
@@ -26,28 +65,45 @@ Explore the live demo:
   **Password**: `password`
 
 ##### Default - PawTunes
-[![PawTunes Template](https://cdn.prahec.com/projects/pawtunes/screens/20241129175123.png)](https://cdn.prahec.com/projects/pawtunes/screens/20241129175123.png)
+[![PawTunes default template with circular artwork and spectrum visualizer](https://cdn.prahec.com/projects/pawtunes/screens/20241129175123.png)](https://cdn.prahec.com/projects/pawtunes/screens/20241129175123.png)
 
 ##### AIO Radio Player
-[![PawTunes Template](https://cdn.prahec.com/projects/pawtunes/screens/20241129175330.png)](https://cdn.prahec.com/projects/pawtunes/screens/20241129175330.png)
+[![PawTunes AIO Radio Player template with multi-channel support](https://cdn.prahec.com/projects/pawtunes/screens/20241129175330.png)](https://cdn.prahec.com/projects/pawtunes/screens/20241129175330.png)
 
 ##### HTML5 Radio Player
-[![PawTunes Template](https://cdn.prahec.com/projects/pawtunes/screens/20241129175356.png)](https://cdn.prahec.com/projects/pawtunes/screens/20241129175356.png)
+[![PawTunes HTML5 Radio Player compact template](https://cdn.prahec.com/projects/pawtunes/screens/20241129175356.png)](https://cdn.prahec.com/projects/pawtunes/screens/20241129175356.png)
 
 ##### Simple Template
-[![PawTunes Template](https://cdn.prahec.com/projects/pawtunes/screens/20241129175419.png)](https://cdn.prahec.com/projects/pawtunes/screens/20241129175419.png)
+[![PawTunes Simple minimal radio player template](https://cdn.prahec.com/projects/pawtunes/screens/20241129175419.png)](https://cdn.prahec.com/projects/pawtunes/screens/20241129175419.png)
 
 ##### Modern Light
-[![PawTunes Template](https://cdn.prahec.com/projects/pawtunes/screens/modern-light.png)](https://cdn.prahec.com/projects/pawtunes/screens/modern-light.png)
+[![PawTunes Modern Light theme with ring visualizer and mobile-first design](https://cdn.prahec.com/projects/pawtunes/screens/modern-light.png)](https://cdn.prahec.com/projects/pawtunes/screens/modern-light.png)
 
 ##### Modern Dark
-[![PawTunes Template](https://cdn.prahec.com/projects/pawtunes/screens/modern-dark.png)](https://cdn.prahec.com/projects/pawtunes/screens/modern-dark.png)
+[![PawTunes Modern Dark theme with glassmorphism UI and animated gradient background](https://cdn.prahec.com/projects/pawtunes/screens/modern-dark.png)](https://cdn.prahec.com/projects/pawtunes/screens/modern-dark.png)
 
 ---
 
-## 🚀 Features
+## Why PawTunes?
 
-### 🖥️ Frontend
+| Feature | PawTunes | Typical Players |
+|---|---|---|
+| Multi-channel streaming | Unlimited channels | 1-3 channels |
+| Track info APIs | 7+ (Shoutcast, Icecast, AzuraCast, CentovaCast...) | 1-2 |
+| Artwork sources | Spotify, iTunes, LastFM, FanArt TV, Custom | iTunes only |
+| Caching | Redis, Memcached, APCu, Disk | None |
+| Docker support | Yes, with persistent volumes | Rare |
+| Self-hosted | Full control, no SaaS dependency | Often SaaS |
+| Templates | 6 included, fully customizable | 1 fixed layout |
+| WebSocket support | Built-in for live updates | Not available |
+| Artwork management | Auto-crop, optimize, cache | Pass-through only |
+| PHP backend | Full control panel with API integrations | JavaScript only |
+
+---
+
+## Features
+
+### Frontend
 - **Responsive Design**: Optimized for seamless performance on desktops, tablets, and mobiles.
 - **HTML5 Audio API**: Fully compatible with all major browsers, ensuring a consistent experience.
 - **Unlimited Multi-Channels**: Configure an unlimited number of channels per player.
@@ -64,7 +120,7 @@ Explore the live demo:
 - **Auto-Reconnect**: Automatically reconnects streams in case of browser disconnection or network errors.
 - **and much more...**
 
-### 🔧 Backend
+### Backend
 - **PHP Backend**: Powers advanced features like track info, artwork management, API integrations, and more
 - **Caching Options**: Supports APCu, Redis, Memcached, and disk-based caching for high performance.
 - **Control Panel**: Manage all settings, templates, and tracks via an intuitive dashboard.
@@ -73,7 +129,7 @@ Explore the live demo:
 - **Advanced Template Options**: Add custom templates with metadata-driven options (e.g. enable/disable spectrum, song search URL and much more) see `metadata.json` in the template folders.
 - **and more...**
 
-### 🌍 Track Info APIs
+### Track Info APIs
 - **Any stream** with embedded ICY-METADATA (used by most streams today).
 - **Shoutcast** (Public & Admin access).
 - **Icecast** (Admin access required).
@@ -82,7 +138,7 @@ Explore the live demo:
 - **CentovaCast** (Public widget API).
 - **Custom** (Use external APIs of your choice).
 
-### 🌍 Artwork APIs
+### Artwork APIs
 - **iTunes**: Public API, no API key required.
 - **Spotify**: Public API, API key required.
 - **LastFM**: Public API, API key required.
@@ -91,7 +147,7 @@ Explore the live demo:
 
 ---
 
-## 🛠 Installation
+## Installation
 Installation is straightforward in most cases, download the shared "ZIP" file and upload its contents to your web host.
 Since **PawTunes** is a standalone PHP script/app, you only need to upload the files to a folder of your choice and then access that folder using the following URL format:  
 `http://your-host.com/folder-name/panel/index.php`
@@ -105,7 +161,7 @@ If you encounter any issues during installation, please refer to the [Installati
 
 I also offer installation and customization services. For more details, feel free to reach out via the [Prahec - Contact Me](https://prahec.com/contact) page.
 
-### 📦 Docker
+### Docker
 The easiest way to run **PawTunes** is with Docker.  
 You can get started in seconds:
 ```bash
@@ -115,9 +171,9 @@ docker run -d -p 80:80 jackyprahec/pawtunes:latest
 #### Persisting Data
 To keep your configuration and data across container updates, you should mount the following paths:
 
-- **/var/www/html/inc/config** → holds `general.php` and other config
-- **/var/www/html/inc/locale** → translations/locales
-- **/var/www/html/data** -> Holds Artworks, cache, images
+- **/var/www/html/inc/config** - holds `general.php` and other config
+- **/var/www/html/inc/locale** - translations/locales
+- **/var/www/html/data** - holds artworks, cache, images
 
 Example:
 ```bash
@@ -132,13 +188,13 @@ docker run \
 
 Since **PawTunes 1.0.7**, the `entrypoint.sh` script will automatically copy default config/locale/data files into empty volumes on first run.
 
-PawTunes includes an Nginx server by default, but for TLS/HTTPS you’ll usually want to put it behind a reverse proxy (e.g. Traefik, NGINX Proxy Manager, Caddy, etc...).  
-You _can_ modify the bundled Nginx config for TLS directly, but that’s out of scope here.
+PawTunes includes an Nginx server by default, but for TLS/HTTPS you'll usually want to put it behind a reverse proxy (e.g. Traefik, NGINX Proxy Manager, Caddy, etc...).  
+You _can_ modify the bundled Nginx config for TLS directly, but that's out of scope here.
 
 ---
 
-## 🤝Developer-Friendly
-**PawTunes** is designed to be easily extended, upgraded, and customized.
+## Developer API & Customization
+**PawTunes** is designed to be easily extended, upgraded, and customized.
 The codebase is straightforward, well-commented, and structured for simplicity.
 Full documentation for all player classes and functions is coming soon.
 In the meantime, you can find practical code examples for integrating the player into your website using the **External API (JSONP)** here:
@@ -152,19 +208,14 @@ Check out the demo and feel free to contribute or provide feedback: [Live ICY Me
 
 ---
 
-### 📈 Scalability
+## Scalability & Caching
 - **High Performance**: Optimized to handle thousands of simultaneous listeners.
-- **Caching** using APC, APCu, Redis, Memcached, and Disk cache (can be on shared storage)
+- **Caching** using APC, APCu, Redis, Memcached, and Disk cache (can be on shared storage).
+- **Artwork Optimization**: Images are cropped, optimized, and stored on PawTunes for fast access. This feature can be disabled in the settings, using only direct API requests, which are also cached.
 
 ---
 
-## 📜 Documentation
-Comprehensive documentation is available at:
-- [PawTunes Official Docs](https://doc.prahec.com/pawtunes)
-
----
-
-## ⚙️ Requirements
+## Requirements
 PawTunes has minimal requirements to ensure smooth operation:
 - **PHP 7.4+** with CURL Extension.
 - **PHP ZipArchive Extension** (optional, for updates).
@@ -172,25 +223,25 @@ PawTunes has minimal requirements to ensure smooth operation:
 
 ---
 
-## ☕ Donations
-This project took an immense amount of effort to build. While it may not look like much,
-it represents over 5 months of initial (first release) full-time work and over a decade of experience developing similar apps and scripts.
-My initial plan was to sell this as a product on Envato Market — CodeCanyon for 35$ (about 31€), but the review team permanently declined the project,
-so I decided to share this awesome project for free.
-
-As this project is close to my heart, I will continue working on it for free. However,
-if you find it useful and want to support its ongoing development, any financial support would be greatly appreciated.
-It would help cover costs (hosting) my effort and, of course, fund a coffee or two to keep me coding! ☕
-
-💸[Donate via PayPal](https://www.paypal.com/donate/?hosted_button_id=VN3SBVYNHC2SE)
-
-I will also be extremely grateful for any help solving issues and/or improving my code for others.
+## Documentation
+Comprehensive documentation is available at:
+- [PawTunes Official Docs](https://doc.prahec.com/pawtunes)
 
 ---
 
-## ⭐ Credits
+## Links
+
+- [Live Demo](https://prahec.com/projects/pawtunes/demo/panel/)
+- [Documentation](https://doc.prahec.com/pawtunes)
+- [Docker Hub](https://hub.docker.com/r/jackyprahec/pawtunes)
+- [Report Issues](https://github.com/Jackysi/pawtunes/issues)
+- [Contact](https://prahec.com/contact)
+
+---
+
+## Credits
 **PawTunes** would have taken even more time to develop without the incredible open-source projects that made it possible.
-Here’s the list of libraries and projects used in the **Control Panel**:
+Here's the list of libraries and projects used in the **Control Panel**:
 
 - **FontAwesome 6 Free**: [https://fontawesome.com/](https://fontawesome.com/)
 - **Bootstrap Modals**: [https://getbootstrap.com/docs/5.3/components/modal/](https://getbootstrap.com/docs/5.3/components/modal/)
@@ -202,4 +253,22 @@ The player itself uses only one lightweight library:
 
 - **AudioMotion Analyser**: [https://www.npmjs.com/package/audiomotion-analyzer](https://www.npmjs.com/package/audiomotion-analyzer)
 
-If I’ve missed crediting any library, please let me know, and I will update this list promptly.
+If I've missed crediting any library, please let me know, and I will update this list promptly.
+
+---
+
+## Support the Project
+**Donate & Support**
+
+This project took an immense amount of effort to build. While it may not look like much,
+it represents over 5 months of initial (first release) full-time work and over a decade of experience developing similar apps and scripts.
+My initial plan was to sell this as a product on Envato Market - CodeCanyon for 35$ (about 31€), but the review team permanently declined the project,
+so I decided to share this awesome project for free.
+
+As this project is close to my heart, I will continue working on it for free. However,
+if you find it useful and want to support its ongoing development, any financial support would be greatly appreciated.
+It would help cover costs (hosting) my effort and, of course, fund a coffee or two to keep me coding!
+
+[Donate via PayPal](https://www.paypal.com/donate/?hosted_button_id=VN3SBVYNHC2SE)
+
+I will also be extremely grateful for any help solving issues and/or improving my code for others.
