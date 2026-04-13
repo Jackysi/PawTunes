@@ -162,6 +162,7 @@
         <div class="modal-dialog modal-lg" role="document">
             <form enctype="multipart/form-data" id="artworkUpload">
                 <input type="hidden" name="form" value="artwork">
+                {!! $panel->csrfField() !!}
                 <div class="modal-content">
                     <div class="modal-header">
                         <h4 class="modal-title"><i class="icon fa fa-cloud-upload"></i> Upload Artwork</h4>
@@ -286,7 +287,6 @@
                             <br>
                             <i class="text-red">Note: Artwork manager pictures have the highest priority, they will not be ignored!</i>
                         </p>
-
                         <div class="form-grid">
                             <div class="form-group-grid">
                                 <label class="control-label" for="text">Artist Name</label>
@@ -325,246 +325,244 @@
 
         // Templates list
         let templates = @json( $templates );
-        let source    = null;
+        let source = null;
 
         // Initial window function (executed on body load)
         window.loadInit = function() {
 
             // Append templates to form (simple
-            $.each( templates, function( key, val ) {
+            $.each(templates, function(key, val) {
 
-                let html = $( '<option \>', {
+                let html = $('<option \>', {
                     value: key,
-                    html : val.name
-                } );
+                    html : val.name,
+                });
 
-                $( '#template' ).append( html );
+                $('#template').append(html);
 
-            } );
+            });
 
             // Modals
-            $( '.upload-artwork-modal' ).on( 'hidden.bs.modal', function() {
+            $('.upload-artwork-modal').on('hidden.bs.modal', function() {
 
                 loadArtwork();
-                $( '#artworkUpload' )[ 0 ].reset();
-                $( '#artwork-message' ).empty();
+                $('#artworkUpload')[0].reset();
+                $('#artwork-message').empty();
 
-            } );
+            });
 
-            $( '.check-artwork-modal' ).on( 'hidden.bs.modal', function() {
+            $('.check-artwork-modal').on('hidden.bs.modal', function() {
 
-                $( '#check-artwork-image' ).empty();
+                $('#check-artwork-image').empty();
 
-            } );
+            });
 
-            $( '.import-artwork-modal' ).on( 'hidden.bs.modal', function() {
+            $('.import-artwork-modal').on('hidden.bs.modal', function() {
 
-                $( '.import-output' ).empty().hide();
+                $('.import-output').empty().hide();
 
-            } );
-
+            });
 
             /**
              * Handle artwork loading and handling
              */
             function loadArtwork() {
 
-                $( '.artworkManager' ).find( 'tbody' ).empty();
-                $.ajax( { url: "index.php?page=api", dataType: "json", cache: false, data: { action: "get-artwork" } } )
-                    .then( function( data ) {
+                $('.artworkManager').find('tbody').empty();
+                $.ajax({url: 'index.php?page=api', dataType: 'json', cache: false, data: {action: 'get-artwork'}}).then(function(data) {
 
-                        if ( data.length >= 1 ) {
-                            $( data ).each( function( key, val ) {
+                    if (data.length >= 1) {
+                        $(data).each(function(key, val) {
 
-                                let tableRow = $(
-                                    '<tr><td><img alt="Artwork" src="./../' + val.path + '" width="24" height="24" data-preview="true" class="pull-left"></td>' +
-                                    '<td class="artist-name">' + val.name + '</td><td>' + val.path + '</td><td>' + val.size + '</td>' +
-                                    '<td><a href="#" class="edit-img btn btn-primary btn-small"><i class="icon fa fa-edit"></i> Replace</a> ' +
-                                    ( ( val[ 'name' ].match( /default\./ ) ) ? '' : '<a href="#" class="delete-img btn btn-danger btn-small"><i class="icon fa fa-times"></i> Delete</a>' ) +
-                                    '</td></tr>'
-                                );
+                            let tableRow = $(
+                                '<tr><td><img alt="Artwork" src="./../' + val.path + '" width="24" height="24" data-preview="true" class="pull-left"></td>' +
+                                '<td class="artist-name">' + val.name + '</td><td>' + val.path + '</td><td>' + val.size + '</td>' +
+                                '<td><a href="#" class="edit-img btn btn-primary btn-small"><i class="icon fa fa-edit"></i> Replace</a> ' +
+                                ((val['name'].match(/default\./)) ? '' : '<a href="#" class="delete-img btn btn-danger btn-small"><i class="icon fa fa-times"></i> Delete</a>') +
+                                '</td></tr>',
+                            );
 
-                                // Bind edit
-                                tableRow.find( '.edit-img' ).on( 'click', function() {
+                            // Bind edit
+                            tableRow.find('.edit-img').on('click', function() {
 
-                                    $( '.upload-artwork-modal' ).modal( 'show' );
-                                    let artist_name = $( this ).closest( 'tr' ).find( '.artist-name' ).text();
-                                    $( 'input#track' ).val( artist_name ).focus();
-                                    $( '.croparea' ).html( `<img alt="Cropped Image" height="140" src="${$( this ).closest( 'tr' ).find( 'img' ).attr( 'src' )}" width="140">` );
+                                $('.upload-artwork-modal').modal('show');
+                                let artist_name = $(this).closest('tr').find('.artist-name').text();
+                                $('input#track').val(artist_name).focus();
+                                $('.croparea').html(`<img alt="Cropped Image" height="140" src="${$(this).closest('tr').find('img').attr('src')}" width="140">`);
 
-                                    return false;
+                                return false;
 
-                                } );
+                            });
 
-                                // Bind delete
-                                tableRow.find( '.delete-img' ).on( 'click', function() {
+                            // Bind delete
+                            tableRow.find('.delete-img').on('click', function() {
 
-                                    let artist_name = $( this ).closest( 'tr' ).find( '.artist-name' ).text(), elm = $( this );
-                                    $.get( 'index.php?page=api&action=delete-artwork&name=' + artist_name, function() {
-                                        $( elm ).closest( 'tr' ).remove();
-                                    } );
+                                let artist_name = $(this).closest('tr').find('.artist-name').text(), elm = $(this);
+                                $.get('index.php?page=api&action=delete-artwork&name=' + artist_name, function() {
+                                    $(elm).closest('tr').remove();
+                                });
 
-                                    return false;
-                                } );
+                                return false;
+                            });
 
-                                // Hover Artist Image
-                                tableRow.find( 'img[data-preview]' ).on( 'mouseover', function() { // Hover
+                            // Hover Artist Image
+                            tableRow.find('img[data-preview]').on('mouseover', function() { // Hover
 
-                                    let elm = $( this );
+                                let elm = $(this);
 
-                                    // Not yet hovered before
-                                    if ( !elm.next().hasClass( 'image-preview' ) ) {
+                                // Not yet hovered before
+                                if (!elm.next().hasClass('image-preview')) {
 
-                                        let imageFile = ( elm.attr( 'data-preview' ) != 'true' ) ? elm.attr( 'data-preview' ) : elm.attr( 'src' );
-                                        elm.after( `<div class="image-preview"><img alt="Preview Image" height="180"  width="180" src="${imageFile}"></div>` );
+                                    let imageFile = (elm.attr('data-preview') != 'true') ? elm.attr('data-preview') : elm.attr('src');
+                                    elm.after(`<div class="image-preview"><img alt="Preview Image" height="180"  width="180" src="${imageFile}"></div>`);
 
-                                    }
+                                }
 
-                                    elm.next( '.image-preview' ).addClass( 'in' );
-                                    elm.on( 'mousemove', function( e ) { // Mouse Move
-                                        let calcOffset = ( window.screen.width > 1024 ) ? 90 : 0;
-                                        elm.next( '.image-preview' ).css(
-                                            {
-                                                'left': ( e.clientX - calcOffset ) + 'px',
-                                                'top' : ( e.clientY - 190 ) + 'px'
-                                            }
-                                        );
-                                    } );
+                                elm.next('.image-preview').addClass('in');
+                                elm.on('mousemove', function(e) { // Mouse Move
+                                    let calcOffset = (window.screen.width > 1024) ? 90 : 0;
+                                    elm.next('.image-preview').css(
+                                        {
+                                            'left': (e.clientX - calcOffset) + 'px',
+                                            'top' : (e.clientY - 190) + 'px',
+                                        },
+                                    );
+                                });
 
-                                } );
+                            });
 
-                                // Mouse Out on Artist image
-                                tableRow.find( 'img[data-preview]' ).on( 'mouseout', function() { // Mouse Out
-                                    $( this ).next( '.image-preview' ).removeClass( 'in' );
-                                } );
+                            // Mouse Out on Artist image
+                            tableRow.find('img[data-preview]').on('mouseout', function() { // Mouse Out
+                                $(this).next('.image-preview').removeClass('in');
+                            });
 
-                                $( '.artworkManager' ).find( 'tbody' ).append( tableRow );
+                            $('.artworkManager').find('tbody').append(tableRow);
 
-                            } );
+                        });
 
-                        }
+                    }
 
-                        $( '.artworkManager' ).removeClass( 'hidden' );
-                        $( '.loadArtwork' ).remove();
+                    $('.artworkManager').removeClass('hidden');
+                    $('.loadArtwork').remove();
 
-                    } );
+                });
             }
 
             /**
              * Bind templates to show schemes
              */
-            $( '#template' ).on( 'change', function() {
+            $('#template').on('change', function() {
 
                 // Might need
-                let elm = $( this );
+                let elm = $(this);
 
                 // Check a list
-                if ( elm.val() != '' && typeof ( templates[ elm.val() ][ 'schemes' ] ) !== 'undefined' ) {
+                if (elm.val() != '' && typeof (templates[elm.val()]['schemes']) !== 'undefined') {
 
-                    let base = $( '<select \>', { "name": "base-theme", "id": "base-theme" } );
-                    $( '.base-container' ).empty().append( base );
+                    let base = $('<select \>', {'name': 'base-theme', 'id': 'base-theme'});
+                    $('.base-container').empty().append(base);
 
                     // Append first "not selected" option
-                    base.append( '<option value="" disabled">None</option>' );
+                    base.append('<option value="" disabled">None</option>');
 
                     // Loop through schemes
-                    $.each( templates[ elm.val() ][ 'schemes' ], function( key, val ) {
+                    $.each(templates[elm.val()]['schemes'], function(key, val) {
 
                         // If no compile provided, don't show...
-                        if ( typeof ( val.compile ) !== 'undefined' ) {
+                        if (typeof (val.compile) !== 'undefined') {
 
-                            let html_option = $( '<option \>', { text: val.name } );
-                            base.append( html_option );
+                            let html_option = $('<option \>', {text: val.name});
+                            base.append(html_option);
 
                         }
 
-                    } );
+                    });
 
                     base.selectbox();
-                    base.closest( '.form-group' ).removeClass( 'hidden' );
+                    base.closest('.form-group').removeClass('hidden');
 
                 } else {
 
-                    $( '.base-container' ).closest( '.form-group' ).addClass( 'hidden' );
+                    $('.base-container').closest('.form-group').addClass('hidden');
 
                 }
 
-            } );
+            });
 
             /**
              * Bind debug button
              */
-            $( '.start-debug' ).on( 'click', function( e ) {
+            $('.start-debug').on('click', function(e) {
 
                 e.preventDefault();
-                let elm        = $( this );
+                let elm = $(this);
                 let closeEvent = () => {
-                    elm.find( '.in-progress' ).addClass( 'hidden' );
-                    elm.find( '.normal' ).removeClass( 'hidden' );
+                    elm.find('.in-progress').addClass('hidden');
+                    elm.find('.normal').removeClass('hidden');
                     source.close();
-                }
+                };
 
                 // Allow stopping
-                if ( source !== null && source?.readyState !== EventSource.CLOSED ) {
+                if (source !== null && source?.readyState !== EventSource.CLOSED) {
                     closeEvent();
                     return;
                 }
 
-                elm.find( '.in-progress' ).removeClass( 'hidden' );
-                elm.find( '.normal' ).addClass( 'hidden' );
+                elm.find('.in-progress').removeClass('hidden');
+                elm.find('.normal').addClass('hidden');
 
-                $( '.debug-output' ).show().html( '<b>Starting a debugging session...</b><br>' );
+                $('.debug-output').show().html('<b>Starting a debugging session...</b><br>');
 
-                source = new EventSource( 'index.php?page=api&action=debug&test=' + $( '[name="debug-server"]' ).val() )
-                source.addEventListener( 'debug', ( event ) => {
+                source = new EventSource('index.php?page=api&action=debug&test=' + $('[name="debug-server"]').val());
+                source.addEventListener('debug', (event) => {
 
-                    if ( event.data === 'close' ) {
+                    if (event.data === 'close') {
                         closeEvent();
                         return;
                     }
 
-                    $( '.debug-output' ).append( atob( event.data ) + '<br>' );
+                    $('.debug-output').append(atob(event.data) + '<br>');
 
-                } );
+                });
 
-                source.onerror = ( error ) => {
-                    console.error( 'EventSource failed:', error );
+                source.onerror = (error) => {
+                    console.error('EventSource failed:', error);
                     closeEvent();
                 };
 
                 return false;
 
-            } );
-
+            });
 
             /**
              * Bind artwork uploader
              */
-            $( '#artworkUpload' ).on( 'submit', function( e ) {
+            $('#artworkUpload').on('submit', function(e) {
 
                 e.preventDefault();
-                let elm = $( this ).find( 'button' );
-                elm.find( '.in-progress' ).removeClass( 'hidden' );
-                elm.find( '.normal' ).addClass( 'hidden' );
+                let elm = $(this).find('button');
+                elm.find('.in-progress').removeClass('hidden');
+                elm.find('.normal').addClass('hidden');
 
-                let msg  = $( '#artwork-message' )
-                let file = $( this ).find( 'input[type="file"]' )[ 0 ].files[ 0 ]
+                let msg = $('#artwork-message');
+                let file = $(this).find('input[type="file"]')[0].files[0];
 
-                if ( !file ) {
+                if (!file) {
 
-                    msg.html( '<div class="text-danger mt-2">No file selected</div>' );
-                    elm.find( '.in-progress' ).addClass( 'hidden' );
-                    elm.find( '.normal' ).removeClass( 'hidden' );
+                    msg.html('<div class="text-danger mt-2">No file selected</div>');
+                    elm.find('.in-progress').addClass('hidden');
+                    elm.find('.normal').removeClass('hidden');
                     return;
 
                 }
 
                 let formData = new FormData();
-                formData.append( 'image', file );
-                formData.append( 'track', $( this ).find( 'input[name="track"]' ).val() );
-                formData.append( 'form', 'artwork' );
-                formData.append( 'cropX', $( this ).find( 'input[name="cropX"]' ).val() );
-                formData.append( 'cropY', $( this ).find( 'input[name="cropY"]' ).val() );
+                formData.append('image', file);
+                formData.append('track', $(this).find('input[name="track"]').val());
+                formData.append('form', 'artwork');
+                formData.append('cropX', $(this).find('input[name="cropX"]').val());
+                formData.append('cropY', $(this).find('input[name="cropY"]').val());
+                formData.append('_token', $(this).find('input[name="_token"]').val());
 
                 $.ajax(
                     {
@@ -573,130 +571,129 @@
                         data       : formData,
                         processData: false,
                         contentType: false,
-                    }
-                ).then( function( response ) {
+                    },
+                ).then(function(response) {
 
-                    console.log( response );
-                    msg.html( '<div class="text-success mt-2">' + response + '</div>' );
-                    elm.find( '.in-progress' ).addClass( 'hidden' );
-                    elm.find( '.normal' ).removeClass( 'hidden' );
+                    console.log(response);
+                    msg.html('<div class="text-success mt-2">' + response + '</div>');
+                    elm.find('.in-progress').addClass('hidden');
+                    elm.find('.normal').removeClass('hidden');
 
                     // Reset form
-                    $( '#artworkUpload' )[ 0 ].reset();
-                    $( '.croparea' ).html( '<label for="artist-image" style="display: block; text-align: center;">' +
-                                           '<i class="icon fa fa-image" style="font-size: 30px; padding:55px 0; color: #e0e0e0;"></i></label>' );
+                    $('#artworkUpload')[0].reset();
+                    $('.croparea').html('<label for="artist-image" style="display: block; text-align: center;">' +
+                        '<i class="icon fa fa-image" style="font-size: 30px; padding:55px 0; color: #e0e0e0;"></i></label>');
 
-                } ).fail( function( jqXHR ) {
+                }).fail(function(jqXHR) {
 
-                    msg.html( '<div class="text-danger mt-2">' + jqXHR.responseText + '</div>' );
-                    elm.find( '.in-progress' ).addClass( 'hidden' );
-                    elm.find( '.normal' ).removeClass( 'hidden' );
+                    msg.html('<div class="text-danger mt-2">' + jqXHR.responseText + '</div>');
+                    elm.find('.in-progress').addClass('hidden');
+                    elm.find('.normal').removeClass('hidden');
 
-                } );
+                });
 
-            } );
+            });
 
             /**
              * Bind an upload artwork form
              */
-            $( '#compileColorScheme' ).on( 'submit', function() {
+            $('#compileColorScheme').on('submit', function() {
 
-                let elm = $( this ).find( 'button' );
-                elm.find( '.in-progress' ).removeClass( 'hidden' );
-                elm.find( '.normal' ).addClass( 'hidden' );
+                let elm = $(this).find('button');
+                elm.find('.in-progress').removeClass('hidden');
+                elm.find('.normal').addClass('hidden');
 
-            } );
+            });
 
             /**
              * Bind import button
              * ftps://pawtunes:0hp&nQ089@ftp.defikon.com/
              */
-            $( 'form#import-tool' ).on( 'submit', function( e ) {
+            $('form#import-tool').on('submit', function(e) {
 
                 e.preventDefault();
-                if ( source !== null && source?.readyState !== EventSource.CLOSED ) {
+                if (source !== null && source?.readyState !== EventSource.CLOSED) {
                     return false;
                 }
 
-                let elm        = $( this );
-                let output     = $( '.import-output' );
+                let elm = $(this);
+                let output = $('.import-output');
                 let closeEvent = () => {
-                    elm.find( '.in-progress' ).addClass( 'hidden' );
-                    elm.find( '.normal' ).removeClass( 'hidden' );
+                    elm.find('.in-progress').addClass('hidden');
+                    elm.find('.normal').removeClass('hidden');
                     source.close();
-                }
+                };
 
-                elm.find( '.in-progress' ).removeClass( 'hidden' );
-                elm.find( '.normal' ).addClass( 'hidden' );
+                elm.find('.in-progress').removeClass('hidden');
+                elm.find('.normal').addClass('hidden');
 
-                output.show().html( '<b>Starting Artwork Import, hand tight this may take a while...</b><br>' );
+                output.show().html('<b>Starting Artwork Import, hand tight this may take a while...</b><br>');
 
-                source = new EventSource( 'index.php?page=api&action=import-artwork&path=' + encodeURIComponent( $( '[name="import_path"]' ).val() ) )
-                source.addEventListener( 'artwork', function( event ) {
+                source = new EventSource('index.php?page=api&action=import-artwork&path=' + encodeURIComponent($('[name="import_path"]').val()));
+                source.addEventListener('artwork', function(event) {
 
-                    if ( event.data === 'close' ) {
+                    if (event.data === 'close') {
                         closeEvent();
                         return;
                     }
 
-                    output.append( atob( event.data ) + '<br>' );
+                    output.append(atob(event.data) + '<br>');
 
-                } );
+                });
 
-                source.onerror = function( error ) {
-                    console.error( 'EventSource failed:', error );
+                source.onerror = function(error) {
+                    console.error('EventSource failed:', error);
                     closeEvent();
                 };
 
                 return false;
 
-            } );
+            });
 
             /**
              * When artist artwork browse is changed, show preview/crop
              */
-            $( "input[type='file']" ).on( "change", function() {
+            $('input[type=\'file\']').on('change', function() {
 
                     // Change form input
-                    let cVal = $( this ).val().replace( /.*\\fakepath\\/, '' );
-                    $( this ).parent( '.file-input' ).find( 'input.file-name' ).val( cVal );
+                    let cVal = $(this).val().replace(/.*\\fakepath\\/, '');
+                    $(this).parent('.file-input').find('input.file-name').val(cVal);
 
                     // Preview image and crop area
-                    let url = $( this ).val();
-                    let ext = url.substring( url.lastIndexOf( '.' ) + 1 ).toLowerCase();
+                    let url = $(this).val();
+                    let ext = url.substring(url.lastIndexOf('.') + 1).toLowerCase();
 
-                    if ( this.files && this.files[ 0 ] && ( ext == "svg" || ext == "png" || ext == "jpeg" || ext == "jpg" || ext == "webp" ) ) {
+                    if (this.files && this.files[0] && (ext == 'svg' || ext == 'png' || ext == 'jpeg' || ext == 'jpg' || ext == 'webp')) {
 
                         let reader = new FileReader();
-                        let image  = new Image();
+                        let image = new Image();
 
-                        reader.onload = function( e ) {
+                        reader.onload = function(e) {
 
-                            image.src    = e.target.result;
+                            image.src = e.target.result;
                             image.onload = function() {
-                                $( '.croparea' ).imagearea( this.src, { width: 140, height: 140 } );
+                                $('.croparea').imagearea(this.src, {width: 140, height: 140});
                             };
                         };
 
-                        reader.readAsDataURL( this.files[ 0 ] );
+                        reader.readAsDataURL(this.files[0]);
 
                     }
-                }
+                },
             );
 
             /**
              * Handle colour schemes loading/deleting
              */
-            $.ajax( { url: "./index.php?page=api", dataType: "json", cache: false, data: { action: "get-themes-list" } } )
-                .then( function( data ) {
+            $.ajax({url: './index.php?page=api', dataType: 'json', cache: false, data: {action: 'get-themes-list'}}).then(function(data) {
 
-                    let manager = $( '.schemes-manager' );
-                    if ( data.length >= 1 ) {
+                let manager = $('.schemes-manager');
+                if (data.length >= 1) {
 
-                        $( data ).each( function( index, scheme ) {
+                    $(data).each(function(index, scheme) {
 
-                            let tableRow = $( `<tr>
-                                <td>${scheme.name.replace( /\.css$/, '' )}</td>
+                        let tableRow = $(`<tr>
+                                <td>${scheme.name.replace(/\.css$/, '')}</td>
                                 <td>${scheme.template}</td>
                                 <td class="scheme-path">${scheme.path}</td>
                                 <td>${scheme.size}</td>
@@ -706,149 +703,147 @@
                                     </a>
                                     <a class="delete btn btn-danger btn-small" href="#"><i class="icon fa fa-times"></i> Delete</a>
                                 </td>
-                            </tr>` );
+                            </tr>`);
 
-                            // Bind view
-                            tableRow.find( '.view' ).on( 'click', function() {
+                        // Bind view
+                        tableRow.find('.view').on('click', function() {
 
-                                let path = $( this ).closest( 'tr' ).find( '.scheme-path' ).text();
-                                window.open( './../' + path, '_blank' );
-                                return false;
+                            let path = $(this).closest('tr').find('.scheme-path').text();
+                            window.open('./../' + path, '_blank');
+                            return false;
 
-                            } );
+                        });
 
-                            // Bind delete
-                            tableRow.find( '.delete' ).on( 'click', function() {
+                        // Bind delete
+                        tableRow.find('.delete').on('click', function() {
 
-                                if ( confirm( 'Are you sure?' ) ) {
+                            if (confirm('Are you sure?')) {
 
-                                    let path = $( this ).closest( 'tr' ).find( '.scheme-path' ).text();
-                                    let elm  = $( this );
+                                let path = $(this).closest('tr').find('.scheme-path').text();
+                                let elm = $(this);
 
-                                    $.get( './index.php?page=api&action=delete-theme&path=' + encodeURI( path ) ).then( function( response ) {
-                                        if ( response && response.success ) {
+                                $.get('./index.php?page=api&action=delete-theme&path=' + encodeURI(path)).then(function(response) {
+                                    if (response && response.success) {
 
-                                            $( elm ).closest( 'tr' ).remove();
-                                            if ( manager.find( 'tbody > tr' ).length < 1 ) {
-                                                manager.hide();
-                                            }
-
-                                        } else {
-
-                                            alert( 'Error deleting theme' );
-
+                                        $(elm).closest('tr').remove();
+                                        if (manager.find('tbody > tr').length < 1) {
+                                            manager.hide();
                                         }
-                                    } );
 
-                                }
+                                    } else {
 
-                                return false;
+                                        alert('Error deleting theme');
 
-                            } );
+                                    }
+                                });
 
+                            }
 
-                            // Mouse Out on Artist image
-                            manager.find( 'tbody' ).append( tableRow );
+                            return false;
 
-                        } );
+                        });
 
-                    }
+                        // Mouse Out on Artist image
+                        manager.find('tbody').append(tableRow);
 
-                    if ( manager.find( 'tbody > tr' ).length >= 1 ) {
-                        manager.show();
-                    }
+                    });
 
-                    $( '.scheme-manager-preloader' ).hide();
+                }
 
-                } );
+                if (manager.find('tbody > tr').length >= 1) {
+                    manager.show();
+                }
+
+                $('.scheme-manager-preloader').hide();
+
+            });
 
             /**
              * Search artwork
              */
-            $( '#artworkLookup' ).on( 'submit', function( e ) {
+            $('#artworkLookup').on('submit', function(e) {
 
                     // Set preloader
                     e.preventDefault();
-                    $( '#check-artwork-image' ).html( '<div class="preloader-spin align-middle"></div>' );
+                    $('#check-artwork-image').html('<div class="preloader-spin align-middle"></div>');
 
                     // Get image
-                    $.get( 'index.php?page=api&action=artwork-lookup&' + $( this ).serialize() ).done( function( response ) {
+                    $.get('index.php?page=api&action=artwork-lookup&' + $(this).serialize()).done(function(response) {
 
                         // On success
-                        if ( response.artwork ) {
+                        if (response.artwork) {
 
                             // Fix local images
-                            if ( response.artwork.startsWith( './data/' ) )
+                            if (response.artwork.startsWith('./data/'))
                                 response.artwork = response.image = './../' + response.artwork;
 
                             // Append image to modal
-                            $( '#check-artwork-image' )
-                                .append( '<img src="' + response.artwork + '" style="display:none; max-width: 100%;" ' +
-                                         'alt="Artwork" class="align-middle" onload="$(this).prev(\'div\').remove(); this.style.display=\'block\'">' );
+                            $('#check-artwork-image').append('<img src="' + response.artwork + '" style="display:none; max-width: 100%;" ' +
+                                'alt="Artwork" class="align-middle" onload="$(this).prev(\'div\').remove(); this.style.display=\'block\'">');
 
                         }
 
-                        if ( response.error ) {
+                        if (response.error) {
 
-                            $( '#check-artwork-image' ).html( '<div class="alert alert-danger">Failed to get Artwork image, reason: ' + response.error + '</div>' );
+                            $('#check-artwork-image').html('<div class="alert alert-danger">Failed to get Artwork image, reason: ' + response.error + '</div>');
 
                         }
 
-                    } ).fail( function( e ) {
+                    }).fail(function(e) {
 
                         // Different possible messages
                         let msg = e.statusText;
-                        if ( e.responseJSON && e.responseJSON.error ) {
+                        if (e.responseJSON && e.responseJSON.error) {
 
                             msg = e.responseJSON.error;
 
-                        } else if ( e.responseText ) {
+                        } else if (e.responseText) {
 
                             msg = e.responseText;
 
                         }
 
-                        $( '#check-artwork-image' ).html( '<div class="alert alert-danger">Failed to get Artwork image, reason: <pre>' + msg + '</pre></div>' );
+                        $('#check-artwork-image').html('<div class="alert alert-danger">Failed to get Artwork image, reason: <pre>' + msg + '</pre></div>');
 
-                    } );
+                    });
 
                     return false;
 
-                }
+                },
             );
 
-            $( "#base-color" ).spectrum(
+            $('#base-color').spectrum(
                 {
-                    preferredFormat       : "hex",
+                    preferredFormat       : 'hex',
                     appendTo              : '.modal.compile-custom-scheme',
                     showPalette           : true,
                     hideAfterPaletteSelect: true,
                     showInput             : true,
                     palette               : [
-                        [ '#1abc9c', '#16a085', '#2ecc71', '#27ae60' ],
-                        [ '#3498db', '#2980b9', '#9b59b6', '#9b50ba' ],
-                        [ '#34495e', '#2c3e50', '#f1c40f', '#f39c12' ],
-                        [ '#e74c3c', '#c0392b', '#ecf0f1', '#bdc3c7' ],
-                        [ '#95a5a6', '#7f8c8d' ]
-                    ]
-                }
+                        ['#1abc9c', '#16a085', '#2ecc71', '#27ae60'],
+                        ['#3498db', '#2980b9', '#9b59b6', '#9b50ba'],
+                        ['#34495e', '#2c3e50', '#f1c40f', '#f39c12'],
+                        ['#e74c3c', '#c0392b', '#ecf0f1', '#bdc3c7'],
+                        ['#95a5a6', '#7f8c8d'],
+                    ],
+                },
             );
 
-            $( "#bg-color" ).spectrum(
+            $('#bg-color').spectrum(
                 {
-                    preferredFormat       : "hex",
+                    preferredFormat       : 'hex',
                     showPalette           : true,
                     hideAfterPaletteSelect: true,
                     appendTo              : '.modal.compile-custom-scheme',
                     showInput             : true,
                     palette               : [
-                        [ '#1abc9c', '#16a085', '#2ecc71', '#27ae60' ],
-                        [ '#3498db', '#2980b9', '#9b59b6', '#9b50ba' ],
-                        [ '#34495e', '#2c3e50', '#f1c40f', '#f39c12' ],
-                        [ '#e74c3c', '#c0392b', '#ecf0f1', '#bdc3c7' ],
-                        [ '#95a5a6', '#7f8c8d' ]
-                    ]
-                }
+                        ['#1abc9c', '#16a085', '#2ecc71', '#27ae60'],
+                        ['#3498db', '#2980b9', '#9b59b6', '#9b50ba'],
+                        ['#34495e', '#2c3e50', '#f1c40f', '#f39c12'],
+                        ['#e74c3c', '#c0392b', '#ecf0f1', '#bdc3c7'],
+                        ['#95a5a6', '#7f8c8d'],
+                    ],
+                },
             );
 
             loadArtwork();
