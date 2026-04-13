@@ -124,10 +124,10 @@ class Direct extends TrackInfo
 
         // Handle Ogg/Vorbis/Opus where icyMetaint is missing
         if ($icyMetaint === null) {
-            $isOgg = str_contains($contentType ?? '', 'ogg')
-                     || str_contains($contentType ?? '', 'vorbis')
-                     || str_contains($contentType ?? '', 'opus')
-                     || str_starts_with($buf, 'OggS');
+            $isOgg = strpos($contentType ?? '', 'ogg') !== false
+                     || strpos($contentType ?? '', 'vorbis') !== false
+                     || strpos($contentType ?? '', 'opus') !== false
+                     || strpos($buf, 'OggS') === 0;
 
             if ($isOgg) {
                 $icyMetaint = 0; // Use start of buffer
@@ -145,7 +145,7 @@ class Direct extends TrackInfo
             if ($slice !== false && $slice !== '') {
 
                 // Shoutcast: StreamTitle='...';
-                if (str_contains($slice, 'StreamTitle=')) {
+                if (strpos($slice, 'StreamTitle=') !== false) {
                     if (preg_match("/StreamTitle='(.*?)';/s", $slice, $m)) {
                         $result = $m[1];
                     }
