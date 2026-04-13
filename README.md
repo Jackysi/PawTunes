@@ -2,18 +2,18 @@
 # PawTunes Internet Radio Player (Web App) 🎵
 
 PawTunes is a powerful and versatile web-based internet radio player designed for both radio stations and music enthusiasts.
-Built from the ground up with over 15 years of experience, PawTunes combines cutting-edge technology, elegant design, 
+Built from the ground up with over 15 years of experience, PawTunes combines cutting-edge technology, elegant design,
 and unparalleled performance to deliver the ultimate radio player experience.
 It integrates templates and knowledge from all my previously created radio players: "Radio Player," "Pro Radio Player," and "AIO Radio Station Player."
 
-This is not just a simple JavaScript library for playing music, it's a complete platform/app that fetches Track Information and Artworks for your live radio stream. 
+This is not just a simple JavaScript library for playing music, it's a complete platform/app that fetches Track Information and Artworks for your live radio stream.
 Its versatility allows seamless integration with many APIs, and more can easily be added using the "TrackInfo" class.
 All requests are cached for the refresh time configured, minimizing unnecessary API calls.
-Additionally, there's a small Go app I developed that connects to the stream and provides "Live Info" from a lightweight service, 
+Additionally, there's a small Go app I developed that connects to the stream and provides "Live Info" from a lightweight service,
 including history and HTTPS proxying (if you provide a certificate).
 But more on that later.
 
-The great thing is that these images are cropped, optimized, and stored on **PawTunes** for fast access. 
+The great thing is that these images are cropped, optimized, and stored on **PawTunes** for fast access.
 This feature can be disabled in the settings, using only direct API requests, which are also cached.
 
 ---
@@ -25,15 +25,23 @@ Explore the live demo:
   **Username**: `admin`  
   **Password**: `password`
 
+##### Default - PawTunes
 [![PawTunes Template](https://cdn.prahec.com/projects/pawtunes/screens/20241129175123.png)](https://cdn.prahec.com/projects/pawtunes/screens/20241129175123.png)
 
+##### AIO Radio Player
 [![PawTunes Template](https://cdn.prahec.com/projects/pawtunes/screens/20241129175330.png)](https://cdn.prahec.com/projects/pawtunes/screens/20241129175330.png)
 
+##### HTML5 Radio Player
 [![PawTunes Template](https://cdn.prahec.com/projects/pawtunes/screens/20241129175356.png)](https://cdn.prahec.com/projects/pawtunes/screens/20241129175356.png)
 
+##### Simple Template
 [![PawTunes Template](https://cdn.prahec.com/projects/pawtunes/screens/20241129175419.png)](https://cdn.prahec.com/projects/pawtunes/screens/20241129175419.png)
 
-[![PawTunes Template](https://cdn.prahec.com/projects/pawtunes/screens/rj20QUyaCm.jpg)](https://cdn.prahec.com/projects/pawtunes/screens/rj20QUyaCm.jpg)
+##### Modern Light
+[![PawTunes Template](https://cdn.prahec.com/projects/pawtunes/screens/modern-light.png)](https://cdn.prahec.com/projects/pawtunes/screens/modern-light.png)
+
+##### Modern Dark
+[![PawTunes Template](https://cdn.prahec.com/projects/pawtunes/screens/modern-dark.png)](https://cdn.prahec.com/projects/pawtunes/screens/modern-dark.png)
 
 ---
 
@@ -84,7 +92,7 @@ Explore the live demo:
 ---
 
 ## 🛠 Installation
-Installation is straightforward in most cases, download the shared "ZIP" file and upload its contents to your web host. 
+Installation is straightforward in most cases, download the shared "ZIP" file and upload its contents to your web host.
 Since **PawTunes** is a standalone PHP script/app, you only need to upload the files to a folder of your choice and then access that folder using the following URL format:  
 `http://your-host.com/folder-name/panel/index.php`
 
@@ -137,8 +145,8 @@ In the meantime, you can find practical code examples for integrating the player
 [Developer Documentation](https://doc.prahec.com/pawtunes#developers).
 
 #### Experimental feature: ICY Metadata
-For years, reading ICY metadata directly in the browser seemed impossible without Web Assembly. 
-Now, we're pushing the boundaries with an experimental implementation. 
+For years, reading ICY metadata directly in the browser seemed impossible without Web Assembly.
+Now, we're pushing the boundaries with an experimental implementation.
 It's still a work in progress, currently in beta, and may not function on some mobile browsers or older environments.
 Check out the demo and feel free to contribute or provide feedback: [Live ICY Metadata Demo](https://prahec.com/pawdemo/)
 
@@ -165,13 +173,13 @@ PawTunes has minimal requirements to ensure smooth operation:
 ---
 
 ## ☕ Donations
-This project took an immense amount of effort to build. While it may not look like much, 
-it represents over 5 months of initial (first release) full-time work and over a decade of experience developing similar apps and scripts. 
+This project took an immense amount of effort to build. While it may not look like much,
+it represents over 5 months of initial (first release) full-time work and over a decade of experience developing similar apps and scripts.
 My initial plan was to sell this as a product on Envato Market — CodeCanyon for 35$ (about 31€), but the review team permanently declined the project,
 so I decided to share this awesome project for free.
 
-As this project is close to my heart, I will continue working on it for free. However, 
-if you find it useful and want to support its ongoing development, any financial support would be greatly appreciated. 
+As this project is close to my heart, I will continue working on it for free. However,
+if you find it useful and want to support its ongoing development, any financial support would be greatly appreciated.
 It would help cover costs (hosting) my effort and, of course, fund a coffee or two to keep me coding! ☕
 
 💸[Donate via PayPal](https://www.paypal.com/donate/?hosted_button_id=VN3SBVYNHC2SE)
@@ -181,7 +189,7 @@ I will also be extremely grateful for any help solving issues and/or improving m
 ---
 
 ## ⭐ Credits
-**PawTunes** would have taken even more time to develop without the incredible open-source projects that made it possible. 
+**PawTunes** would have taken even more time to develop without the incredible open-source projects that made it possible.
 Here’s the list of libraries and projects used in the **Control Panel**:
 
 - **FontAwesome 6 Free**: [https://fontawesome.com/](https://fontawesome.com/)
