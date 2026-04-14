@@ -42,35 +42,81 @@ window.toast = function (message, type, duration) {
 };
 
 /**
- * JS-positioned tooltips for elements inside overflow containers.
- * Add class "js-hint" alongside "css-hint" to opt in, or it auto-applies
- * to any .css-hint inside a scrollable container.
+ * JS-positioned tooltips — replaces CSS pseudo-element tooltips.
+ * Supports: default (above), .left (to the left), auto-flip when near edges.
  */
 (function () {
 
     let tip = null;
+    let arrow = null;
 
-    function show(e) {
-        let el = e.currentTarget;
+    function show(el) {
         let title = el.getAttribute('data-title');
         if (!title) return;
 
         if (tip) tip.remove();
+
         tip = document.createElement('div');
         tip.className = 'js-tooltip';
         tip.textContent = title;
+
+        arrow = document.createElement('div');
+        arrow.className = 'js-tooltip-arrow';
+        tip.appendChild(arrow);
+
         document.body.appendChild(tip);
 
         let rect = el.getBoundingClientRect();
+        let th = tip.offsetHeight;
         let tw = tip.offsetWidth;
-        let left = rect.left + rect.width / 2 - tw / 2;
+        let gap = 8;
+        let pos, left, top;
 
-        // Keep within viewport
-        if (left < 8) left = 8;
-        if (left + tw > window.innerWidth - 8) left = window.innerWidth - tw - 8;
+        if (el.classList.contains('left')) {
+            // Position to the left of the element
+            left = rect.left - tw - gap;
+            top = rect.top + rect.height / 2 - th / 2;
+            pos = 'left';
 
+            // Flip to right if off-screen
+            if (left < gap) {
+                left = rect.right + gap;
+                pos = 'right';
+            }
+        } else {
+            // Default: above
+            left = rect.left + rect.width / 2 - tw / 2;
+            top = rect.top - th - gap;
+            pos = 'top';
+
+            // Flip below if off-screen
+            if (top < gap) {
+                top = rect.bottom + gap;
+                pos = 'bottom';
+            }
+        }
+
+        // Keep horizontally within viewport
+        if (left < gap) left = gap;
+        if (left + tw > window.innerWidth - gap) left = window.innerWidth - tw - gap;
+
+        // Keep vertically within viewport
+        if (top < gap) top = gap;
+        if (top + th > window.innerHeight - gap) top = window.innerHeight - th - gap;
+
+        tip.setAttribute('data-pos', pos);
         tip.style.left = left + 'px';
-        tip.style.top = (rect.top - tip.offsetHeight - 8) + 'px';
+        tip.style.top = top + 'px';
+
+        // Position arrow relative to element center
+        if (pos === 'top' || pos === 'bottom') {
+            let arrowLeft = rect.left + rect.width / 2 - left;
+            arrow.style.left = Math.max(8, Math.min(arrowLeft, tw - 8)) + 'px';
+        } else {
+            let arrowTop = rect.top + rect.height / 2 - top;
+            arrow.style.top = Math.max(8, Math.min(arrowTop, th - 8)) + 'px';
+        }
+
         requestAnimationFrame(function () { tip.classList.add('visible'); });
     }
 
@@ -80,7 +126,7 @@ window.toast = function (message, type, duration) {
 
     document.addEventListener('mouseover', function (e) {
         let el = e.target.closest('.css-hint[data-title]');
-        if (el) show({ currentTarget: el });
+        if (el) show(el);
     });
 
     document.addEventListener('mouseout', function (e) {

@@ -626,13 +626,43 @@ tbody .handle {
     border-radius: 6px;
     pointer-events: none;
     opacity: 0;
-    transform: translateY(4px);
-    transition: opacity 150ms ease, transform 150ms ease;
+    transition: opacity 150ms ease;
 
     &.visible {
         opacity: 1;
-        transform: translateY(0);
     }
+}
+
+.js-tooltip-arrow {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border: 5px solid transparent;
+}
+
+// Arrow positions based on data-pos
+.js-tooltip[data-pos="top"] .js-tooltip-arrow {
+    bottom: -10px;
+    transform: translateX(-5px);
+    border-top-color: $slate-800;
+}
+
+.js-tooltip[data-pos="bottom"] .js-tooltip-arrow {
+    top: -10px;
+    transform: translateX(-5px);
+    border-bottom-color: $slate-800;
+}
+
+.js-tooltip[data-pos="left"] .js-tooltip-arrow {
+    right: -10px;
+    transform: translateY(-5px);
+    border-left-color: $slate-800;
+}
+
+.js-tooltip[data-pos="right"] .js-tooltip-arrow {
+    left: -10px;
+    transform: translateY(-5px);
+    border-right-color: $slate-800;
 }
 
 // Hide CSS pseudo-tooltips globally — JS tooltip system replaces them

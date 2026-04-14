@@ -371,6 +371,11 @@
         color: $slate-900;
     }
 
+    .js-tooltip[data-pos="top"] .js-tooltip-arrow { border-top-color: #e2e8f0; }
+    .js-tooltip[data-pos="bottom"] .js-tooltip-arrow { border-bottom-color: #e2e8f0; }
+    .js-tooltip[data-pos="left"] .js-tooltip-arrow { border-left-color: #e2e8f0; }
+    .js-tooltip[data-pos="right"] .js-tooltip-arrow { border-right-color: #e2e8f0; }
+
     .confirm-popover {
         background: $slate-800;
         border-color: #475569;
