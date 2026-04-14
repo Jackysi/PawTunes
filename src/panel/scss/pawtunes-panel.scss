@@ -394,6 +394,8 @@ tbody .handle {
 /* Artwork manager & Crop feature */
 .artwork-manager {
     margin-bottom: 15px;
+    max-height: 70vh;
+    overflow-y: auto;
 
     @media (max-width: 768px) {
         overflow-x: auto;
@@ -609,6 +611,34 @@ tbody .handle {
         display: flex;
         gap: 0.4rem;
     }
+}
+
+// JS-positioned tooltip (fixed, not clipped by overflow)
+.js-tooltip {
+    position: fixed;
+    z-index: 10000;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+    line-height: 1;
+    white-space: nowrap;
+    color: #fff;
+    background: $slate-800;
+    border-radius: 6px;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 150ms ease, transform 150ms ease;
+
+    &.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+// Hide CSS pseudo-tooltip when JS tooltip is active
+.js-hint::before,
+.js-hint::after {
+    display: none !important;
 }
 
 .modal-header i {
