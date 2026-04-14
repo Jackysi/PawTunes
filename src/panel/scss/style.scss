@@ -15,7 +15,7 @@
  */
 
 // General Settings
-$base-font-size: 13px;
+$base-font-size: 14px;
 $base-line-height: 1.5 !default;
 $font-family: "Inter", "Verdana", sans-serif;
 $icon-font: "Font Awesome 6 Free";
@@ -24,20 +24,39 @@ $font-light: 300 !default;
 $font-normal: 400 !default;
 
 // Base paddings
-$input-padding-base: .4rem !default;
+$input-padding-base: 7px !default;
 $btn-padding-base: .4rem !default;
 
 
 $primary-color: #fff;
-$secondary-color: #575757;
-$primary-bg-color: #137594;
-$secondary-bg-color: #0a576f;
+$secondary-color: #64748b;
+$primary-bg-color: #3b82f6;
+$secondary-bg-color: #334155;
 
 $header-color: #fff;
-$header-bg-color: #0a576f;
+$header-bg-color: #1e293b;
 
 $footer-color: #999;
-$footer-bg-color: #333;
+$footer-bg-color: #1e293b;
+
+$primary-hover-color: #2563eb;
+
+// Slate palette tokens
+$slate-50: #f8fafc;
+$slate-100: #f1f5f9;
+$slate-200: #e2e8f0;
+$slate-300: #cbd5e1;
+$slate-400: #94a3b8;
+$slate-500: #64748b;
+$slate-700: #334155;
+$slate-800: #1e293b;
+$slate-900: #0f172a;
+
+// Semantic colors
+$success-color: #16a34a;
+$danger-color: #dc2626;
+$warning-color: #f59e0b;
+$info-color: #3b82f6;
 
 // Navigation Settings
 $navigation-height: 42px;

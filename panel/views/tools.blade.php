@@ -7,7 +7,7 @@
                 some web hosting providers are blocking uncommon internet ports for their "security". In most cases contacting the provider to unblock the port will fix the issue.
             </p>
             <div class="row">
-                <div class="col-sm-4" style="padding-right:5px;">
+                <div class="col-sm-4 pe-1">
                     <select class="form-control" name="debug-server">
                         @if (count( $channels ) >= 1)
                             <option value="user">All configured channels</option>
@@ -46,7 +46,7 @@
                             <th>Template</th>
                             <th>Path</th>
                             <th>File size</th>
-                            <th>Action</th>
+                            <th class="text-right">Action</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -77,7 +77,7 @@
                             <th>File name (formatted)</th>
                             <th>Image Path</th>
                             <th>File size</th>
-                            <th>Action</th>
+                            <th class="text-right">Action</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -372,13 +372,14 @@
                 $.ajax({url: 'index.php?page=api', dataType: 'json', cache: false, data: {action: 'get-artwork'}}).then(function(data) {
 
                     if (data.length >= 1) {
+                        $('.artwork-manager .artwork-empty').remove();
                         $(data).each(function(key, val) {
 
                             let tableRow = $(
                                 '<tr><td><img alt="Artwork" src="./../' + val.path + '" width="24" height="24" data-preview="true" class="pull-left"></td>' +
                                 '<td class="artist-name">' + val.name + '</td><td>' + val.path + '</td><td>' + val.size + '</td>' +
-                                '<td><a href="#" class="edit-img btn btn-primary btn-small"><i class="icon fa fa-edit"></i> Replace</a> ' +
-                                ((val['name'].match(/default\./)) ? '' : '<a href="#" class="delete-img btn btn-danger btn-small"><i class="icon fa fa-times"></i> Delete</a>') +
+                                '<td class="row-btns"><a href="#" class="edit-img btn btn-default btn-small css-hint" data-title="Replace"><i class="icon fa fa-edit"></i></a>' +
+                                ((val['name'].match(/default\./)) ? '' : '<a href="#" class="delete-img btn btn-danger btn-small css-hint" data-title="Delete"><i class="icon fa fa-times"></i></a>') +
                                 '</td></tr>',
                             );
 
@@ -440,6 +441,14 @@
 
                         });
 
+                    } else {
+                        $('.artwork-manager').html(
+                            '<div class="artwork-empty empty-state">' +
+                            '<i class="icon fa fa-image"></i>' +
+                            '<h3>No custom artwork</h3>' +
+                            '<p>Upload artwork to override automatic images.</p>' +
+                            '</div>'
+                        );
                     }
 
                     $('.artworkManager').removeClass('hidden');
@@ -697,11 +706,9 @@
                                 <td>${scheme.template}</td>
                                 <td class="scheme-path">${scheme.path}</td>
                                 <td>${scheme.size}</td>
-                                <td>
-                                    <a class="view btn btn-primary btn-small css-hint" data-title="Minified source code" href="#">
-                                        <i class="icon fa fa-external-link"></i> View
-                                    </a>
-                                    <a class="delete btn btn-danger btn-small" href="#"><i class="icon fa fa-times"></i> Delete</a>
+                                <td class="row-btns">
+                                    <a class="view btn btn-default btn-small css-hint" data-title="View source" href="#"><i class="icon fa fa-external-link"></i></a>
+                                    <a class="delete btn btn-danger btn-small css-hint" data-title="Delete" href="#"><i class="icon fa fa-times"></i></a>
                                 </td>
                             </tr>`);
 

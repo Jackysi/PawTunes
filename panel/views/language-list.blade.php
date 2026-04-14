@@ -7,13 +7,18 @@
             </p>
             {!! $message !!}
             @if ( count( $translations ) < 1 )
-                {!! $panel->alert( 'No translation files found! If you deleted "en.php" by mistake, please re-upload it!' ) !!}
+                <div class="empty-state">
+                    <i class="icon fa fa-language"></i>
+                    <h3>No translation files</h3>
+                    <p>Add a language to enable multi-language support.</p>
+                    <a href="index.php?page=language&add" class="btn btn-primary"><i class="icon fa fa-plus-circle"></i> Add Language</a>
+                </div>
             @else
                 <table class="table vertical-center hover">
                     <thead>
                         <tr>
                             <th>Language</th>
-                            <th>Actions</th>
+                            <th class="text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -25,13 +30,13 @@
                                 <td class="col-sm-9">
                                     <i class="fi fi-{{$languages[ $language ]['flag']}}"></i> <b>{{$languages[ $language ]['name']}} </b> ({{strtoupper( $language )}})
                                 </td>
-                                <td>
-                                    <a class="btn btn-primary btn-small" href="index.php?page=language&edit={{$pawtunes->extDel( $translation )}}">
-                                        <i class="icon fa fa-edit"></i> Edit
+                                <td class="row-btns">
+                                    <a class="btn btn-default btn-small css-hint" data-title="Edit" href="index.php?page=language&edit={{$pawtunes->extDel( $translation )}}">
+                                        <i class="icon fa fa-edit"></i>
                                     </a>
                                     @if ( $translation !== 'en.php' )
-                                        <a class="btn btn-danger btn-small" href="index.php?page=language&delete={{$language}}" onclick="return confirm('Are you sure?');">
-                                            <i class="icon fa fa-times"></i> Delete</a>
+                                        <a class="btn btn-danger btn-small css-hint" data-title="Delete" data-confirm href="index.php?page=language&delete={{$language}}">
+                                            <i class="icon fa fa-times"></i></a>
                                     @endif
                                 </td>
                             </tr>

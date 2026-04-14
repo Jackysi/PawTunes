@@ -3,8 +3,8 @@
     line-height: 1;
     height: 0;
     margin: 15px 0;
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.8);
+    border-top: 1px solid $slate-200;
+    border-bottom: none;
     -webkit-tap-highlight-color: transparent
 }
 
@@ -106,7 +106,7 @@
     vertical-align: baseline;
     white-space: nowrap;
     color: #fff;
-    background-color: #616161;
+    background-color: $slate-500;
     text-shadow: 0 -1px 0 rgba(0, 0, 0, .25);
 }
 
@@ -135,7 +135,7 @@ a.label:hover, a.label:focus, a.badge:hover, a.badge:focus {
 }
 
 .label-important, .badge-important {
-    background-color: #f44336;
+    background-color: $danger-color;
 }
 
 .label-important[href], .badge-important[href] {
@@ -143,7 +143,7 @@ a.label:hover, a.label:focus, a.badge:hover, a.badge:focus {
 }
 
 .label-warning, .badge-warning {
-    background-color: #f89406;
+    background-color: $warning-color;
 }
 
 .label-warning[href], .badge-warning[href] {
@@ -151,7 +151,7 @@ a.label:hover, a.label:focus, a.badge:hover, a.badge:focus {
 }
 
 .label-success, .badge-success {
-    background-color: #468847;
+    background-color: $success-color;
 }
 
 .label-success[href], .badge-success[href] {
