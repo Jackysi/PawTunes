@@ -241,11 +241,12 @@ function shouldUpdate(serverVersion, localVersion, segments = 3) {
                 ev.preventDefault();
                 popover.remove();
 
-                // If it's a link, navigate
+                // If it's a link with a real href, navigate
                 if (btn.is('a') && btn.attr('href') && btn.attr('href') !== '#') {
                     window.location.href = btn.attr('href');
                 } else {
-                    // Trigger the original click handler (for JS-bound deletes)
+                    // For JS-bound deletes, flag and re-trigger
+                    btn.data('confirmed-action', true);
                     btn.removeAttr('data-confirm').trigger('click').attr('data-confirm', '');
                 }
             });

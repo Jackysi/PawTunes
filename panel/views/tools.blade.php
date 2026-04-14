@@ -379,7 +379,7 @@
                                 '<tr><td><img alt="Artwork" src="./../' + val.path + '" width="24" height="24" data-preview="true" class="pull-left"></td>' +
                                 '<td class="artist-name">' + val.name + '</td><td>' + val.path + '</td><td>' + val.size + '</td>' +
                                 '<td class="row-btns"><a href="#" class="edit-img btn btn-default btn-small css-hint" data-title="Replace"><i class="icon fa fa-edit"></i></a>' +
-                                ((val['name'].match(/default\./)) ? '' : '<a href="#" class="delete-img btn btn-danger btn-small css-hint" data-title="Delete"><i class="icon fa fa-times"></i></a>') +
+                                ((val['name'].match(/default\./)) ? '' : '<a href="#" class="delete-img btn btn-danger btn-small css-hint" data-title="Delete" data-confirm><i class="icon fa fa-times"></i></a>') +
                                 '</td></tr>',
                             );
 
@@ -395,8 +395,11 @@
 
                             });
 
-                            // Bind delete
+                            // Bind delete (confirmation handled by data-confirm popover)
                             tableRow.find('.delete-img').on('click', function() {
+
+                                if (!$(this).data('confirmed-action')) return false;
+                                $(this).removeData('confirmed-action');
 
                                 let artist_name = $(this).closest('tr').find('.artist-name').text(), elm = $(this);
                                 $.get('index.php?page=api&action=delete-artwork&name=' + artist_name, function() {
@@ -708,7 +711,7 @@
                                 <td>${scheme.size}</td>
                                 <td class="row-btns">
                                     <a class="view btn btn-default btn-small css-hint" data-title="View source" href="#"><i class="icon fa fa-external-link"></i></a>
-                                    <a class="delete btn btn-danger btn-small css-hint" data-title="Delete" href="#"><i class="icon fa fa-times"></i></a>
+                                    <a class="delete btn btn-danger btn-small css-hint" data-title="Delete" data-confirm href="#"><i class="icon fa fa-times"></i></a>
                                 </td>
                             </tr>`);
 
@@ -721,28 +724,29 @@
 
                         });
 
-                        // Bind delete
+                        // Bind delete (confirmation handled by data-confirm popover)
                         tableRow.find('.delete').on('click', function() {
 
-                            if (confirm('Are you sure?')) {
+                            if (!$(this).data('confirmed-action')) return false;
+                            $(this).removeData('confirmed-action');
 
-                                let path = $(this).closest('tr').find('.scheme-path').text();
-                                let elm = $(this);
+                            let path = $(this).closest('tr').find('.scheme-path').text();
+                            let elm = $(this);
 
-                                $.get('./index.php?page=api&action=delete-theme&path=' + encodeURI(path)).then(function(response) {
-                                    if (response && response.success) {
+                            $.get('./index.php?page=api&action=delete-theme&path=' + encodeURI(path)).then(function(response) {
+                                if (response && response.success) {
 
-                                        $(elm).closest('tr').remove();
-                                        if (manager.find('tbody > tr').length < 1) {
-                                            manager.hide();
-                                        }
-
-                                    } else {
-
-                                        alert('Error deleting theme');
-
+                                    $(elm).closest('tr').remove();
+                                    if (manager.find('tbody > tr').length < 1) {
+                                        manager.hide();
                                     }
-                                });
+
+                                } else {
+
+                                    toast('Error deleting theme', 'error');
+
+                                }
+                            });
 
                             }
 
