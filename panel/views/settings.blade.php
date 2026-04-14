@@ -39,7 +39,7 @@
             'value'       => './data/cache',
             'placeholder' => './data/cache',
             'reset'       => true,
-            'description' => ' (Images and API cache)',
+            'description' => ' (Images and API cache, leave empty for default)',
         ],
         [
             'label'       => 'Google Analytics',
@@ -58,7 +58,7 @@
         ],
         'default_language',
         [
-            'label'       => 'Multi-language Support',
+            'label'       => 'Multi-language',
             'name'        => 'multi_lang',
             'class'       => 'col-sm-9',
             'value'       => 'true',

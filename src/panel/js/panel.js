@@ -49,12 +49,17 @@ window.toast = function (message, type, duration) {
 
     let tip = null;
     let arrow = null;
+    let currentEl = null;
 
     function show(el) {
         let title = el.getAttribute('data-title');
         if (!title) return;
 
+        // Already showing for this element, skip
+        if (tip && currentEl === el) return;
+
         if (tip) tip.remove();
+        currentEl = el;
 
         tip = document.createElement('div');
         tip.className = 'js-tooltip';
@@ -121,7 +126,7 @@ window.toast = function (message, type, duration) {
     }
 
     function hide() {
-        if (tip) { tip.remove(); tip = null; }
+        if (tip) { tip.remove(); tip = null; currentEl = null; }
     }
 
     document.addEventListener('mouseover', function (e) {

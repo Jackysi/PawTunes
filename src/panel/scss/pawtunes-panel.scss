@@ -642,25 +642,25 @@ tbody .handle {
 
 // Arrow positions based on data-pos
 .js-tooltip[data-pos="top"] .js-tooltip-arrow {
-    bottom: -10px;
+    bottom: -9px;
     transform: translateX(-5px);
     border-top-color: $slate-800;
 }
 
 .js-tooltip[data-pos="bottom"] .js-tooltip-arrow {
-    top: -10px;
+    top: -9px;
     transform: translateX(-5px);
     border-bottom-color: $slate-800;
 }
 
 .js-tooltip[data-pos="left"] .js-tooltip-arrow {
-    right: -10px;
+    right: -9px;
     transform: translateY(-5px);
     border-left-color: $slate-800;
 }
 
 .js-tooltip[data-pos="right"] .js-tooltip-arrow {
-    left: -10px;
+    left: -9px;
     transform: translateY(-5px);
     border-right-color: $slate-800;
 }

@@ -321,9 +321,10 @@ class Panel
         if (isset($_SESSION[$this->prefix]['flash'])) {
 
             if ( ! is_array($_SESSION[$this->prefix]['flash'])) {
-                unset($_SESSION[$this->prefix]['flash']);
 
+                unset($_SESSION[$this->prefix]['flash']);
                 return;
+
             }
 
             foreach ($_SESSION[$this->prefix]['flash'] as $message) {
@@ -352,6 +353,7 @@ class Panel
 
         $result = [];
         foreach ($_SESSION[$this->prefix]['flash'] as $html) {
+
             // Determine type from alert class
             $type = 'info';
             if (strpos($html, 'alert-success') !== false) {

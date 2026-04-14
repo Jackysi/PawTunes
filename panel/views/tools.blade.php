@@ -75,7 +75,6 @@
                         <tr>
                             <th></th>
                             <th>File name (formatted)</th>
-                            <th>Image Path</th>
                             <th>File size</th>
                             <th class="text-right">Action</th>
                         </tr>
@@ -377,7 +376,7 @@
 
                             let tableRow = $(
                                 '<tr><td><img alt="Artwork" src="./../' + val.path + '" width="24" height="24" data-preview="true" class="pull-left"></td>' +
-                                '<td class="artist-name">' + val.name + '</td><td>' + val.path + '</td><td>' + val.size + '</td>' +
+                                '<td class="artist-name">' + val.name + '</td><td>' + val.size + '</td>' +
                                 '<td class="row-btns"><a href="#" class="edit-img btn btn-default btn-small css-hint" data-title="Replace"><i class="icon fa fa-edit"></i></a>' +
                                 ((val['name'].match(/default\./)) ? '' : '<a href="#" class="delete-img btn btn-danger btn-small css-hint" data-title="Delete" data-confirm><i class="icon fa fa-times"></i></a>') +
                                 '</td></tr>',
