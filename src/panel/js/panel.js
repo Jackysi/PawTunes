@@ -78,27 +78,13 @@ window.toast = function (message, type, duration) {
         if (tip) { tip.remove(); tip = null; }
     }
 
-    // Delegate for dynamically created elements
     document.addEventListener('mouseover', function (e) {
         let el = e.target.closest('.css-hint[data-title]');
-        if (!el) return;
-
-        // Check if inside a scrollable container
-        let parent = el.parentElement;
-        while (parent && parent !== document.body) {
-            let style = getComputedStyle(parent);
-            if (style.overflowY === 'auto' || style.overflowY === 'scroll') {
-                // Disable CSS tooltip, use JS one
-                el.classList.add('js-hint');
-                show({ currentTarget: el });
-                return;
-            }
-            parent = parent.parentElement;
-        }
+        if (el) show({ currentTarget: el });
     });
 
     document.addEventListener('mouseout', function (e) {
-        let el = e.target.closest('.js-hint');
+        let el = e.target.closest('.css-hint[data-title]');
         if (el) hide();
     });
 

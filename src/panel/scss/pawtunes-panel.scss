@@ -635,9 +635,9 @@ tbody .handle {
     }
 }
 
-// Hide CSS pseudo-tooltip when JS tooltip is active
-.js-hint::before,
-.js-hint::after {
+// Hide CSS pseudo-tooltips globally — JS tooltip system replaces them
+.css-hint[data-title]::before,
+.css-hint[data-title]::after {
     display: none !important;
 }
 
