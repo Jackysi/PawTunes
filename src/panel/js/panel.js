@@ -131,7 +131,13 @@ window.toast = function (message, type, duration) {
 
     document.addEventListener('mouseout', function (e) {
         let el = e.target.closest('.css-hint[data-title]');
-        if (el) hide();
+        if (!el) return;
+
+        // Don't hide if moving to a child element within the same hint
+        let related = e.relatedTarget;
+        if (related && el.contains(related)) return;
+
+        hide();
     });
 
 })();
