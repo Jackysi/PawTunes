@@ -396,9 +396,10 @@
                             });
 
                             // Bind delete (confirmation handled by data-confirm popover)
-                            tableRow.find('.delete-img').on('click', function() {
+                            tableRow.find('.delete-img').on('click', function(e) {
 
-                                if (!$(this).data('confirmed-action')) return false;
+                                e.preventDefault();
+                                if (!$(this).data('confirmed-action')) return;
                                 $(this).removeData('confirmed-action');
 
                                 let artist_name = $(this).closest('tr').find('.artist-name').text(), elm = $(this);
@@ -406,7 +407,6 @@
                                     $(elm).closest('tr').remove();
                                 });
 
-                                return false;
                             });
 
                             // Hover Artist Image
@@ -725,9 +725,10 @@
                         });
 
                         // Bind delete (confirmation handled by data-confirm popover)
-                        tableRow.find('.delete').on('click', function() {
+                        tableRow.find('.delete').on('click', function(e) {
 
-                            if (!$(this).data('confirmed-action')) return false;
+                            e.preventDefault();
+                            if (!$(this).data('confirmed-action')) return;
                             $(this).removeData('confirmed-action');
 
                             let path = $(this).closest('tr').find('.scheme-path').text();
@@ -747,8 +748,6 @@
 
                                 }
                             });
-
-                            return false;
 
                         });
 
