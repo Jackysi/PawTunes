@@ -42,6 +42,69 @@ window.toast = function (message, type, duration) {
 };
 
 /**
+ * JS-positioned tooltips for elements inside overflow containers.
+ * Add class "js-hint" alongside "css-hint" to opt in, or it auto-applies
+ * to any .css-hint inside a scrollable container.
+ */
+(function () {
+
+    let tip = null;
+
+    function show(e) {
+        let el = e.currentTarget;
+        let title = el.getAttribute('data-title');
+        if (!title) return;
+
+        if (tip) tip.remove();
+        tip = document.createElement('div');
+        tip.className = 'js-tooltip';
+        tip.textContent = title;
+        document.body.appendChild(tip);
+
+        let rect = el.getBoundingClientRect();
+        let tw = tip.offsetWidth;
+        let left = rect.left + rect.width / 2 - tw / 2;
+
+        // Keep within viewport
+        if (left < 8) left = 8;
+        if (left + tw > window.innerWidth - 8) left = window.innerWidth - tw - 8;
+
+        tip.style.left = left + 'px';
+        tip.style.top = (rect.top - tip.offsetHeight - 8) + 'px';
+        requestAnimationFrame(function () { tip.classList.add('visible'); });
+    }
+
+    function hide() {
+        if (tip) { tip.remove(); tip = null; }
+    }
+
+    // Delegate for dynamically created elements
+    document.addEventListener('mouseover', function (e) {
+        let el = e.target.closest('.css-hint[data-title]');
+        if (!el) return;
+
+        // Check if inside a scrollable container
+        let parent = el.parentElement;
+        while (parent && parent !== document.body) {
+            let style = getComputedStyle(parent);
+            if (style.overflowY === 'auto' || style.overflowY === 'scroll') {
+                // Disable CSS tooltip, use JS one
+                el.classList.add('js-hint');
+                show({ currentTarget: el });
+                return;
+            }
+            parent = parent.parentElement;
+        }
+    });
+
+    document.addEventListener('mouseout', function (e) {
+        let el = e.target.closest('.js-hint');
+        if (el) hide();
+    });
+
+})();
+
+/**
  * Compares two version strings.
  *
  * @returns {boolean} - Returns 1 if v1 > v2, -1 if v1 < v2, or 0 if equal.
