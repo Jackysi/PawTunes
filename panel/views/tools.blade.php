@@ -38,7 +38,7 @@
                 The generated color scheme will be saved as <b>theme-name.css</b> file under <b>/templates/(your chosen template)/custom/</b> directory.
             </p>
             <div class="scheme-manager-preloader spinner mb-5">Scanning for color schemes, please wait...</div>
-            <div class="schemes-manager mb-5 overflow-auto" style="display: none">
+            <div class="schemes-manager mb-5" style="display: none">
                 <table class="table vertical-center hover">
                     <thead>
                         <tr>
