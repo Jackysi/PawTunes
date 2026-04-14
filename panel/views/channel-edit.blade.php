@@ -60,7 +60,7 @@
                 <div class="row">
                     <div class="col-sm-9 col-sm-offset-2">
                         <div class="collapsible-header" onclick="$(this).toggleClass('open').next('.collapsible-body').toggleClass('open')">
-                            <h5><i class="icon fa fa-question-circle"></i> How to configure streams? <i class="fas fa-chevron-down pull-right"></i></h5>
+                            <h5><i class="icon fa fa-question-circle"></i> How to configure streams? <i class="fas fa-chevron-down ms-1"></i></h5>
                         </div>
                         <div class="collapsible-body">
                             <p>
@@ -81,8 +81,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="clearfix"></div>
-                <br>
+                <div class="divider"></div>
                 <div class="row">
                     <label class="col-sm-2 control-label">Streams (Audio)</label>
                     <div class="col-sm-9">
