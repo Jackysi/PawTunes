@@ -25,8 +25,8 @@ body {
     overflow-x: auto;
     overflow-y: scroll;
     padding: 0;
-    color: #7b7b83;
-    background-color: #f1f3f6;
+    color: $slate-700;
+    background-color: $slate-50;
 }
 
 
@@ -56,7 +56,7 @@ h4,
 h5,
 h6 {
     font-family: inherit;
-    font-weight: $font-bold;
+    font-weight: 600;
     line-height: 1.1;
     color: inherit;
 
@@ -324,7 +324,7 @@ a.back-to-top {
 
         // Animations
         border: .5em solid transparent;
-        border-top-color: rgba(#000, 0.85);
+        border-top-color: $slate-800;
     }
 
     &::after {
@@ -346,11 +346,8 @@ a.back-to-top {
         color: #fff;
 
         // Animations
-        border-radius: .3em;
-        background: #111;
-
-        // Don't allow word breaks
-        background: rgba(#000, 0.85);
+        border-radius: 6px;
+        background: $slate-800;
     }
 
     &::after, &::before {
@@ -370,7 +367,7 @@ a.back-to-top {
             bottom: -.8em;
             transform: translate3d(0, 1em, 0);
             border-color: transparent;
-            border-bottom-color: rgba(#000, 0.85);
+            border-bottom-color: $slate-800;
         }
 
         &::after {
@@ -390,7 +387,7 @@ a.back-to-top {
             left: -.8em;
             transform: translate3d(95%, .7rem, 0);
             border-color: transparent;
-            border-left-color: rgba(#000, 0.85);
+            border-left-color: $slate-800;
         }
 
         &::after {

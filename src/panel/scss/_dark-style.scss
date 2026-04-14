@@ -1,27 +1,28 @@
 .dark-mode {
-    --secondary-color: #b2b0b0 !important;
+    --secondary-color: #e2e8f0 !important;
 
     body {
-        color: #b2b0b0;
-        background: #333;
+        color: #e2e8f0;
+        background: $slate-900;
     }
 
     &.login-page {
 
         body {
-            background-image: linear-gradient(#333 0, #222 100%);
+            background-image: linear-gradient($slate-900 0, $slate-800 100%);
         }
 
         .login-container {
-            background: #212222;
+            background: $slate-800;
+            border-color: #334155;
         }
 
         .form-control {
-            border-color: #393939;
-            background: #282828;
+            border-color: #475569;
+            background: $slate-800;
 
             &:autofill {
-                color: #606266;
+                color: #94a3b8;
                 background: transparent !important;
             }
 
@@ -29,36 +30,36 @@
             &:-webkit-autofill:hover,
             &:-webkit-autofill:focus,
             &:-webkit-autofill:active {
-                -webkit-box-shadow: 0 0 0 40px #393939 inset !important;
-                -webkit-text-fill-color: #606266;
+                -webkit-box-shadow: 0 0 0 40px $slate-800 inset !important;
+                -webkit-text-fill-color: #94a3b8;
             }
 
             &:hover {
                 transition: none;
-                border: 1px solid #575757;
+                border: 1px solid #475569;
             }
 
             &:focus {
-                color: #313131;
+                color: #e2e8f0;
                 border-color: $primary-bg-color;
                 outline: 0;
             }
 
             &::placeholder {
-                font-style: italic;
+                font-style: normal;
                 opacity: 1;
-                color: #bcc2c8 !important;
+                color: #64748b !important;
             }
 
             &:hover::placeholder,
             &:focus::placeholder {
-                color: #9ba5ad !important;
+                color: #94a3b8 !important;
             }
         }
     }
 
     a:not(.btn) {
-        color: #b4b2b2;
+        color: #94a3b8;
 
         &:hover {
             color: $primary-bg-color;
@@ -79,76 +80,77 @@
     }
 
     .croparea {
-        color: #b4b4b4;
-        border-color: #404040;
-        background: #2c2c2c;
+        color: #94a3b8;
+        border-color: #334155;
+        background: $slate-800;
     }
 
     .progress-bar {
-        background-color: #7f7f7f;
+        background-color: #475569;
 
         .bar {
             p {
-                color: #d5d6da;
+                color: #e2e8f0;
             }
         }
     }
 
     .menu {
-        color: #b4b4b4;
-        background: #2c2c2c;
-        box-shadow: 0 1px 4px 0 rgba(0, 0, 0, .5);
+        color: #94a3b8;
+        background: $slate-800;
+        box-shadow: none;
+        border-bottom-color: #334155;
 
         ul.tabs li:first-child a {
             border-radius: 0;
         }
 
         ul.tabs li:hover a {
-            transition: background-color 0ms ease;
-            color: #c9c9c9;
-            background: #464646;
+            color: #e2e8f0;
+            background: rgba(255, 255, 255, 0.1);
         }
 
         ul.tabs li.active a {
-            color: #b4b4b4;
-            background: #464646;
+            color: #e2e8f0;
+            background: transparent;
         }
     }
 
     .panel {
-        border: none;
-        background-color: #414141;
-        box-shadow: 1px 1px 1px rgba(0, 0, 0, .1);
+        background: $slate-800;
+        border-color: #334155;
+        box-shadow: none;
 
         > .heading {
-            color: #80acc5;
+            color: #e2e8f0;
+            border-bottom-color: #334155;
         }
     }
 
     label {
-        color: #bfbfbf;
+        color: #cbd5e1;
     }
 
     input {
-        color: #bec0c6;
+        color: #e2e8f0;
     }
 
     .form-control {
-        color: #b6b6b6;
-        border: 1px solid #575757;
-        background-color: #4b4b4b;
+        color: #e2e8f0;
+        border: 1px solid #475569;
+        background-color: $slate-800;
 
         &:hover {
-            border-color: color.adjust(#575757, $lightness: 5%);
+            border-color: color.adjust(#475569, $lightness: 5%);
         }
 
         &:focus {
-            color: #afafaf;
+            color: #e2e8f0;
             border-color: $primary-bg-color;
         }
 
         &:autofill {
-            color: #606266;
+            color: #94a3b8;
             background: transparent !important;
         }
 
@@ -156,28 +158,37 @@
         &:-webkit-autofill:hover,
         &:-webkit-autofill:focus,
         &:-webkit-autofill:active {
-            -webkit-box-shadow: 0 0 0 40px #4b4b4b inset !important;
-            -webkit-text-fill-color: #b6b6b6;
+            -webkit-box-shadow: 0 0 0 40px $slate-800 inset !important;
+            -webkit-text-fill-color: #e2e8f0;
         }
 
         &::placeholder {
-            font-style: italic;
+            font-style: normal;
             opacity: 1;
-            color: #6a6d70 !important;
+            color: #64748b !important;
         }
 
         &:hover::placeholder,
         &:focus::placeholder {
-            color: #7e8286 !important;
+            color: #94a3b8 !important;
+        }
+    }
+
+    .btn-info, .btn-default {
+        background-color: #334155;
+        border-color: #475569;
+        color: #e2e8f0;
+        &:hover {
+            background-color: #475569;
         }
     }
 
     .checkbox span.icon, .radio span.icon {
-        border: 1px solid #575757;
-        background: #505050;
+        border: 1px solid #475569;
+        background: #334155;
 
         &:hover {
-            border-color: color.adjust(#575757, $lightness: 5%);
+            border-color: color.adjust(#475569, $lightness: 5%);
         }
     }
 
@@ -187,14 +198,14 @@
         display: block;
 
         .current-value {
-            color: #b6b6b6 !important;
-            border: 1px solid #575757;
-            background: #4b4b4b;
+            color: #e2e8f0 !important;
+            border: 1px solid #475569;
+            background: $slate-800;
         }
 
         &:hover:not(.opened) {
             .current-value {
-                border-color: color.adjust(#575757, $lightness: 5%);
+                border-color: color.adjust(#475569, $lightness: 5%);
             }
         }
 
@@ -204,13 +215,13 @@
         }
 
         ul.options {
-            border-color: #6b6868;
-            background-color: #4b4b4b;
+            border-color: #475569;
+            background-color: $slate-800;
             box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.1);
 
             li {
                 a {
-                    color: #bdbdbd;
+                    color: #cbd5e1;
 
                     &:hover {
                         color: #fff;
@@ -229,53 +240,83 @@
 
 
     table.table {
-        color: #d2d2d2;
-        background-color: rgba(0, 0, 0, 0);
+        color: #e2e8f0;
+        background-color: transparent;
     }
 
     table.table.hover tbody tr:hover {
-        background-color: rgba(170, 170, 170, 0.12);
+        background-color: rgba(255, 255, 255, 0.04);
     }
 
     table.table thead th,
     table.table tbody td,
     table.table tr td {
-        border-color: #5e5e5e;
+        border-color: rgba(255, 255, 255, 0.06);
     }
 
     table.table thead tr th, table.table thead tr th a {
-        color: #dadada;
+        color: #94a3b8;
+        border-bottom-color: rgba(255, 255, 255, 0.08);
+    }
+
+    // Row action buttons in dark mode
+    table.table td.row-btns > .btn:not(.btn-danger) {
+        color: #94a3b8;
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.06);
+            color: #e2e8f0;
+        }
+    }
+
+    table.table td.row-btns > .btn.btn-danger {
+        background: transparent;
+        color: $danger-color;
+
+        &:hover {
+            background: rgba($danger-color, 0.15);
+        }
     }
 
     .divider {
-        border-top: 1px solid rgba(0, 0, 0, .1);
-        border-bottom: 1px solid rgba(255, 255, 255, .1);
+        border-top: 1px solid #334155;
+        border-bottom: none;
     }
 
     .changelog {
 
+        .changelog-heading {
+            background: #334155;
+            border-bottom-color: #475569;
+            box-shadow: none;
+
+            &:hover {
+                background: #3b4f6b;
+            }
+        }
+
         pre {
-            color: #c0bdbd;
+            color: #cbd5e1;
             font-family: $font-family !important;
         }
 
         h3 {
-            color: #80acc5;
+            color: #e2e8f0;
         }
 
         h4 {
-            color: #80acc5
+            color: #e2e8f0
         }
 
         code {
-            color: #d8dce0;
+            color: #e2e8f0;
             background-color: $primary-bg-color;
             box-shadow: .07rem .07rem 0 rgba(0, 0, 0, 0.1);
         }
     }
 
     .modal-content {
-        background-color: #3d3d3d;
+        background-color: $slate-800;
     }
 
     .close {
@@ -283,30 +324,57 @@
     }
 
     .alert.alert-success {
-        color: #0e2f10;
-        background-color: #61c763;
+        color: #86efac;
+        background-color: rgba(22, 163, 74, 0.15);
     }
 
     .alert.alert-info {
-        color: #091e2a;
-        background-color: #368ebb;
+        color: #93c5fd;
+        background-color: rgba(59, 130, 246, 0.15);
 
         a {
-            color: #091e2a;
+            color: #93c5fd;
         }
     }
 
     .alert.alert-danger, .alert.alert-error {
-        color: #2c0707;
-        background-color: #c02b2b;
+        color: #fca5a5;
+        background-color: rgba(220, 38, 38, 0.15);
     }
 
     .alert.alert-warning {
-        color: #312301;
-        background-color: #b68508;
+        color: #fcd34d;
+        background-color: rgba(245, 158, 11, 0.15);
 
         a {
-            color: #1c1400;
+            color: #fcd34d;
+        }
+    }
+
+    .empty-state {
+        > .icon { color: #475569; }
+        h3 { color: #e2e8f0; }
+        p { color: #94a3b8; }
+    }
+
+    .toast {
+        background: #334155;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    .collapsible-header:hover {
+        color: #e2e8f0;
+    }
+
+    .confirm-popover {
+        background: $slate-800;
+        border-color: #475569;
+
+        span { color: #e2e8f0; }
+
+        &::after {
+            background: $slate-800;
+            border-color: #475569;
         }
     }
 }

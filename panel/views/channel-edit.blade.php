@@ -59,22 +59,26 @@
                 <div class="divider"></div>
                 <div class="row">
                     <div class="col-sm-9 col-sm-offset-2">
-                        <h5>How to configure streams?</h5>
-                        <p>
-                            The player supports various streaming formats, but because <b>HTML5 Audio API</b> relies on web browser, each has different codecs support.
-                            MP3 codec is supported in all major web browsers, and for that reason it is highly recommended. Codecs like <b>AAC+</b> and <b>OGG</b> are only supported in a small number of browsers.
-                            Below you will find examples of how to link streams:
-                        </p>
-                        <ul>
-                            <li><b>Shoutcast v1.x</b> - http://shoutcast-server-url.com:port/;stream.mp3</li>
-                            <li><b>Shoutcast v2.x</b> - http://shoutcast-server-url.com:port/mountpoint</li>
-                            <li><b>Iceacast v2.x</b> - http://icecast-server-url.com:port/mountpoint</li>
-                            <li><b>Other Software</b> - http://stream-url.com/stream.mp3</li>
-                        </ul>
-                        <span>
-                            <strong class="text-red">Note:</strong> You can use a combination of codecs e.g., OGG and MP3. In combination mode, the first stream is used as "primary" and the second as "fall-back".
-                            Adding AAC+ codec may break the player in some browsers because some browsers don't fall back when playback fails.
-                        </span>
+                        <div class="collapsible-header" onclick="$(this).toggleClass('open').next('.collapsible-body').toggleClass('open')">
+                            <h5><i class="icon fa fa-question-circle"></i> How to configure streams? <i class="fas fa-chevron-down pull-right"></i></h5>
+                        </div>
+                        <div class="collapsible-body">
+                            <p>
+                                The player supports various streaming formats, but because <b>HTML5 Audio API</b> relies on web browser, each has different codecs support.
+                                MP3 codec is supported in all major web browsers, and for that reason it is highly recommended. Codecs like <b>AAC+</b> and <b>OGG</b> are only supported in a small number of browsers.
+                                Below you will find examples of how to link streams:
+                            </p>
+                            <ul>
+                                <li><b>Shoutcast v1.x</b> - http://shoutcast-server-url.com:port/;stream.mp3</li>
+                                <li><b>Shoutcast v2.x</b> - http://shoutcast-server-url.com:port/mountpoint</li>
+                                <li><b>Iceacast v2.x</b> - http://icecast-server-url.com:port/mountpoint</li>
+                                <li><b>Other Software</b> - http://stream-url.com/stream.mp3</li>
+                            </ul>
+                            <span>
+                                <strong class="text-red">Note:</strong> You can use a combination of codecs e.g., OGG and MP3. In combination mode, the first stream is used as "primary" and the second as "fall-back".
+                                Adding AAC+ codec may break the player in some browsers because some browsers don't fall back when playback fails.
+                            </span>
+                        </div>
                     </div>
                 </div>
                 <div class="clearfix"></div>

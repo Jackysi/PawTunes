@@ -6,9 +6,8 @@
     margin: 1em 0;
     padding: 1em;
     color: rgba(0, 0, 0, 0.6);
-    border-radius: 0.325em;
+    border-radius: 8px;
     background-color: #efefef;
-    box-shadow: inset 0 -1px 0 rgba(#000, 0.05);
 
     &:first-child {
         margin-top: 0;
@@ -121,23 +120,23 @@
     }
 
     &.alert-info {
-        color: #4d8796;
-        background-color: #e6f4f9;
+        color: #1e40af;
+        background-color: #eff6ff;
     }
 
     &.alert-warning {
-        color: #96904d;
-        background-color: #f6f3d5;
+        color: #92400e;
+        background-color: #fffbeb;
     }
 
     &.alert-danger, &.alert-error {
-        color: #a95252;
-        background-color: #f1d7d7;
+        color: #991b1b;
+        background-color: #fef2f2;
     }
 
     &.alert-success {
-        color: #52a954;
-        background-color: #defcd5;
+        color: #166534;
+        background-color: #f0fdf4;
     }
 
 }

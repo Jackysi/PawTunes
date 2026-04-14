@@ -10,6 +10,38 @@
  */
 
 /**
+ * Toast notification system
+ */
+window.toast = function (message, type, duration) {
+
+    type = type || 'info';
+    duration = duration !== undefined ? duration : 5000;
+
+    let container = document.querySelector('.toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+    }
+
+    let el = document.createElement('div');
+    el.className = 'toast toast-' + type;
+    el.innerHTML = '<span class="toast-message">' + message + '</span>' +
+        '<button class="toast-close">&times;</button>';
+
+    container.appendChild(el);
+    requestAnimationFrame(function () { el.classList.add('toast-visible'); });
+
+    let dismiss = function () {
+        el.classList.remove('toast-visible');
+        el.addEventListener('transitionend', function () { el.remove(); });
+    };
+
+    el.querySelector('.toast-close').addEventListener('click', dismiss);
+    if (duration > 0) setTimeout(dismiss, duration);
+};
+
+/**
  * Compares two version strings.
  *
  * @returns {boolean} - Returns 1 if v1 > v2, -1 if v1 < v2, or 0 if equal.
@@ -179,6 +211,52 @@ function shouldUpdate(serverVersion, localVersion, segments = 3) {
 
             darkMode.toggle();
             return false;
+
+        });
+
+        /**
+         * Popover delete confirmations.
+         * Add data-confirm to any button/link to enable.
+         */
+        $(document).on('click', '[data-confirm]', function (e) {
+
+            let btn = $(this);
+            e.preventDefault();
+
+            // Remove any existing popover
+            $('.confirm-popover').remove();
+
+            let popover = $('<div class="confirm-popover">' +
+                '<span>Are you sure?</span>' +
+                '<div class="confirm-popover-actions">' +
+                '<a href="#" class="confirm-yes btn btn-danger btn-small">Yes</a>' +
+                '<a href="#" class="confirm-no btn btn-default btn-small">No</a>' +
+                '</div></div>');
+
+            // Position relative to button
+            btn.css('position', 'relative').append(popover);
+            requestAnimationFrame(function () { popover.addClass('visible'); });
+
+            popover.find('.confirm-yes').on('click', function (ev) {
+                ev.preventDefault();
+                popover.remove();
+
+                // If it's a link, navigate
+                if (btn.is('a') && btn.attr('href') && btn.attr('href') !== '#') {
+                    window.location.href = btn.attr('href');
+                } else {
+                    // Trigger the original click handler (for JS-bound deletes)
+                    btn.removeAttr('data-confirm').trigger('click').attr('data-confirm', '');
+                }
+            });
+
+            popover.find('.confirm-no').on('click', function (ev) {
+                ev.preventDefault();
+                popover.remove();
+            });
+
+            // Auto-dismiss after 5s
+            setTimeout(function () { popover.remove(); }, 5000);
 
         });
 

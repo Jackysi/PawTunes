@@ -205,7 +205,7 @@
     pointer-events: auto;
     color: var(--bs-modal-color);
     border: var(--bs-modal-border-width) solid var(--bs-modal-border-color);
-    border-radius: var(--bs-modal-border-radius);
+    border-radius: 12px;
     outline: 0;
     background-color: var(--bs-modal-bg);
     background-clip: padding-box;
@@ -237,7 +237,7 @@
     align-items: center;
     flex-shrink: 0;
     padding: var(--bs-modal-header-padding);
-    border-bottom: var(--bs-modal-header-border-width) solid var(--bs-modal-header-border-color);
+    border-bottom: var(--bs-modal-header-border-width) solid $slate-100;
     border-top-left-radius: var(--bs-modal-inner-border-radius);
     border-top-right-radius: var(--bs-modal-inner-border-radius);
 }
@@ -266,7 +266,7 @@
     flex-wrap: wrap;
     justify-content: flex-end;
     padding: calc(var(--bs-modal-padding) - var(--bs-modal-footer-gap) * 0.5);
-    border-top: var(--bs-modal-footer-border-width) solid var(--bs-modal-footer-border-color);
+    border-top: var(--bs-modal-footer-border-width) solid $slate-100;
     border-bottom-right-radius: var(--bs-modal-inner-border-radius);
     border-bottom-left-radius: var(--bs-modal-inner-border-radius);
     background-color: var(--bs-modal-footer-bg);

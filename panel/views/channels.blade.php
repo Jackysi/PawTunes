@@ -9,7 +9,16 @@
             @endif
 
             @if ( count( $channels ) <= 0 )
-                {!!$panel->alert( 'You did not yet configure any channels, please do that first.' )!!}
+                <div class="panel">
+                    <div class="content">
+                        <div class="empty-state">
+                            <i class="icon fa fa-headphones"></i>
+                            <h3>No channels configured</h3>
+                            <p>Add your first radio channel to get started.</p>
+                            <a href="index.php?page=channels&action=add" class="btn btn-primary"><i class="icon fa fa-plus-circle"></i> Add Channel</a>
+                        </div>
+                    </div>
+                </div>
             @endif
             {!! $message !!}
 
@@ -20,7 +29,6 @@
                         Other settings that affect all channels are covered in the <b>Settings tab</b>.
                     </p>
                     @if ( count( $channels ) >= 1 )
-                        <div class="overflow-auto">
                             <table class="table vertical-center hover">
                                 <thead>
                                     <tr>
@@ -53,18 +61,15 @@
                                             <td>{{$channel[ 'name' ]}}</td>
                                             <td class="mobile-hidden"><i>{{$cached_song}}</i></td>
                                             <td>{{ucwords( $method )}}</td>
-                                            <td class="text-right">
-                                                <a class="btn btn-primary btn-small" href="index.php?page=channels&action=edit&channel={{$key}}"><i class="icon fa fa-edit"></i> Edit</a>
-                                                <a class="btn btn-danger btn-small" onclick="return confirm('Are you sure?');" href="index.php?page=channels&delete&id={{$key}}">
-                                                    <i class="icon fa fa-times"></i> Delete
-                                                </a>
+                                            <td class="text-right row-btns">
+                                                <a class="btn btn-default btn-small css-hint" data-title="Edit" href="index.php?page=channels&action=edit&channel={{$key}}"><i class="icon fa fa-edit"></i></a>
+                                                <a class="btn btn-danger btn-small css-hint" data-title="Delete" data-confirm href="index.php?page=channels&delete&id={{$key}}"><i class="icon fa fa-times"></i></a>
                                             </td>
                                         </tr>
 
                                     @endforeach
                                 </tbody>
                             </table>
-                        </div>
                     @endif
                 </div>
             </div>
@@ -76,7 +81,7 @@
                     <li><a href="index.php?page=channels&sort=custom"><i class="icon fa fa-fire"></i> Custom</a></li>
                 </ul>
             </div>
-            <a onclick="return confirm('Are you sure?');" href="index.php?page=channels&cache=flush" class="btn btn-danger pull-right mobile-nofloat" style="margin-right: 8px;">
+            <a data-confirm href="index.php?page=channels&cache=flush" class="btn btn-danger pull-right mobile-nofloat" style="margin-right: 8px;">
                 <i class="icon fa fa-trash"></i> Flush Cache
             </a>
             @if ( isset( $mode ) && $mode === 'custom' )

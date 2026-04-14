@@ -339,6 +339,42 @@ class Panel
 
 
     /**
+     * Get flash messages as structured array for toast rendering
+     *
+     * @return array<array{message: string, type: string}>
+     */
+    public function getFlashMessages(): array
+    {
+        if ( ! isset($_SESSION[$this->prefix]['flash']) || ! is_array($_SESSION[$this->prefix]['flash'])) {
+            unset($_SESSION[$this->prefix]['flash']);
+            return [];
+        }
+
+        $result = [];
+        foreach ($_SESSION[$this->prefix]['flash'] as $html) {
+            // Determine type from alert class
+            $type = 'info';
+            if (strpos($html, 'alert-success') !== false) {
+                $type = 'success';
+            } elseif (strpos($html, 'alert-danger') !== false || strpos($html, 'alert-error') !== false) {
+                $type = 'error';
+            } elseif (strpos($html, 'alert-warning') !== false) {
+                $type = 'warning';
+            }
+
+            // Strip HTML tags to get plain text
+            $text = strip_tags($html);
+            $text = trim($text);
+
+            $result[] = ['message' => $text, 'type' => $type];
+        }
+
+        unset($_SESSION[$this->prefix]['flash']);
+        return $result;
+    }
+
+
+    /**
      * Simple function to generate HTML view
      *
      * @throws Exception
