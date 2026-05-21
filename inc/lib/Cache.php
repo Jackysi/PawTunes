@@ -100,9 +100,7 @@ class Cache
                 // Check if path exists, if not create it
                 if ( ! is_dir($this->options['path'])) { // if not create it recursively
                     if ( ! mkdir($this->options['path'], 0755) && ! is_dir($this->options['path'])) {
-
                         return false;
-
                     }
                 }
 

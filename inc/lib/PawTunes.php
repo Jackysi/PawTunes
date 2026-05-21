@@ -95,7 +95,7 @@ class PawTunes
         // If DISK cache and path is set, do realpath as we need full path for cache to work
         if (empty($this->settings['cache']['mode']) || $this->settings['cache']['mode'] === 'disk') {
             if ( ! empty($this->settings['cache']['path'])) {
-                $cachePath = realpath($this->settings['cache']['path']);
+                $cachePath = $this->settings['cache']['path'];
             }
         }
 
