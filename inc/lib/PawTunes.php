@@ -56,11 +56,12 @@ class PawTunes
      */
     protected array $artworkMethods
         = [
-            'itunes'   => 'iTunes',
-            'fanarttv' => 'FanArtTV',
-            'lastfm'   => 'LastFM',
-            'spotify'  => 'Spotify',
-            'custom'   => 'Custom',
+            'itunes'     => 'iTunes',
+            'applemusic' => 'AppleMusic',
+            'fanarttv'   => 'FanArtTV',
+            'lastfm'     => 'LastFM',
+            'spotify'    => 'Spotify',
+            'custom'     => 'Custom',
         ];
     /**
      * @var string|null

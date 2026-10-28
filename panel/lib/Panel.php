@@ -49,6 +49,29 @@ class Panel
             'itunes'   => [
                 'name' => 'iTunes (no API keys)',
             ],
+            'applemusic' => [
+                'name'   => 'Apple Music (API key required)',
+                'fields' => [
+                    [
+                        'name'        => 'api_key',
+                        'placeholder' => 'TEAM_ID:KEY_ID',
+                        'helpText'    => 'Requires an Apple Developer account. Click to create a MusicKit key.',
+                        'helpURL'     => 'https://developer.apple.com/account/resources/authkeys/list',
+                    ],
+                    [
+                        'name'        => 'private_key',
+                        'type'        => 'password',
+                        'placeholder' => 'file:///path/to/AuthKey_XXXX.p8',
+                        'helpText'    => 'Absolute path to AuthKey_XXXX.p8 (downloaded when creating the MusicKit key), prefixed with file://. Pasting the key contents here does not work, as this field drops the line breaks the key needs.',
+                    ],
+                    [
+                        'name'        => 'storefront',
+                        'size'        => 'narrow',
+                        'placeholder' => 'Store (us)',
+                        'helpText'    => 'Two-letter storefront code, e.g. us, de, si. Default: us',
+                    ],
+                ],
+            ],
             'fanarttv' => [
                 'name'  => 'FanArtTV (API key required)',
                 'field' => [

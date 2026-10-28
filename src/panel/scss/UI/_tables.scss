@@ -26,6 +26,23 @@ table.table tr td.table-input {
     padding-bottom: 0 !important;
 }
 
+// Several inputs in one table cell (e.g. Apple Music credentials), kept on one line
+// so the row height matches single-input rows. Wraps only when the cell gets too narrow.
+td.table-input .input-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+
+    > .input-append {
+        flex: 1 1 10rem;
+        min-width: 0;
+    }
+
+    > .input-append.narrow {
+        flex: 0 1 7rem;
+    }
+}
+
 table.table thead th,
 table.table tbody td,
 table.table tr td {
