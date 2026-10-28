@@ -380,23 +380,27 @@
                                     <b>{{$api['name']}}</b>
                                 </td>
                                 <td class="table-input">
-                                    @if (isset($api['field']))
-                                        <div class="input-append">
-                                            <input class="form-control" type="text"
-                                                   name="{{$key}}[{{$api['field']['name']}}]"
-                                                   placeholder="{{$api['field']['placeholder']}}"
-                                                   value="{{( !empty( $api[ $api['field']['name'] ] ) ? $api[$api['field']['name'] ] : '' )}}">
-                                            <div class="append css-hint left" data-title="{{$api['field']['helpText'] ?? $api['field']['placeholder']}}">
-                                                @if (!empty($api['field']['helpURL']))
-                                                    <a href="{{$api['field']['helpURL']}}" target="_blank">
-                                                        <i class="fas fa-external-link"></i>
-                                                    </a>
-                                                @else
-                                                    <i class="fas fa-question-circle"></i>
-                                                @endif
+                                    {{-- Sources define either one 'field' or a list of 'fields' --}}
+                                    <div class="input-row">
+                                        @foreach(($api['fields'] ?? (isset($api['field']) ? [$api['field']] : [])) as $field)
+                                            <div class="input-append {{$field['size'] ?? ''}}">
+                                                <input class="form-control" type="{{$field['type'] ?? 'text'}}"
+                                                       name="{{$key}}[{{$field['name']}}]"
+                                                       placeholder="{{$field['placeholder']}}"
+                                                       autocomplete="off"
+                                                       value="{{$api[$field['name']] ?? ''}}">
+                                                <div class="append css-hint left" data-title="{{$field['helpText'] ?? $field['placeholder']}}">
+                                                    @if (!empty($field['helpURL']))
+                                                        <a href="{{$field['helpURL']}}" target="_blank">
+                                                            <i class="fas fa-external-link"></i>
+                                                        </a>
+                                                    @else
+                                                        <i class="fas fa-question-circle"></i>
+                                                    @endif
+                                                </div>
                                             </div>
-                                        </div>
-                                    @endif
+                                        @endforeach
+                                    </div>
                                 </td>
                             </tr>
                         @endforeach
@@ -479,17 +483,17 @@
     <script type="text/javascript">
 
         // Bind document ready
-        $(document).ready(function () {
+        $(document).ready(function() {
 
             $('.table.artwork-apis').rowSorter({
                 handler: '.sort-handle',
             });
 
             // Delete existing logo
-            $('.delete-override').on('click', function () {
+            $('.delete-override').on('click', function() {
 
                 let elm = $(this);
-                $.get('index.php?page=settings&delete=override-share-image', function () {
+                $.get('index.php?page=settings&delete=override-share-image', function() {
                     $(elm).closest('.logo-container').remove();
                 });
 
@@ -498,7 +502,7 @@
             });
 
             // Change input value for browse
-            $('input[type="file"]').on('change', function () {
+            $('input[type="file"]').on('change', function() {
                 let cVal = $(this).val().replace(/.*\\fakepath\\/, '');
                 let elm = $(this).closest('.form-group');
                 elm.find('input#override_share_image').val(cVal);
@@ -506,14 +510,14 @@
             });
 
             let timeout = null;
-            $('.templateOptions').find('select, input, textarea').each(function () {
+            $('.templateOptions').find('select, input, textarea').each(function() {
                 let form = $(this).closest('form');
-                $(this).on('change', function () {
+                $(this).on('change', function() {
 
                     clearTimeout(timeout);
-                    timeout = setTimeout(function () {
+                    timeout = setTimeout(function() {
 
-                        $.post($(form).attr('data-action'), $(form).serialize(), function () {
+                        $.post($(form).attr('data-action'), $(form).serialize(), function() {
                         }, 'json');
 
                     }, 250);
