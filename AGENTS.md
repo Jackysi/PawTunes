@@ -168,6 +168,7 @@ Each template must contain:
 
 - `template.html` — Player HTML with `{{$variable}}` placeholders
 - `manifest.json` — Metadata, schemes, and custom options (see [Template Manifest](#template-manifest))
+- `screenshot.webp`: Player preview shown on the panel's template picker (path set by the manifest `screenshot` field)
 - `scss/` / `css/` — Source SCSS and compiled CSS
 - `js/` — Compiled template-specific JavaScript (optional)
 
@@ -461,12 +462,17 @@ Shared variables in all views: `$panel` (Panel instance), `$pawtunes` (PawTunes 
 {
     "name": "Template Name",
     "template": "template.html",
+    "screenshot": "screenshot.webp",
     "schemes": [
         {"name": "Light", "compile": "scss/light.scss", "style": "./css/light.css"},
         {"name": "Dark", "compile": "scss/dark.scss", "style": "./css/dark.css"}
     ]
 }
 ```
+
+**`screenshot`**: path relative to the template directory. Rendered as the template's card on the panel settings page (Settings > Template), where clicking a card selects the template and its cog button opens a modal with that template's `extra` options. Capture it at the manifest `size` viewport via `index.php?template=<dir>`, store as WebP with the longest edge at most 640px, and use only license-safe content (no real album artwork or station names). It is required for every bundled template, but enforced only at the panel level: a missing or unreadable file shows a "No preview" placeholder, so third-party templates keep working. The player never reads this field.
+
+The settings page re-reads all manifests on every visit (and refreshes the `templates` cache), so manifest edits show up without a manual cache flush.
 
 **Optional `extra` field** — defines custom options rendered in the panel settings:
 
@@ -584,6 +590,7 @@ Class is auto-resolved from `$channel['stats']['method']` value — no registrat
 2. Add SCSS entry to `templateScss` array in `gulpfile.js`
 3. Add TypeScript entry to `tsPaths` array in `gulpfile.js` (if template has JS)
 4. Run `npm run build`
+5. Capture `screenshot.webp` and reference it from the manifest `screenshot` field (see [Template Manifest](#template-manifest))
 
 ### Add New Panel Page
 

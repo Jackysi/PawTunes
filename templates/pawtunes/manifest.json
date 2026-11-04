@@ -15,6 +15,7 @@
     ],
     "template": "template.html",
     "size":     "1024x650",
+    "screenshot": "screenshot.webp",
     "url":      "https://prahec.com",
     "extra":    {
         "songSearch":         {

@@ -423,4 +423,46 @@
             border-color: #475569;
         }
     }
+
+    .template-picker-intro,
+    .template-card-meta {
+        color: $slate-400;
+    }
+
+    .template-card-body {
+        border-color: #334155;
+        background: $slate-800;
+
+        &:hover {
+            border-color: #475569;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, .3);
+        }
+    }
+
+    .template-card-preview {
+        background: $slate-900;
+    }
+
+    .template-card-name {
+        color: #e2e8f0;
+    }
+
+    .template-card-input:checked + .template-card-body {
+        border-color: $primary-bg-color;
+        box-shadow: 0 0 0 1px $primary-bg-color, 0 8px 22px rgba(0, 0, 0, .35);
+
+        .template-card-preview {
+            background: rgba($primary-bg-color, .14);
+        }
+    }
+
+    .template-card .template-card-options:not(:hover):not(:focus-visible) {
+        color: #e2e8f0;
+        border-color: rgba(255, 255, 255, .1);
+        background: rgba($slate-800, .85);
+    }
+
+    .template-options-status:not(.is-saved):not(.is-error) {
+        color: $slate-400;
+    }
 }

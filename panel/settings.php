@@ -23,23 +23,18 @@ if ( ! isset($panel)) {
     exit;
 }
 
-// Delete templates cache
-if (isset($_GET['reset']) && $_GET['reset'] === 'templates') {
-
-    $pawtunes->cache->delete('templates');
-    $panel->flash($panel->alert('Templates cache flushed successfully!', 'success'), 'index.php?page=settings');
-
-}
-
-// Template settings
+// Template settings (saved instantly via AJAX from the per-template options modal)
 if (isset($_GET['advanced-options'])) {
 
-    $template = $_POST['template'];
+    header('Content-Type: application/json');
+
+    $template = $_POST['template'] ?? '';
     unset($_POST['template']);
 
     $tpl = $pawtunes->getAdvancedTemplateOptions($template);
     if (count($tpl) < 1) {
-        die('Unable to set template settings, Template not found!');
+        http_response_code(404);
+        die(json_encode(['error' => 'Unable to set template settings, Template not found!']));
     }
 
     // Make sure we fill only values in manifest, also don't store empty values
@@ -65,10 +60,11 @@ if (isset($_GET['advanced-options'])) {
     );
 
     if ($panel->storeConfig('config/general', $pawtunes->getConfigAll())) {
-        die('Saved successfully');
+        die(json_encode(['success' => true]));
     }
 
-    die('Unable to save settings!');
+    http_response_code(500);
+    die(json_encode(['error' => 'Unable to save settings!']));
 
 }
 
@@ -218,13 +214,23 @@ if (is_array($channels)) {
     foreach ($channels as $c): $channelsList[$c['name']] = $c['name']; endforeach;
 }
 
-// Now create options array
-$templates     = $pawtunes->getTemplates();
-$templatesList = array_map(
-    static function ($var) {
-        return $var['name'];
-    }, $templates
-);
+// Re-read manifests on every visit (also refreshes the player's cached copy), so manifest
+// edits such as a new screenshot show up here without a manual cache flush
+$pawtunes->cache->delete('templates');
+$templates = $pawtunes->getTemplates();
+
+// Screenshot URL relative to the panel, versioned by mtime so a replaced image is not served stale.
+// Templates without a screenshot get null and the view renders a placeholder instead.
+foreach ($templates as $key => $template) {
+    $screenshot = "{$template['path']}/".($template['screenshot'] ?? '');
+
+    $templates[$key]['screenshotURL'] = ( ! empty($template['screenshot']) && is_file($screenshot))
+        ? "./../{$screenshot}?v=".filemtime($screenshot)
+        : null;
+}
+
+// Fall back to the first template when the configured one no longer exists, same as the player does
+$selectedTemplate = isset($templates[$_POST['template'] ?? '']) ? $_POST['template'] : array_key_first($templates);
 
 // Cache path is bit different, due to allowing different caching methods
 $_POST['cache_path'] = $_POST['cache']['path'] ?? null;
@@ -236,8 +242,8 @@ $panel->view(
         'pawtunes'      => $pawtunes,
         'message'       => $message ?? null,
         'languages'     => $languages,
-        'templates'     => $templates,
-        'templatesList' => $templatesList,
-        'channels'      => $channelsList,
+        'templates'        => $templates,
+        'selectedTemplate' => $selectedTemplate,
+        'channels'         => $channelsList,
     ]
 );

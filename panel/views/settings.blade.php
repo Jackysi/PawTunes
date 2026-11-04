@@ -4,7 +4,7 @@
      * @var $languages
      * @var $channels
      * @var $templates
-     * @var $templatesList
+     * @var $selectedTemplate
      * @var $pawtunes
      */
 
@@ -285,29 +285,48 @@
 
                     {!! $form->field( $input ) !!}
                 @endforeach
-
-                <!-- Templates (not generated in Form class, so we can add btn to reset cache) -->
-                <div class="form-group">
-                    <label class="col-sm-2 control-label" for="template">Template</label>
-                    <div class="col-sm-4 pe-0">
-                        <select name="template" class="form-control" id="template">
-                            @foreach ( $templatesList as $index => $name )
-                                <option value="{{$index}}"{!! ( ( $index === $_POST[ 'template' ] ) ? 'selected' : '' ) !!}>{{$name}}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-sm-6">
-                        <a href="index.php?page=settings&reset=templates" class="btn btn-danger">
-                            <i class="icon fa fa-trash-can"></i> Flush Cache
-                        </a>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <div class="col-sm-8 col-sm-offset-2">
-                        <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#template-options">
-                            <i class="icon fas fa-gear"></i> Template Options
-                        </a>
-                    </div>
+            </div>
+        </div>
+        <div class="panel">
+            <div class="heading">
+                <i class="icon fa fa-palette"></i> Template
+            </div>
+            <div class="content form-content">
+                <p class="template-picker-intro">
+                    Click a template to use it for the player. The <i class="icon fa fa-gear"></i> button opens options for that template, which are saved instantly.
+                </p>
+                {{-- Radio-backed cards: the selection posts with the main form, the cog button sits outside the label so it never toggles it --}}
+                <div class="template-picker">
+                    @foreach ( $templates as $index => $data )
+                        <div class="template-card">
+                            <input type="radio" class="template-card-input" name="template" id="template-{{$index}}" value="{{$index}}"{{( ( $index === $selectedTemplate ) ? ' checked' : '' )}}>
+                            <label class="template-card-body" for="template-{{$index}}">
+                                <span class="template-card-preview">
+                                    @if ( !empty( $data[ 'screenshotURL' ] ) )
+                                        <img src="{{$data[ 'screenshotURL' ]}}" alt="{{$data[ 'name' ]}} preview" loading="lazy" decoding="async">
+                                    @else
+                                        <span class="template-card-placeholder"><i class="icon fa fa-image"></i> No preview</span>
+                                    @endif
+                                </span>
+                                <span class="template-card-check"><i class="fa fa-check"></i></span>
+                                <span class="template-card-info">
+                                    <span class="template-card-name">{{$data[ 'name' ]}}</span>
+                                    <span class="template-card-meta">
+                                        @if ( !empty( $data[ 'size' ] ) )
+                                            {{str_replace( 'x', ' × ', $data[ 'size' ] )}} &middot;
+                                        @endif
+                                        {{count( $data[ 'schemes' ] ?? [] )}} {{( count( $data[ 'schemes' ] ?? [] ) === 1 ) ? 'scheme' : 'schemes'}}
+                                    </span>
+                                </span>
+                            </label>
+                            @if ( !empty( $data[ 'extra' ] ) )
+                                <button type="button" class="template-card-options css-hint" data-title="Template options" aria-label="{{$data[ 'name' ]}} options"
+                                        data-bs-toggle="modal" data-bs-target="#template-options-{{$index}}">
+                                    <i class="fa fa-gear"></i>
+                                </button>
+                            @endif
+                        </div>
+                    @endforeach
                 </div>
             </div>
         </div>
@@ -431,55 +450,39 @@
         </div>
     </form>
 
-    <!-- Advanced Template(s) Options Modal -->
-    <div class="modal fade" tabindex="-1" role="dialog" id="template-options" aria-labelledby="Advanced Template(s) Options">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title"><i class="icon fas fa-cog"></i> Template(s) Options</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <ul class="tabs nav nav-tabs templates-tabs">
-                        @foreach ( $templates as $index => $data )
-                            <li>
-                                <a {!! ( ( $index === array_keys( $templates )[ 0 ] ) ? ' class="active"' : '' ) !!}data-bs-toggle="tab"
-                                   data-bs-target="#{{$index}}" href="#{{$index}}">{{$data[ 'name' ]}}
-                                </a>
-                            </li>
-                        @endforeach
-                    </ul>
-                    <!-- Tab panes -->
-                    <div class="tab-content">
-                        @foreach ( $templates as $index => $data )
-                            <div role="tabpanel" id="{{$index}}" class="tab-pane{{( ( $index === array_keys( $templates )[ 0 ] ) ? ' active' : '' )}}">
-                                <form method="POST" data-action="index.php?page=settings&advanced-options" class="templateOptions" enctype="multipart/form-data">
-                                    {!! $panel->csrfField() !!}
-                                    @if ( empty( $data[ 'extra' ] ) )
-                                        {!! $panel->alert( 'Sorry, there are no advanced options available for this template.', 'info' ) !!}
-                                    @else
-                                        <input type="hidden" name="template" value="{{$index}}">
-                                        {{-- Parse selected options --}}
-                                        @php $opts = $pawtunes->getAdvancedTemplateOptions( $index ); @endphp
-                                        @foreach ( $data[ 'extra' ] as $key => $value )
-                                            @php
-                                                echo $form->add([ 'id' => "{$index}_{$value['name']}",'label-full' => true, 'class'=> 'col-sm-12'] + $value,$opts[ $key ] ?? null);
-                                            @endphp
-                                        @endforeach
-                                    @endif
-                                </form>
-                            </div>
-                        @endforeach
+    <!-- Template Options Modals (one per template, outside the main form since forms can't be nested) -->
+    @foreach ( $templates as $index => $data )
+        @if ( !empty( $data[ 'extra' ] ) )
+            <div class="modal fade" tabindex="-1" role="dialog" id="template-options-{{$index}}" aria-labelledby="template-options-{{$index}}-title">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="template-options-{{$index}}-title"><i class="icon fas fa-gear"></i> {{$data[ 'name' ]}} Options</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form method="POST" data-action="index.php?page=settings&advanced-options" class="template-options-form">
+                                {!! $panel->csrfField() !!}
+                                <input type="hidden" name="template" value="{{$index}}">
+                                @php $opts = $pawtunes->getAdvancedTemplateOptions( $index ); @endphp
+                                @foreach ( $data[ 'extra' ] as $key => $value )
+                                    @php
+                                        echo $form->add([ 'id' => "{$index}_{$value['name']}",'label-full' => true, 'class'=> 'col-sm-12'] + $value,$opts[ $key ] ?? null);
+                                    @endphp
+                                @endforeach
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <span class="template-options-status" aria-live="polite">Changes are saved automatically</span>
+                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
+                                <i class="icon fa fa-check"></i> Done
+                            </button>
+                        </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" aria-label="Close">
-                        <i class="icon fa fa-times"></i> Close
-                    </button>
-                </div>
             </div>
-        </div>
-    </div>
+        @endif
+    @endforeach
     <script type="text/javascript">
 
         // Bind document ready
@@ -509,20 +512,40 @@
                 elm.find('.logo-container').remove();
             });
 
+            // Template options save on change (debounced), progress is reported in the modal footer
             let timeout = null;
-            $('.templateOptions').find('select, input, textarea').each(function() {
+            let saveTemplateOptions = function(form) {
+
+                let status = form.closest('.modal-content').find('.template-options-status');
+                status.removeClass('is-saved is-error').text('Saving...');
+
+                $.post(form.attr('data-action'), form.serialize(), null, 'json')
+                    .done(function() {
+                        status.addClass('is-saved').html('<i class="icon fa fa-check"></i> All changes saved');
+                    })
+                    .fail(function(xhr) {
+                        let error = (xhr.responseJSON && xhr.responseJSON.error) || 'Unable to save options, please try again!';
+                        status.addClass('is-error').text(error);
+                    });
+
+            };
+
+            $('.template-options-form').on('change', 'select, input, textarea', function() {
+
                 let form = $(this).closest('form');
-                $(this).on('change', function() {
 
-                    clearTimeout(timeout);
-                    timeout = setTimeout(function() {
+                clearTimeout(timeout);
+                timeout = setTimeout(function() {
+                    saveTemplateOptions(form);
+                }, 250);
 
-                        $.post($(form).attr('data-action'), $(form).serialize(), function() {
-                        }, 'json');
+            }).on('submit', function(e) {
 
-                    }, 250);
+                // Enter in a text field would otherwise post this partial form to the main settings handler
+                e.preventDefault();
+                clearTimeout(timeout);
+                saveTemplateOptions($(this));
 
-                });
             });
 
         });

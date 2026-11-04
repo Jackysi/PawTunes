@@ -1111,3 +1111,218 @@ html.login-page {
         justify-items: start;
     }
 }
+
+/**
+ * Settings: template picker (screenshot cards backed by radio inputs)
+ */
+.template-picker-intro {
+    margin: 0 0 1.25rem;
+    color: $slate-500;
+}
+
+.template-picker {
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 260px));
+}
+
+// Phones: two fluid columns instead of one capped card with a dead gap beside it
+@media (max-width: 575px) {
+    .template-picker {
+        gap: .75rem;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.template-card {
+    position: relative;
+}
+
+// Visually hidden, but still focusable and keyboard navigable (arrow keys move between radios)
+.template-card-input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.template-card-body {
+    font-weight: $font-normal;
+    display: flex;
+    overflow: hidden;
+    flex-direction: column;
+    margin: 0;
+    cursor: pointer;
+    border: 1px solid $slate-200;
+    border-radius: 10px;
+    background: #fff;
+    transition: border-color 200ms ease, box-shadow 200ms ease;
+
+    &:hover {
+        border-color: $slate-300;
+        box-shadow: 0 6px 18px rgba($slate-900, .08);
+    }
+}
+
+// Players have different aspect ratios, so the screenshot floats centered inside a fixed 4:3 stage
+.template-card-preview {
+    display: flex;
+    overflow: hidden;
+    align-items: center;
+    justify-content: center;
+    padding: 14px;
+    transition: background-color 250ms ease;
+    background: $slate-100;
+    aspect-ratio: 4 / 3;
+
+    img {
+        display: block;
+        max-width: 100%;
+        max-height: 100%;
+        transition: filter 250ms ease, opacity 250ms ease, transform 250ms ease;
+        opacity: .85;
+        border-radius: 4px;
+        box-shadow: 0 4px 14px rgba($slate-900, .18);
+        filter: grayscale(.5);
+    }
+}
+
+.template-card-placeholder {
+    font-size: 13px;
+    color: $slate-400;
+}
+
+.template-card-check {
+    font-size: 11px;
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    transition: opacity 200ms ease, transform 250ms cubic-bezier(.34, 1.56, .64, 1);
+    transform: scale(.5);
+    opacity: 0;
+    color: #fff;
+    border-radius: 50%;
+    background: $primary-bg-color;
+    box-shadow: 0 2px 6px rgba($primary-bg-color, .4);
+}
+
+.template-card-info {
+    display: flex;
+    flex-direction: column;
+    padding: .65rem .85rem .75rem;
+    gap: 2px;
+}
+
+.template-card-name {
+    font-weight: 600;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: $slate-900;
+}
+
+.template-card-meta {
+    font-size: 12px;
+    color: $slate-500;
+}
+
+.template-card-body:hover .template-card-preview img {
+    opacity: 1;
+    filter: none;
+}
+
+// Selected state: blue ring, full color screenshot with a subtle zoom, check badge pops in
+.template-card-input:checked + .template-card-body {
+    border-color: $primary-bg-color;
+    box-shadow: 0 0 0 1px $primary-bg-color, 0 8px 22px rgba($primary-bg-color, .18);
+
+    .template-card-preview {
+        background: rgba($primary-bg-color, .08);
+    }
+
+    .template-card-preview img {
+        transform: scale(1.04);
+        opacity: 1;
+        filter: none;
+    }
+
+    .template-card-check {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.template-card-input:focus-visible + .template-card-body {
+    outline: 2px solid $primary-bg-color;
+    outline-offset: 3px;
+}
+
+// Two classes so it wins over .css-hint { position: relative } used for the tooltip
+.template-card .template-card-options {
+    position: absolute;
+    z-index: 1;
+    top: 8px;
+    right: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    cursor: pointer;
+    transition: color 150ms ease, background-color 150ms ease, border-color 150ms ease;
+    color: $slate-700;
+    border: 1px solid rgba($slate-900, .08);
+    border-radius: 50%;
+    background: rgba(#fff, .85);
+    box-shadow: 0 1px 3px rgba($slate-900, .12);
+    backdrop-filter: blur(6px);
+
+    i {
+        transition: transform 300ms ease;
+    }
+
+    &:hover, &:focus-visible {
+        color: #fff;
+        border-color: $primary-bg-color;
+        background: $primary-bg-color;
+
+        i {
+            transform: rotate(60deg);
+        }
+    }
+
+    &:focus-visible {
+        outline: 2px solid $primary-bg-color;
+        outline-offset: 2px;
+    }
+}
+
+.template-options-status {
+    font-size: 13px;
+    margin-right: auto;
+    color: $slate-500;
+
+    &.is-saved {
+        color: $success-color;
+    }
+
+    &.is-error {
+        color: $danger-color;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .template-card-body,
+    .template-card-preview,
+    .template-card-preview img,
+    .template-card-check,
+    .template-card .template-card-options,
+    .template-card .template-card-options i {
+        transition: none;
+    }
+}
