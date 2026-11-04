@@ -287,9 +287,12 @@
                 @endforeach
             </div>
         </div>
-        <div class="panel">
+        <div class="panel template-panel">
             <div class="heading">
                 <i class="icon fa fa-palette"></i> Template
+                <a href="index.php?page=settings&reset=templates" class="btn btn-default btn-sm ms-auto css-hint" data-title="Re-scan the templates folder">
+                    <i class="icon fa fa-rotate"></i> Flush Cache
+                </a>
             </div>
             <div class="content form-content">
                 <p class="template-picker-intro">
@@ -453,7 +456,7 @@
     <!-- Template Options Modals (one per template, outside the main form since forms can't be nested) -->
     @foreach ( $templates as $index => $data )
         @if ( !empty( $data[ 'extra' ] ) )
-            <div class="modal fade" tabindex="-1" role="dialog" id="template-options-{{$index}}" aria-labelledby="template-options-{{$index}}-title">
+            <div class="modal fade template-options-modal" tabindex="-1" role="dialog" id="template-options-{{$index}}" aria-labelledby="template-options-{{$index}}-title">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
                         <div class="modal-header">

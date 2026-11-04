@@ -23,6 +23,14 @@ if ( ! isset($panel)) {
     exit;
 }
 
+// Delete templates cache (manual re-scan of the templates folder, e.g. after adding a new template)
+if (isset($_GET['reset']) && $_GET['reset'] === 'templates') {
+
+    $pawtunes->cache->delete('templates');
+    $panel->flash($panel->alert('Templates cache flushed successfully!', 'success'), 'index.php?page=settings');
+
+}
+
 // Template settings (saved instantly via AJAX from the per-template options modal)
 if (isset($_GET['advanced-options'])) {
 

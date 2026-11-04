@@ -1092,6 +1092,12 @@ html.login-page {
 /**
  * Settings: template picker (screenshot cards backed by radio inputs)
  */
+.panel.template-panel > .heading {
+    display: flex;
+    align-items: center;
+    gap: .25rem;
+}
+
 .template-picker-intro {
     margin: 0 0 1.25rem;
     color: $slate-500;
@@ -1277,6 +1283,11 @@ html.login-page {
         outline: 2px solid $primary-bg-color;
         outline-offset: 2px;
     }
+}
+
+// A bit wider than the 500px default so option descriptions wrap less, still well short of modal-lg (920px)
+.modal.template-options-modal {
+    --bs-modal-width: 620px;
 }
 
 .template-options-status {
