@@ -3,6 +3,7 @@
     "name": "Modern",
     "template": "template.html",
     "size": "480x700",
+    "screenshot": "screenshot.webp",
     "url": "https://prahec.com",
     "schemes": [
         {

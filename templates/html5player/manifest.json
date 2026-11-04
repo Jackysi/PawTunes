@@ -9,6 +9,7 @@
         }
     ],
     "size":     "720x355",
+    "screenshot": "screenshot.webp",
     "template": "template.html",
     "url":      "https://prahec.com",
     "extra":    {
