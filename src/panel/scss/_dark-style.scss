@@ -285,33 +285,69 @@
 
     .changelog {
 
-        .changelog-heading {
-            background: #334155;
-            border-bottom-color: #475569;
-            box-shadow: none;
-
-            &:hover {
-                background: #3b4f6b;
-            }
-        }
-
-        pre {
-            color: #cbd5e1;
-            font-family: $font-family !important;
-        }
-
-        h3 {
-            color: #e2e8f0;
-        }
-
-        h4 {
-            color: #e2e8f0
+        // Same tones as light mode, lifted towards white so they stay readable on slate
+        [data-type] {
+            --changelog-ink: color-mix(in srgb, var(--changelog-tone) 55%, #fff);
+            --changelog-tint: color-mix(in srgb, var(--changelog-tone) 22%, transparent);
         }
 
         code {
             color: #e2e8f0;
-            background-color: $primary-bg-color;
-            box-shadow: .07rem .07rem 0 rgba(0, 0, 0, 0.1);
+            background-color: #334155;
+        }
+
+        .changelog-release {
+            border-top-color: #334155;
+        }
+
+        .changelog-summary:hover,
+        .changelog-item:hover {
+            background-color: rgba(255, 255, 255, .03);
+        }
+
+        .changelog-version-number,
+        .changelog-group-title {
+            color: #e2e8f0;
+        }
+
+        .changelog-badge {
+            color: #86efac;
+            background-color: rgba(34, 197, 94, .16);
+        }
+
+        .changelog-item {
+            color: #cbd5e1;
+        }
+
+        .changelog-text a {
+            color: #93c5fd;
+        }
+
+        .changelog-tag {
+            color: #cbd5e1;
+            background-color: #334155;
+
+            &.is-breaking {
+                color: #fca5a5;
+                background-color: rgba(220, 38, 38, .2);
+            }
+        }
+
+        .changelog-date,
+        .changelog-intro,
+        .changelog-empty,
+        .changelog-compare {
+            color: #94a3b8;
+        }
+
+        .changelog-chevron,
+        .changelog-group-count,
+        .changelog-hash {
+            color: #64748b;
+        }
+
+        .changelog-hash:hover {
+            color: #93c5fd;
         }
     }
 

@@ -81,6 +81,7 @@ const jsFiles = [
             'src/panel/js/sortable.js',
             'src/panel/js/custom-select.js',
             'src/panel/js/markdown.js',
+            'src/panel/js/changelog.js',
             'src/panel/js/panel.js',
         ],
         dest: 'panel/assets/js/',

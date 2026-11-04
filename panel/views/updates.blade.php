@@ -35,18 +35,11 @@
     </div>
     <div class="panel update-history" style="display:none">
         <div class="heading">
-            <a href="#" title="Expand all" class="pull-right d-flex toggle-all">
-                <div class="fa-xs" style="display: inline-flex; flex-direction: column;">
-                    <i class="fas fa-chevron-up"></i>
-                    <i class="fas fa-chevron-down"></i>
-                </div>
-            </a>
             <i class="fas fa-history"></i> Update History
+            <button type="button" class="btn btn-default btn-sm ms-auto toggle-all">Expand all</button>
         </div>
-        <div class="content">
-            <div class="changelog history">
-                Loading...
-            </div>
+        <div class="content p-0">
+            <div class="changelog history"></div>
         </div>
     </div>
     <script type="text/javascript">
@@ -85,31 +78,6 @@
                 return Math.floor($min + ($percentage / 100) * ($max - $min));
 
             }
-
-            /**
-             * Parse changelog
-             */
-            function parseChangelog(data, noHeader = false) {
-
-                let changeLog = '<div>' + markdown(data) + '</div>';
-
-                // Remove title
-                changeLog = changeLog.replace(/<h2>[^<\/]+<\/h2>/g, '');
-
-                // Tweak Update Name
-                changeLog = changeLog.replace(
-                    /<h3>(.*?)<\/h3>/gi,
-                    function (a, b, c) {
-                        if (noHeader) return '';
-                        return '</div><div class="changelog-heading"><h3>Release ' + b + ' <i class="fas pull-right fa-chevron-down"></i>' +
-                            '</h3></div><div class="changelog-content">';
-                    }
-                );
-
-                return changeLog;
-
-            }
-
 
             /**
              * Start SSE
@@ -216,16 +184,19 @@
 
                 }
 
-                // At the end, append changelog if available
-                if (lastRelease.body) {
+                // Release notes use the same layout as the history below, free-form notes fall back to plain markdown
+                const latestNotes = parseChangelog(lastRelease.body)[0];
+                if (latestNotes && latestNotes.groups.length) {
 
-                    // Append to DOM
-                    $('.changelog.latest').html(parseChangelog(lastRelease.body, true));
+                    $('.changelog.latest').html(renderChangelogBody(latestNotes));
+
+                } else if (lastRelease.body) {
+
+                    $('.changelog.latest').html(markdown(lastRelease.body));
 
                 } else {
 
-                    // Display a message when the server doesn't respond with the change log
-                    $('.changelog.latest').html('Sorry, latest change log is unavailable.');
+                    $('.changelog.latest').html('Release notes for this update are unavailable.');
 
                 }
 
@@ -250,46 +221,22 @@
 
             $.ajax({cache: false, url: 'index.php?page=api&action=update-history'}).then(function (data) {
 
-                // Write a changelog from a file
-                let historyLog = parseChangelog(data);
+                // CHANGELOG.md only ships with release builds, keep the panel hidden without it
+                const releases = parseChangelog(data);
+                if (!releases.length) {
+                    return;
+                }
 
-                $('.changelog.history').html(historyLog).show();
+                $('.changelog.history').html(renderChangelog(releases, version));
                 $('.update-history').show();
 
-                let changeLog = $('.changelog.history .changelog-heading')
-                changeLog.on('click', function () {
-                    $(this).toggleClass('open');
-                    $(this).next('.changelog-content').toggleClass('open');
-                })
+                const $releases = $('.changelog.history .changelog-release');
+                const $toggle = $('.toggle-all');
+                const allOpen = () => $releases.toArray().every(el => el.open);
 
-                // Open first
-                changeLog.first('.changelog-heading').trigger('click');
-
-                // Toggle all
-                $('.toggle-all').on('click', function (e) {
-
-                    e.preventDefault();
-
-                    let elm = $(this);
-
-                    let changeLogContents = $('.changelog.history .changelog-content')
-                    const allOpen = changeLogContents.toArray().every(el => $(el).hasClass('open'));
-
-                    if (allOpen) {
-
-                        changeLogContents.toArray().every(el => $(el).removeClass('open'))
-                        elm.find('.fa-chevron-up').removeClass('fa-rotate-180');
-                        elm.find('.fa-chevron-down').removeClass('fa-rotate-180');
-                        elm.attr('title', 'Expand all');
-                        return true;
-                    }
-
-                    changeLogContents.toArray().every(el => $(el).addClass('open'))
-                    elm.find('.fa-chevron-up').addClass('fa-rotate-180');
-                    elm.find('.fa-chevron-down').addClass('fa-rotate-180');
-                    elm.attr('title', 'Collapse all');
-
-                })
+                // Releases are native <details>, so the label follows them whether opened one by one or all at once
+                $releases.on('toggle', () => $toggle.text(allOpen() ? 'Collapse all' : 'Expand all'));
+                $toggle.on('click', () => $releases.prop('open', !allOpen()));
 
             });
         };

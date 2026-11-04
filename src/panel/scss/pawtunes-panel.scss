@@ -23,92 +23,319 @@ pre .text-label {
     text-align: right;
 }
 
+/**
+ * Changelog (Updates page), markup from src/panel/js/changelog.js
+ * Each change type gets one tone, everything else stays neutral. Tones are the 700 shades so small
+ * counts and icons keep 4.5:1 contrast on white; dark mode lifts the same tones (see _dark-style.scss).
+ */
+$changelog-tones: (
+    breaking: #dc2626,
+    feat: #2563eb,
+    fix: #15803d,
+    perf: #b45309,
+    other: #475569,
+    refactor: #0f766e,
+    style: #be185d,
+    docs: #6d28d9,
+    test: #4d7c0f,
+    chore: $slate-500,
+);
+
+// Expand/collapse toggle sits at the right end of the panel heading
+.panel.update-history > .heading {
+    display: flex;
+    align-items: center;
+    gap: .25rem;
+}
+
 .changelog {
 
-    pre {
-        font-family: $font-family !important;
-    }
-
-    .divider {
-        margin-top: .6rem;
-    }
-
-    h3 {
-        font-size: 1rem;
-        margin-top: 2rem;
-        color: #45565f;
-
-        &:first-child {
-            margin-top: 1rem;
+    @each $type, $tone in $changelog-tones {
+        [data-type="#{$type}"] {
+            --changelog-tone: #{$tone};
         }
     }
 
-    ul {
-        padding: 0 0 0 2rem;
-    }
-
-    h4 {
-        font-size: .85rem;
-        font-weight: 400;
-        margin-top: 1rem !important;
-        padding: 0 !important;
-        color: #45565f
+    [data-type] {
+        --changelog-ink: var(--changelog-tone);
+        --changelog-tint: color-mix(in srgb, var(--changelog-tone) 11%, transparent);
     }
 
     code {
-        font-size: .9em;
-        font-weight: 500;
-        padding: .15rem .3rem;
-        color: #d8dce0;
-        border-radius: .1rem;
-        background-color: $primary-bg-color;
-        box-shadow: .07rem .07rem 0 rgba(0, 0, 0, 0.1);
+        font-family: "MonoLisa-Regular", "Monolisa", "Fira Code", Consolas, monospace;
+        font-size: .85em;
+        padding: .1rem .35rem;
+        color: $slate-800;
+        border-radius: 4px;
+        background-color: $slate-100;
     }
 
     &.history {
-        overflow-y: scroll;
-        max-height: 80vh;
-        margin-top: .4rem;
+        overflow: clip;
+        border-radius: 0 0 8px 8px;
     }
 
-    .changelog-heading {
-        background: #fafafa;
-        padding: 1rem;
-        margin-bottom: .5rem;
+    &.latest {
+        max-width: 66rem;
+        margin-top: 1.25rem;
+    }
+
+    .changelog-release {
+        border-top: 1px solid $slate-100;
+        interpolate-size: allow-keywords;
+
+        &:first-child {
+            border-top: 0;
+        }
+
+        // Animated open/close where supported, an instant toggle everywhere else
+        &::details-content {
+            block-size: 0;
+            overflow: clip;
+            transition: block-size 220ms ease, content-visibility 220ms allow-discrete;
+        }
+
+        &[open]::details-content {
+            block-size: auto;
+        }
+
+        &[open] .changelog-chevron {
+            transform: rotate(180deg);
+        }
+    }
+
+    .changelog-summary {
+        display: grid;
+        grid-template-areas: "version mix date chevron";
+        grid-template-columns: 15rem 1fr auto auto;
+        align-items: center;
+        gap: .5rem 1.5rem;
+        padding: 1rem 1.7rem;
         cursor: pointer;
-        box-shadow: 0 .1rem 0 rgba(#000, .05);
-        border-radius: .3rem;
-        border-bottom: .1rem solid #fff;
-        transition: background-color 120ms;
+        list-style: none;
+        user-select: none;
+
+        &::-webkit-details-marker {
+            display: none;
+        }
 
         &:hover {
-            background-color: #f5f5f5;
-            transition: none;
+            background-color: $slate-50;
         }
 
-        h3 {
-            padding: 0;
-            margin: 0;
-        }
-
-        i {
-            transition: transform 150ms ease;
-        }
-
-        &.open {
-            i {
-                transform: rotate(180deg);
-            }
+        &:focus-visible {
+            outline: 2px solid $primary-bg-color;
+            outline-offset: -2px;
         }
     }
 
-    .changelog-content {
-        overflow: hidden;
-        display: none;
-        padding: 0 1.2rem 2rem;
+    .changelog-version {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: .5rem;
+        grid-area: version;
+    }
 
-        &.open {
-            display: block;
+    .changelog-version-number {
+        font-size: 1.2rem;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: -.01em;
+        color: $slate-900;
+    }
+
+    .changelog-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: .3rem;
+        padding: .1rem .5rem;
+        font-size: .75rem;
+        font-weight: 600;
+        line-height: 1.4;
+        color: #15803d;
+        border-radius: 999px;
+        background-color: rgba(#16a34a, .12);
+
+        i {
+            font-size: .65rem;
+        }
+    }
+
+    .changelog-mix {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .375rem;
+        grid-area: mix;
+    }
+
+    .changelog-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        padding: .15rem .55rem;
+        font-size: .8rem;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+        color: var(--changelog-ink);
+        border-radius: 999px;
+        background-color: var(--changelog-tint);
+
+        i {
+            font-size: .75rem;
+        }
+    }
+
+    .changelog-date {
+        grid-area: date;
+        font-size: .875rem;
+        white-space: nowrap;
+        color: $slate-500;
+    }
+
+    .changelog-chevron {
+        grid-area: chevron;
+        font-size: .8rem;
+        color: $slate-400;
+        transition: transform 200ms ease;
+    }
+
+    .changelog-body {
+        max-width: 66rem;
+        padding: .25rem 1.7rem 1.75rem;
+    }
+
+    .changelog-intro,
+    .changelog-empty {
+        margin: 0 0 1rem;
+        color: $slate-500;
+    }
+
+    .changelog-group + .changelog-group {
+        margin-top: 1.25rem;
+    }
+
+    .changelog-group-title {
+        display: flex;
+        align-items: center;
+        gap: .625rem;
+        margin: 0 0 .375rem;
+        padding: 0;
+        font-size: .9rem;
+        font-weight: 600;
+        color: $slate-900;
+    }
+
+    .changelog-icon {
+        display: inline-grid;
+        place-items: center;
+        width: 1.75rem;
+        height: 1.75rem;
+        font-size: .8rem;
+        color: var(--changelog-ink);
+        border-radius: 6px;
+        background-color: var(--changelog-tint);
+    }
+
+    .changelog-group-count {
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+        color: $slate-400;
+    }
+
+    // Indented past the icon tile so messages line up with the group label
+    .changelog-items {
+        margin: 0;
+        padding: 0 0 0 2.375rem;
+        list-style: none;
+    }
+
+    .changelog-item {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-left: -.5rem;
+        padding: .3rem .5rem;
+        line-height: 1.55;
+        color: $slate-700;
+        border-radius: 6px;
+
+        &:hover {
+            background-color: $slate-50;
+        }
+    }
+
+    .changelog-text a {
+        color: $primary-hover-color;
+    }
+
+    .changelog-tag {
+        display: inline-block;
+        margin-right: .4rem;
+        padding: 0 .4rem;
+        font-size: .75rem;
+        font-weight: 600;
+        color: $slate-700;
+        border-radius: 4px;
+        background-color: $slate-100;
+
+        &.is-breaking {
+            color: #b91c1c;
+            background-color: rgba(#dc2626, .1);
+        }
+    }
+
+    .changelog-hash {
+        flex-shrink: 0;
+        font-family: "MonoLisa-Regular", "Monolisa", "Fira Code", Consolas, monospace;
+        font-size: .75rem;
+        text-decoration: none;
+        color: $slate-400;
+
+        &:hover {
+            text-decoration: underline;
+            color: $primary-bg-color;
+        }
+    }
+
+    .changelog-compare {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        margin-top: 1.25rem;
+        font-size: .8125rem;
+        color: $slate-500;
+    }
+
+    @media (max-width: 768px) {
+
+        .changelog-summary {
+            grid-template-areas: "version date chevron" "mix mix mix";
+            grid-template-columns: 1fr auto auto;
+            gap: .625rem 1rem;
+            padding: .875rem 1rem;
+        }
+
+        .changelog-body {
+            padding: .25rem 1rem 1.5rem;
+        }
+
+        .changelog-items {
+            padding-left: 0;
+        }
+
+        .changelog-item {
+            flex-wrap: wrap;
+            gap: 0 .75rem;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+
+        .changelog-release::details-content,
+        .changelog-chevron {
+            transition: none;
         }
     }
 }
