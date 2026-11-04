@@ -227,9 +227,8 @@ function renderChangelogBody(release) {
         return `
             <section class="changelog-group" data-type="${group.type.key}">
                 <h4 class="changelog-group-title">
-                    <span class="changelog-icon"><i class="fas ${group.type.icon}" aria-hidden="true"></i></span>
+                    <i class="fas ${group.type.icon} changelog-icon" aria-hidden="true"></i>
                     ${group.type.label}
-                    <span class="changelog-group-count">${group.items.length}</span>
                 </h4>
                 <ul class="changelog-items">${items}</ul>
             </section>`;
@@ -256,10 +255,10 @@ function renderChangelog(releases, installedVersion) {
             ? '<span class="changelog-badge"><i class="fas fa-check" aria-hidden="true"></i> Installed</span>'
             : '';
 
-        // At-a-glance mix of change types, so a release can be judged without opening it
-        const chips = release.groups.map(group => `
-            <span class="changelog-chip" data-type="${group.type.key}" title="${group.type.label}: ${group.items.length}">
-                <i class="fas ${group.type.icon}" aria-hidden="true"></i>${group.items.length}<span class="sr-only"> ${group.type.label}</span>
+        // Which kinds of change a release contains, so it can be judged without opening it
+        const types = release.groups.map(group => `
+            <span class="changelog-type" data-type="${group.type.key}" title="${group.type.label}">
+                <i class="fas ${group.type.icon}" aria-hidden="true"></i><span class="sr-only">${group.type.label}</span>
             </span>`).join('');
 
         const compare = release.url
@@ -270,7 +269,7 @@ function renderChangelog(releases, installedVersion) {
             <details class="changelog-release"${index === 0 ? ' open' : ''}>
                 <summary class="changelog-summary">
                     <span class="changelog-version"><span class="changelog-version-number">${escapeChangelog(version)}</span>${badge}</span>
-                    <span class="changelog-mix">${chips}</span>
+                    <span class="changelog-mix">${types}</span>
                     <span class="changelog-date">${escapeChangelog(release.date || '')}</span>
                     <i class="fas fa-chevron-down changelog-chevron" aria-hidden="true"></i>
                 </summary>

@@ -288,7 +288,6 @@
         // Same tones as light mode, lifted towards white so they stay readable on slate
         [data-type] {
             --changelog-ink: color-mix(in srgb, var(--changelog-tone) 55%, #fff);
-            --changelog-tint: color-mix(in srgb, var(--changelog-tone) 22%, transparent);
         }
 
         code {
@@ -341,7 +340,6 @@
         }
 
         .changelog-chevron,
-        .changelog-group-count,
         .changelog-hash {
             color: #64748b;
         }
