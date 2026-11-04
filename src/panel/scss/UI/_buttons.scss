@@ -14,7 +14,7 @@
     vertical-align: middle;
     white-space: nowrap;
     text-decoration: none;
-    color: #fff;
+    color: var(--btn-color, #fff);
     border: 1px solid #fff;
     border-radius: 6px;
     background-image: none;
@@ -64,10 +64,12 @@
 
 }
 
+// States re-assert the text colour so link rules (a:hover) cannot recolour anchor buttons.
+// Variants with non-white text set --btn-color; a hardcoded value here would override them.
 .btn:focus,
 .btn:active:focus,
 .btn.active:focus {
-    color: #fff;
+    color: var(--btn-color, #fff);
     outline: 0;
     outline-offset: 0;
     box-shadow: none;
@@ -76,7 +78,7 @@
 .btn:hover,
 .btn:focus {
     text-decoration: none;
-    color: #fff;
+    color: var(--btn-color, #fff);
 }
 
 .btn:active,
@@ -125,8 +127,8 @@ fieldset[disabled] .btn {
 .btn-info {
     background-color: $slate-100;
     border: 1px solid $slate-200;
-    color: $slate-700;
-    &:hover { background-color: $slate-200; }
+    --btn-color: #{$slate-700};
+    &:hover { background-color: $slate-200; border-color: $slate-300; }
 }
 
 .btn-info .badge {
@@ -151,8 +153,8 @@ fieldset[disabled] .btn {
 .btn-danger {
     background-color: transparent;
     border: 1px solid $danger-color;
-    color: $danger-color;
-    &:hover { background-color: $danger-color; color: #fff; }
+    --btn-color: #{$danger-color};
+    &:hover { background-color: $danger-color; --btn-color: #fff; }
 }
 
 .btn-danger .badge {
@@ -164,8 +166,8 @@ fieldset[disabled] .btn {
 .btn-default {
     background-color: $slate-100;
     border: 1px solid $slate-200;
-    color: $slate-700;
-    &:hover { background-color: $slate-200; }
+    --btn-color: #{$slate-700};
+    &:hover { background-color: $slate-200; border-color: $slate-300; }
 }
 
 .btn-default .badge {

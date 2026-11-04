@@ -177,7 +177,7 @@
     .btn-info, .btn-default {
         background-color: #334155;
         border-color: #475569;
-        color: #e2e8f0;
+        --btn-color: #e2e8f0;
         &:hover {
             background-color: #475569;
         }
