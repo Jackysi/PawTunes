@@ -1285,9 +1285,10 @@ html.login-page {
     }
 }
 
-// A bit wider than the 500px default so option descriptions wrap less, still well short of modal-lg (920px)
+// Wider than the 500px default so bundled option descriptions stay on one line (the longest common one
+// needs ~655px in Chrome, the rest is headroom for wider font rendering), still well short of modal-lg (920px)
 .modal.template-options-modal {
-    --bs-modal-width: 620px;
+    --bs-modal-width: 680px;
 }
 
 .template-options-status {
