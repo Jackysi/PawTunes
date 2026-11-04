@@ -534,29 +534,75 @@ export default class PawTunes extends HTML5Audio {
 
     /**
      * Load artwork
+     * Preloaded off-screen first, so the swap animation never reveals a half-loaded image
      *
      * @param URL string|null
      */
     public loadArtwork(URL: string | null): void {
 
-        if ((!URL || !URL.length) && !this.settings.trackInfo.default.artwork) {
+        const fallback = this.settings.trackInfo.default.artwork;
+        const src = URL || fallback;
+
+        if (!src) {
             this.hideLoading();
             return;
         }
 
-        this._('.artwork', (el: HTMLElement) => {
+        // Already shown or still loading (polls repeat the same artwork)
+        if (src === this.temp.artwork) return;
 
-            this.showLoading();
-            el.setAttribute('src', URL ?? this.settings.trackInfo.default.artwork);
+        this.temp.artwork = src;
+        this.showLoading();
 
-            el.addEventListener('load', () => {
-                this.hideLoading();
-            }, {once: true})
+        const preload = new Image();
+        preload.onload = () => {
+            if (src === this.temp.artwork) this.swapArtwork(src);
+        };
 
-            el.addEventListener('error', () => {
-                if (el.getAttribute('src') === this.settings.trackInfo.default.artwork) return;
-                el.setAttribute('src', this.settings.trackInfo.default.artwork);
-            }, {once: true})
+        // Broken artwork falls back to the default, a broken default just stops the preloader
+        preload.onerror = () => {
+            if (src !== this.temp.artwork) return;
+            if (src === fallback) this.hideLoading();
+            else this.loadArtwork(fallback);
+        };
+
+        preload.src = src;
+
+    }
+
+    /**
+     * Fade the current artwork out, then the new one in
+     *
+     * @param src string
+     */
+    protected swapArtwork(src: string): void {
+
+        this.hideLoading();
+        const animate = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        this._('.artwork', async (el: HTMLImageElement) => {
+
+            if (el.getAttribute('src') === src) return;
+
+            // `scale` (not `transform`) composes with template transforms, so hover zooms keep working
+            if (animate) {
+                await el.animate(
+                    {opacity: [1, 0], scale: [1, .92], filter: ['blur(0)', 'blur(6px)']},
+                    {duration: 200, easing: 'ease-in'}
+                ).finished;
+            }
+
+            // A newer artwork was requested while this one was fading out
+            if (src !== this.temp.artwork) return;
+
+            el.setAttribute('src', src);
+
+            if (animate) {
+                el.animate(
+                    {opacity: [0, 1], scale: [1.06, 1], filter: ['blur(6px)', 'blur(0)']},
+                    {duration: 400, easing: 'cubic-bezier(.2, .8, .2, 1)'}
+                );
+            }
 
         });
 

@@ -109,14 +109,19 @@ export default class PawTunesTpl {
         this.pawtunes.on('status.change', (status: string) => this.updateStatusInfo(status))
 
         /**
-         * When Artwork is loaded, also replace the background blur image
+         * When Artwork is loaded, also replace the background blur image (faded in, matching the artwork swap)
          */
         this.pawtunes._('.artwork', (el: HTMLElement) => {
             el.addEventListener('load', () => {
 
                 let src = el.getAttribute('src');
-                if (src != null)
-                    this.pawtunes._('.background-blur img', (el: HTMLElement) => el.setAttribute('src', src));
+                if (src == null) return;
+
+                this.pawtunes._('.background-blur img', (bg: HTMLElement) => {
+                    if (bg.getAttribute('src') === src) return;
+                    bg.setAttribute('src', src);
+                    bg.animate({opacity: [0, 1]}, {duration: 800, easing: 'ease-out'});
+                });
 
             })
         });
