@@ -122,7 +122,9 @@ window.toast = function (message, type, duration) {
             arrow.style.top = Math.max(8, Math.min(arrowTop, th - 8)) + 'px';
         }
 
-        requestAnimationFrame(function () { tip.classList.add('visible'); });
+        // Keep a local reference, hide() may null `tip` before the next frame
+        let shown = tip;
+        requestAnimationFrame(function () { shown.classList.add('visible'); });
     }
 
     function hide() {
