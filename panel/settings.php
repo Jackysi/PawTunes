@@ -114,6 +114,7 @@ if ( ! empty($_POST)) {
     $store = [
         'cache'           => $pawtunes->config('cache'),
         'tplOptions'      => ($pawtunes->config('tplOptions') ?: []),
+        'ai'              => ($pawtunes->config('ai') ?: []), // edited on the AI page, not part of this form
         'artwork_sources' => $panel->mapArtworkSourcesPost($_POST),
     ];
 

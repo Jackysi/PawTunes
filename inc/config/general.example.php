@@ -77,6 +77,19 @@ return array(
     'admin_username'       => 'admin',
     'admin_password'       => '$2y$10$TI7WVV8ZiIktYvjYWzmCseW1/GqQ4oUq/YiRv7yXapHRmXNwz57bm',
     'development'          => false,
+    'ai'                   =>
+        array(
+            // AI Assistant (panel > AI): track title cleanup and panel tools. Off by default.
+            'text' =>
+                array(
+                    'enabled'        => false,
+                    'provider'       => 'anthropic', // anthropic, openai (also OpenAI-compatible servers via base_url)
+                    'api_key'        => '',
+                    'model'          => '',          // blank = provider default
+                    'base_url'       => '',          // e.g. http://localhost:11434/v1 for a local Ollama
+                    'clean_metadata' => true,
+                ),
+        ),
     'cache'                =>
         array(
             'path'    => './data/cache',    // Location where to cache items

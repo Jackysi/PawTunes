@@ -13,6 +13,7 @@
 
 namespace lib\PawTunes\StreamInfo;
 
+use lib\AI\TrackCleaner;
 use lib\PawException;
 use lib\PawTunes;
 
@@ -116,7 +117,15 @@ abstract class TrackInfo implements TrackInfoInterface
     {
         // Extract track info using regex if not provided
         if (empty($track) && ! empty($text)) {
-            preg_match('/'.$this->pawtunes->config('track_regex').'/', $this->pawtunes->strToUTF8($text), $track);
+
+            $text = $this->pawtunes->strToUTF8($text);
+            preg_match('/'.$this->pawtunes->config('track_regex').'/', $text, $track);
+
+            // The regex could not read it: AI Assistant gets a second chance (off unless enabled, cached per text)
+            if (empty($track['artist']) || empty($track['title'])) {
+                $track = TrackCleaner::split($this->pawtunes, $text) ?? $track;
+            }
+
         }
 
         // Safely extract and clean up artist and title

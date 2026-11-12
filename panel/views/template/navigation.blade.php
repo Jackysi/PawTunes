@@ -5,6 +5,7 @@
     '<i class="icon fa fa-radio"></i> Channels'               => 'channels',
     '<i class="icon fa fa-hands"></i> Language'               => 'language',
     '<i class="icon fa fa-toolbox"></i> Tools'                => 'tools',
+    '<i class="icon fa fa-wand-magic-sparkles"></i> AI'       => 'ai',
     '<i class="icon fa fa-screwdriver-wrench"></i> Settings'  => 'settings',
     '<i class="icon fa fa-cloud-download"></i> Updates'       => 'updates',
     ];
