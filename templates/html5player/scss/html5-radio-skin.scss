@@ -1057,3 +1057,27 @@ body, html {
         }
     }
 }
+
+/* ================================================================================================== */
+// Artwork Accent / Artwork Background (template options). The player sets the --artwork-* colors on <html>
+// from the current artwork, every var() falls back to this skin's own look while none is known.
+// The controls are sprite images, so the accent reaches the header glass and the volume bar.
+html.artwork-tint-accent .pawtunes {
+    .header {
+        transition: background-color 600ms ease;
+        background-color: var(--artwork-color-soft, transparent);
+    }
+
+    .player .volume-control .volume-slider .vol-progress .vol-bar {
+        transition: background-color 600ms ease;
+        background: var(--artwork-color, #{rgba(#0dff00, .65)});
+    }
+}
+
+// The background photo takes the artwork's hue: a luminosity blend keeps the photo's texture and brightness.
+// Without an artwork color the backdrop is transparent and the photo stays as it is.
+html.artwork-tint-background, html.artwork-tint-background body {
+    transition: background-color 800ms ease;
+    background-color: var(--artwork-color, transparent);
+    background-blend-mode: luminosity;
+}

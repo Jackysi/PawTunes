@@ -1028,3 +1028,64 @@ html {
         background-color: #159756;
     }
 }
+
+/* ================================================================================================== */
+// Artwork Accent / Artwork Background (template options). The player sets the --artwork-* colors on <html>
+// from the current artwork, every var() falls back to this scheme's own color while none is known.
+html.artwork-tint-accent {
+    .pawtunes {
+        --accent-color: var(--artwork-color, #{$accent-color});
+
+        .player {
+            .playback .play svg circle, .playback .stop svg circle {
+                transition: fill 600ms $ease-out;
+                fill: var(--artwork-color, #{$accent-color});
+            }
+
+            .playback .play svg .circle-preloader, .playback .stop svg .circle-preloader {
+                stroke: var(--artwork-color-light, #{lighten($accent-color, 10%)});
+            }
+
+            .volume-control .volume-slider .vol-progress {
+                .vol-bar, .circle-control {
+                    transition: background-color 600ms $ease-out, transform 250ms $ease-out, opacity 250ms $ease-out;
+                    background: var(--artwork-color, #{$accent-color});
+                }
+            }
+
+            .volume-control:hover .volume-icon svg,
+            .open-settings:hover svg path, .open-history:hover svg path {
+                fill: var(--artwork-color, #{$accent-color});
+            }
+        }
+
+        .dropdown .dropdown-menu, .dropdown.active > a {
+            background: var(--artwork-color, #{lighten($accent-color, 6%)});
+        }
+
+        .page.settings-page .channel-list, .page.settings-page .streams-list {
+            li a {
+                color: var(--artwork-color-text, #{lighten($accent-color, 40%)});
+                border-color: var(--artwork-color, #{$accent-color});
+                background: var(--artwork-color, #{$accent-color});
+            }
+
+            li:hover a {
+                background: var(--artwork-color-light, #{lighten($accent-color, 5%)});
+            }
+
+            li.active a {
+                border-color: var(--artwork-color-dark, #{darken($accent-color, 20%)});
+                background: var(--artwork-color-dark, #{darken($accent-color, 10%)});
+            }
+        }
+    }
+}
+
+// The gradient is a white glaze over a transitioning background color, so a track change fades smoothly
+// (gradients themselves cannot be animated)
+html.artwork-tint-background {
+    transition: background-color 800ms $ease-out;
+    background-color: var(--artwork-pale, #eaeaea);
+    background-image: linear-gradient(135deg, rgba(#fff, .55) 0%, rgba(#fff, 0) 100%);
+}

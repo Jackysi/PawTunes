@@ -8,6 +8,16 @@ body, html {
     background: darken($accent-color, 52%);
 }
 
+// Artwork Background: a deep shade of the artwork color under a darkening glaze (see aio.light.scss)
+html.artwork-tint-background {
+    background-color: var(--artwork-deep, #{darken($accent-color, 52%)});
+    background-image: linear-gradient(160deg, rgba(#000, 0) 0%, rgba(#000, .25) 100%);
+
+    body {
+        background: transparent;
+    }
+}
+
 // White tooltips
 .css-hint {
     &:before {

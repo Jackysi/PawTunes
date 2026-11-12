@@ -246,6 +246,11 @@ export default class PawTunes extends HTML5Audio {
         // Template options are always dynamic and just passed through, so we accept anything
         this.settings.tpl = (settings.tpl) ? settings.tpl : this.settings.tpl;
 
+        // "Artwork Accent" / "Artwork Background" template options: classes on <html>, so template CSS can tint
+        // anything from the page background down to single buttons (colors are set in applyArtworkTint)
+        document.documentElement.classList.toggle('artwork-tint-accent', !!this.settings.tpl.artworkAccent);
+        document.documentElement.classList.toggle('artwork-tint-background', !!this.settings.tpl.artworkBackground);
+
         // Options
         this.autoplay = this.settings.defaults.autoplay;
         this.language = Object.assign({}, this.language, settings.language ?? {});
@@ -554,7 +559,10 @@ export default class PawTunes extends HTML5Audio {
 
         const preload = new Image();
         preload.onload = () => {
-            if (src === this.temp.artwork) this.swapArtwork(src);
+            if (src !== this.temp.artwork) return;
+
+            this.applyArtworkTint(preload);
+            this.swapArtwork(src);
         };
 
         // Broken artwork falls back to the default, a broken default just stops the preloader
@@ -603,6 +611,147 @@ export default class PawTunes extends HTML5Audio {
             }
 
         });
+
+    }
+
+    /**
+     * Expose the artwork's color as CSS variables on <html> for the "Artwork Accent" / "Artwork Background"
+     * template options, e.g. --artwork-color: hsl(212, 62%, 50%). Without a usable color (greyscale artwork,
+     * or a cross-origin image the canvas may not read) the variables are removed and the template's own colors
+     * apply through their var() fallbacks. Emits "artwork.color" with {r, g, b} or null.
+     *
+     * @param img Loaded artwork
+     */
+    protected applyArtworkTint(img: HTMLImageElement): void {
+
+        if (!this.settings.tpl.artworkAccent && !this.settings.tpl.artworkBackground) return;
+
+        const root = document.documentElement.style;
+        const color = this.artworkColor(img);
+        const names = ['color', 'color-light', 'color-dark', 'color-soft', 'color-text', 'pale', 'deep'];
+
+        if (!color) {
+            names.forEach((name) => root.removeProperty(`--artwork-${name}`));
+            this.emit('artwork.color', null);
+            return;
+        }
+
+        const [r, g, b] = color;
+        const [h, s, l] = this.rgbToHsl(r, g, b);
+
+        // The accent is pulled into a range that reads well on light and dark schemes, whatever the cover
+        const sat = Math.round(Math.max(s, .45) * 100);
+        const light = Math.round(Math.min(Math.max(l, .42), .58) * 100);
+        const hue = Math.round(h);
+
+        // Perceived brightness of the accent, decides between dark and white text on top of it
+        const [ar, ag, ab] = this.hslToRgb(hue, sat / 100, light / 100);
+        const luma = (0.299 * ar + 0.587 * ag + 0.114 * ab) / 255;
+
+        const values: { [name: string]: string } = {
+            'color'      : `hsl(${hue}, ${sat}%, ${light}%)`,
+            'color-light': `hsl(${hue}, ${sat}%, ${Math.min(light + 12, 80)}%)`,
+            'color-dark' : `hsl(${hue}, ${sat}%, ${Math.max(light - 14, 18)}%)`,
+            'color-soft' : `hsla(${hue}, ${sat}%, ${light}%, .22)`,
+            'color-text' : (luma > .62) ? '#111' : '#fff',
+            'pale'       : `hsl(${hue}, ${Math.min(sat, 55)}%, 92%)`,
+            'deep'       : `hsl(${hue}, ${Math.min(sat, 45)}%, 14%)`,
+        };
+
+        names.forEach((name) => root.setProperty(`--artwork-${name}`, values[name]));
+        this.emit('artwork.color', {r: Math.round(r), g: Math.round(g), b: Math.round(b)});
+
+    }
+
+    /**
+     * Dominant vivid color of an image. Pixels are grouped by hue and weighted by how colorful they are,
+     * so a red logo on a grey cover still wins over the grey. Null when the image is (nearly) greyscale
+     * or cannot be read (cross-origin images without CORS headers taint the canvas).
+     *
+     * @param img
+     */
+    protected artworkColor(img: HTMLImageElement): [number, number, number] | null {
+
+        const size = 32;
+        const canvas = document.createElement('canvas');
+        canvas.width = canvas.height = size;
+
+        const context = canvas.getContext('2d', {willReadFrequently: true});
+        if (!context) return null;
+
+        let data: Uint8ClampedArray;
+        try {
+            context.drawImage(img, 0, 0, size, size);
+            data = context.getImageData(0, 0, size, size).data;
+        } catch {
+            return null;
+        }
+
+        // 24 hue groups of 15 degrees: [weight, pixels, r, g, b]
+        const groups = Array.from({length: 24}, () => [0, 0, 0, 0, 0]);
+
+        for (let i = 0; i < data.length; i += 4) {
+
+            const r = data[i], g = data[i + 1], b = data[i + 2];
+            const max = Math.max(r, g, b), chroma = max - Math.min(r, g, b);
+
+            // Transparent, grey and near-black pixels carry no usable hue
+            if (data[i + 3] < 128 || chroma < 30 || max < 40) continue;
+
+            const group = groups[Math.floor(this.rgbToHsl(r, g, b)[0] / 15) % 24];
+            const weight = chroma * chroma;
+
+            group[0] += weight;
+            group[1]++;
+            group[2] += r * weight;
+            group[3] += g * weight;
+            group[4] += b * weight;
+
+        }
+
+        const best = groups.reduce((a, b) => (b[0] > a[0]) ? b : a);
+
+        // A few colored pixels (a thin logo edge) are not enough to tint the whole player
+        if (best[1] < size * size * .04) return null;
+
+        return [best[2] / best[0], best[3] / best[0], best[4] / best[0]];
+
+    }
+
+    /**
+     * @returns [hue 0-360, saturation 0-1, lightness 0-1]
+     */
+    protected rgbToHsl(r: number, g: number, b: number): [number, number, number] {
+
+        r /= 255;
+        g /= 255;
+        b /= 255;
+
+        const max = Math.max(r, g, b), min = Math.min(r, g, b);
+        const l = (max + min) / 2;
+        const d = max - min;
+
+        if (d === 0) return [0, 0, l];
+
+        const s = d / (1 - Math.abs(2 * l - 1));
+        let h = (max === r) ? ((g - b) / d) % 6 : (max === g) ? (b - r) / d + 2 : (r - g) / d + 4;
+
+        h *= 60;
+        return [(h < 0) ? h + 360 : h, s, l];
+
+    }
+
+    /**
+     * @returns [r, g, b] 0-255
+     */
+    protected hslToRgb(h: number, s: number, l: number): [number, number, number] {
+
+        const c = (1 - Math.abs(2 * l - 1)) * s;
+        const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+        const m = l - c / 2;
+        const [r, g, b] = (h < 60) ? [c, x, 0] : (h < 120) ? [x, c, 0] : (h < 180) ? [0, c, x] : (h < 240) ? [0, x, c] : (h < 300) ? [x, 0, c] : [c, 0, x];
+
+        return [(r + m) * 255, (g + m) * 255, (b + m) * 255];
 
     }
 

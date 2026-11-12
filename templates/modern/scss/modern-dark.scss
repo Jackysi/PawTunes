@@ -276,3 +276,41 @@ $overlay-color:   rgba(255, 255, 255, .04);
         transform: translate(-3%, 3%) scale(0.97) rotate(-4deg);
     }
 }
+
+
+// ── Artwork Accent / Artwork Background (see modern.scss) ────────────────────
+// The dark scheme glows instead of filling, so it overrides the light rules where they differ
+html.artwork-tint-accent .pawtunes {
+    .play, .stop {
+        border-color: var(--artwork-color-soft, #{rgba($accent-color, .25)});
+        background: linear-gradient(145deg, var(--artwork-color-soft, #{rgba($accent-color, .22)}) 0%, transparent 100%);
+    }
+
+    .tab-item::before {
+        background: var(--artwork-color, #{$accent-color});
+    }
+
+    .vol-bar {
+        background: linear-gradient(90deg, var(--artwork-color, #{$accent-color}), var(--artwork-color-light, #{lighten($accent-color, 12%)}));
+    }
+
+    .circle-control {
+        background: #fff;
+    }
+
+    .artwork-circle {
+        box-shadow: 0 0 60px var(--artwork-color-soft, #{rgba($accent-color, .12)}), 0 8px 40px rgba(0, 0, 0, .4), 0 2px 12px rgba(0, 0, 0, .3);
+    }
+}
+
+// Same drifting gradient as the default, built from dark glazes over the artwork's deep shade
+html.artwork-tint-background .pawtunes {
+    background-color: var(--artwork-deep, #{$bg-color});
+    background-image: linear-gradient(-45deg, rgba(#000, .35), rgba(#fff, .03), rgba(#000, .15), rgba(#000, .35), rgba(#fff, .04));
+
+    &::before {
+        background: radial-gradient(ellipse at 35% 28%, var(--artwork-color-soft, #{rgba($accent-color, .40)}), transparent 35%),
+                    radial-gradient(ellipse at 70% 33%, var(--artwork-color-soft, #{rgba($accent-color, .22)}), transparent 28%),
+                    radial-gradient(ellipse at 24% 30%, var(--artwork-color-soft, #{rgba($accent-color, .30)}), transparent 32%);
+    }
+}

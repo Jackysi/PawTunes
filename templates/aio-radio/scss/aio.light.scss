@@ -1032,3 +1032,48 @@ body, html {
     }
 
 }
+
+/* ================================================================================================== */
+// Artwork Accent / Artwork Background (template options). The player sets the --artwork-* colors on <html>
+// from the current artwork, every var() falls back to this scheme's own color while none is known.
+html.artwork-tint-accent {
+    // Header, play button and volume bar already read this variable
+    --pawtunes-accent: var(--artwork-color, #{$accent-color});
+
+    .pawtunes {
+        .header, .header ul {
+            transition: background-color 600ms $ease-out;
+        }
+
+        .header ul > li:hover > a, .header ul > li.active > a,
+        .header ul > li > ul, .header ul > li.dropdown.active > a {
+            background: var(--artwork-color-light, #{lighten($accent-color, 6%)});
+        }
+
+        .header ul > li > ul li > a {
+            color: var(--artwork-color-text, #{lighten($accent-color, 30%)});
+        }
+
+        .player .playback {
+            .play svg circle, .stop svg circle {
+                transition: fill 600ms $ease-out;
+            }
+
+            .play svg .circle-preloader, .stop svg .circle-preloader {
+                stroke: var(--artwork-color-light, #{lighten($accent-color, 10%)});
+            }
+        }
+    }
+}
+
+// The gradient is a white glaze over a transitioning background color, so a track change fades smoothly
+// (gradients themselves cannot be animated). The body is cleared so the page background shows through.
+html.artwork-tint-background {
+    transition: background-color 800ms $ease-out;
+    background-color: var(--artwork-pale, #eaeaea);
+    background-image: linear-gradient(160deg, rgba(#fff, .55) 0%, rgba(#fff, 0) 100%);
+
+    body {
+        background: transparent;
+    }
+}

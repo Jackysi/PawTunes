@@ -52,6 +52,20 @@
             "description": "Spectrum Visualizer bars use alpha transparency for animations as well",
             "type": "checkbox",
             "value": "true"
+        },
+        "artworkAccent": {
+            "default": false,
+            "name": "artworkAccent",
+            "description": "Artwork accent: tint the play button, volume bar, tabs and highlights with the current artwork's color",
+            "type": "checkbox",
+            "value": "true"
+        },
+        "artworkBackground": {
+            "default": false,
+            "name": "artworkBackground",
+            "description": "Artwork background: tint only the background gradient with the current artwork's color",
+            "type": "checkbox",
+            "value": "true"
         }
     }
 }

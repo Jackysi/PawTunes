@@ -33,6 +33,20 @@
             "description": "Use accent color from the template color scheme to set main color of Audio Spectrum Visualization",
             "type":        "checkbox",
             "value":       "true"
+        },
+        "artworkAccent":      {
+            "default":     false,
+            "name":        "artworkAccent",
+            "description": "Artwork accent: tint the player bar, play button and highlights with the current artwork's color",
+            "type":        "checkbox",
+            "value":       "true"
+        },
+        "artworkBackground":  {
+            "default":     false,
+            "name":        "artworkBackground",
+            "description": "Artwork background: tint only the background gradient with the current artwork's color",
+            "type":        "checkbox",
+            "value":       "true"
         }
     }
 }

@@ -653,3 +653,54 @@ body, html {
         background-color: #159756;
     }
 }
+
+/* ================================================================================================== */
+// Artwork Accent / Artwork Background (template options). The player sets the --artwork-* colors on <html>
+// from the current artwork, every var() falls back to this scheme's own color while none is known.
+html.artwork-tint-accent {
+    --accent-color: var(--artwork-color, #{$accent-color});
+
+    .pawtunes {
+        .player {
+            transition: background-color 600ms $ease-out;
+            background: var(--artwork-color, #{$accent-color});
+
+            // Light artwork colors (yellows) get dark text
+            .onair, .onair a {
+                color: var(--artwork-color-text, #fff);
+            }
+
+            .playback .play, .playback .stop {
+                .circle-preloader {
+                    stroke: var(--artwork-color-light, #{lighten($accent-color, 10%)});
+                }
+
+                path {
+                    transition: fill 600ms $ease-out;
+                    fill: var(--artwork-color, #{$accent-color});
+                }
+            }
+        }
+
+        .options-status {
+            border-top-color: var(--artwork-color-dark, #{darken($accent-color, 15%)});
+        }
+
+        .main-container .bottom-back a {
+            color: var(--artwork-color-text, #fff);
+            background: var(--artwork-color, #{$accent-color});
+
+            &:hover {
+                background: var(--artwork-color-light, #{lighten($accent-color, 8%)});
+            }
+        }
+    }
+}
+
+// A darker shade of the artwork color under a soft light-to-dark glaze, so a track change fades smoothly
+// (gradients themselves cannot be animated)
+html.artwork-tint-background, html.artwork-tint-background body {
+    transition: background-color 800ms $ease-out;
+    background-color: var(--artwork-color-dark, #{darken($accent-color, 12%)});
+    background-image: linear-gradient(rgba(#fff, .06) 0%, rgba(#000, .18) 100%);
+}

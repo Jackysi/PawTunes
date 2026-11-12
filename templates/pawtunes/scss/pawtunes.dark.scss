@@ -8,6 +8,42 @@ html {
     background: linear-gradient(darken($accent-color, 42%) 0%, darken($accent-color, 35%) 100%);
 }
 
+// Artwork Background: a deep shade of the artwork color under a darkening glaze (see pawtunes.scss)
+html.artwork-tint-background {
+    background-color: var(--artwork-deep, #{darken($accent-color, 38%)});
+    background-image: linear-gradient(rgba(#000, .15) 0%, rgba(#000, 0) 100%);
+}
+
+// Artwork Accent: the dark scheme keeps its muted list buttons, only the highlights follow the artwork
+html.artwork-tint-accent .pawtunes {
+    .icon-fill {
+        fill: var(--artwork-color-dark, #{darken($accent-color, 10%)});
+    }
+
+    .page.settings-page .channel-list, .page.settings-page .streams-list {
+        li a {
+            color: inherit;
+            border-color: transparent;
+            background: rgba(#486372, .3);
+
+            &:hover {
+                border-color: var(--artwork-color-dark, #{darken($accent-color, 20%)});
+                background: var(--artwork-color-soft, #{rgba($accent-color, .2)});
+            }
+        }
+
+        li.active a {
+            border-color: var(--artwork-color-dark, #{darken($accent-color, 20%)});
+            background: var(--artwork-color-soft, #{rgba(darken($accent-color, 15%), .5)});
+        }
+    }
+
+    .player .playback .play svg path,
+    .player .playback .stop svg path {
+        fill: var(--artwork-deep, #{darken($accent-color, 40%)});
+    }
+}
+
 .pawtunes {
     .icon-fill {
         fill: darken($accent-color, 10%);
