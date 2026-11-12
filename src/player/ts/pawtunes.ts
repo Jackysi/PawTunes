@@ -514,6 +514,8 @@ export default class PawTunes extends HTML5Audio {
 
     public handleOnAirError(error: any): void {
 
+        if (this.debug) console.warn('Track info request failed:', error);
+
         // Set default on air
         this.onAir = {
             artist : this.settings.trackInfo.default.artist,

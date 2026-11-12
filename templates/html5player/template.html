@@ -304,6 +304,7 @@
 
         <!-- Load after body, to prevent rendering blocking! -->
         <script type="module">
+
             import PawTunes from "./assets/js/pawtunes.min.js";
 
             let pawtunes = new PawTunes( ".pawtunes", /* @formatter:off*/{{$json_settings}}/*@formatter:on*/ );
@@ -341,6 +342,7 @@
             }
 
             pawtunes.init();
+
         </script>
 
         <!-- Load styles after body has been rendered -->

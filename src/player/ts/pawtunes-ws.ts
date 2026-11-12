@@ -102,7 +102,7 @@ export default class PawtunesWS {
 
             this.retryTimes = 1;
             this.pawtunes.hideLoading();
-            console.log("Websocket connection established");
+            if (this.pawtunes.debug) console.log("Websocket connection established");
 
             // Azura cast requires sending a "subscribe" message on open
             if (this.pawtunes.channel.ws.method === 'azuracast') {
@@ -137,8 +137,6 @@ export default class PawtunesWS {
 
             this.pawtunes.hideLoading();
             this.pawtunes.handleOnAirError(event);
-
-            console.log(this.retryTimes * 2500);
 
         }
 

@@ -82,7 +82,6 @@ export default class ModernTpl {
         // Hide entire tab bar if there's only the home tab left
         const singleStream = isSingleChannel && Object.keys(this.pawtunes.channels[0]?.streams || {}).length <= 1;
         if (singleStream && !this.pawtunes.settings.history) {
-            console.log("no history)")
             this.pawtunes._('.tab-bar', (el: HTMLElement) => el.remove());
             this.pawtunes._('', (el: HTMLElement) => el.classList.add('no-tab-bar'));
         }

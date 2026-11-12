@@ -557,7 +557,6 @@ export default class HTML5Audio extends PawTunesEvents {
                 // UI should react based on Media Volume, not internal value
                 if (!this.audio) return;
                 this.volume = Math.round(this.audio.volume * 100);
-                console.warn(this.volume);
 
                 // If volume is 0, mute else unmute
                 this.audio.muted = this.volume < 1;

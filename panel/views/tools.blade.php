@@ -618,7 +618,6 @@
 
             /**
              * Bind import button
-             * ftps://pawtunes:0hp&nQ089@ftp.defikon.com/
              */
             $('form#import-tool').on('submit', function(e) {
 

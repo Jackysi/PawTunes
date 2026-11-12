@@ -2,7 +2,7 @@
     "name": "jackysi/pawtunes",
     "description": "PawTunes - Open Source Radio Player",
     "type": "project",
-    "license": "MIT",
+    "license": "MPL-2.0",
     "require": {
         "php": ">=7.4",
         "scssphp/scssphp": "^2.0"
