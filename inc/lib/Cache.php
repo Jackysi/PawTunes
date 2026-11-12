@@ -13,631 +13,492 @@
 
 namespace lib;
 
-use Memcache;
-use Memcached;
-use Redis;
+use lib\Cache\ApcCache;
+use lib\Cache\BackendInterface;
+use lib\Cache\DiskCache;
+use lib\Cache\MemcacheCache;
+use lib\Cache\MemcachedCache;
+use lib\Cache\RedisCache;
+use Throwable;
 
 class Cache
 {
 
     /**
-     * This class options are all here, useful for later use (file cache etc)
-     *
      * @var array
      */
     protected array $options;
 
     /**
-     * This is temporary variable with object of a caching method (Memcache, Memcached, APC)
-     *
-     * @var mixed
+     * @var string
      */
-    /** @var mixed */
-    protected $object = null;
+    protected string $requestedMode = 'disk';
 
     /**
-     * Simple bool variable that lets us know if script started properly or not
-     *
+     * @var string|null
+     */
+    protected ?string $lastError = null;
+
+    /**
+     * @var array
+     */
+    protected array $debugEvents = [];
+
+    /**
+     * @var \lib\Cache\BackendInterface|null
+     */
+    protected ?BackendInterface $backend = null;
+
+    /**
      * @var bool
      */
     protected bool $startup = false;
 
     /**
-     * When the stack is initiated, this variable is filled with cache information
+     * Key metadata: key => ['expires' => unix timestamp, 0 = never]. In disk mode this is the only
+     * expiry information there is. The other backends expire keys on their own and the store only
+     * serves deleteAll(), flush() and clean().
      *
      * @var array
      */
     private array $store = [];
 
+    /**
+     * Entries changed during this request: key => entry, or null when the key was removed. The store
+     * is written back only when this is not empty (at the end of the request), and the changes are
+     * merged into the latest stored copy so concurrent requests do not wipe each other's entries.
+     *
+     * @var array
+     */
+    private array $storeChanges = [];
+
 
     /**
-     * cache constructor.
-     *
      * @param  array  $options
      */
     public function __construct(array $options = [])
     {
+        $this->options       = $this->normalizeOptions($options);
+        $this->requestedMode = $this->options['mode'];
+        $this->startup = $this->bootBackend($this->options['mode']);
 
-        // Default Cache class options
-        $this->options = $options + [
-                'path'    => realpath(getcwd()).'/cache', // Location where to cache items
-                'host'    => '127.0.0.1:11211', // Memcached/Redis host (memcached default)
-                'ext'     => '.cache',          // Disk cache file extension
-                'encrypt' => false,             // Disk cache basic file encryption
-                'mode'    => 'disk',            // Modes: disk, apc, apcu, redis, memcache, memcached
-                'extra'   => [],                // Additional options (only redis, memcached and memcache supports at the moment)
-                'prefix'  => '',                // Key prefix (all modes)
-            ];
-
-
-        // Check settings & caching mode
-        if ($this->checkSettings()) {
-
-            // Start cache keys collector
-            $this->startup = true;
-            $this->stack();
-
+        if ($this->startup) {
+            $this->loadStore();
         }
-
     }
 
 
-    /**
-     * Before starting up the caching class this must be done. Here we check if the options
-     * are valid and the connections to Memcache/Memcached are working
-     *
-     * @return bool
-     * @throws \RedisException
-     */
-    private function checkSettings(): bool
+    protected function normalizeOptions(array $options): array
     {
+        $defaults = [
+            'path'    => realpath(getcwd()).DIRECTORY_SEPARATOR.'cache',
+            'host'    => '127.0.0.1:11211',
+            'ext'     => '.cache',
+            'encrypt' => false,
+            'mode'    => 'disk',
+            'extra'   => [],
+            'prefix'  => '',
+            'logger'  => null,
+        ];
 
-        // Various tests & connect
-        switch ($this->options['mode']) {
+        $options = $options + $defaults;
 
-            case 'disk': // disk cache
+        if (empty($options['path'])) {
+            $options['path'] = $defaults['path'];
+        }
 
-                // Check if path exists, if not create it
-                if ( ! is_dir($this->options['path'])) { // if not create it recursively
-                    if ( ! mkdir($this->options['path'], 0755) && ! is_dir($this->options['path'])) {
-                        return false;
-                    }
-                }
+        if (empty($options['mode'])) {
+            $options['mode'] = 'disk';
+        }
 
-                return true;
+        if ( ! is_array($options['extra'])) {
+            $options['extra'] = [];
+        }
 
-            case 'apc': // php_apc
-                if (extension_loaded('apc') && ini_get('apc.enabled')) {
+        return $options;
+    }
 
-                    return true;
 
-                }
-                break;
+    protected function bootBackend(string $mode): bool
+    {
+        $backend = $this->makeBackend($mode);
+        if ($backend->isAvailable()) {
+            $this->backend         = $backend;
+            $this->options['mode'] = $backend->mode();
 
-            case 'apcu': // php_apcu
-                if (extension_loaded('apcu') && ini_get('apc.enabled')) {
+            return true;
+        }
 
-                    return true;
+        $this->recordFailure($backend->mode(), 'startup', $backend->failureReason() ?? "Cache backend \"{$mode}\" is unavailable.");
 
-                }
-                break;
-
-            case 'redis':
-
-                if (extension_loaded('redis')) {
-
-                    $this->object = new Redis();
-
-                    // Use socket
-                    if ( ! preg_match('/(.*):(\d+)/', $this->options['host'], $host)) {
-
-                        if ($this->object->pconnect($this->options['host'], 0, 2)) {
-
-                            return true;
-
-                        }
-
-                    } elseif ($this->object->pconnect($host[1], $host[2], 2)) {
-
-                        return true;
-
-                    }
-
-                    // Special case, authorization...
-                    if (isset($this->options['extra']['auth']) && ! $this->object->auth($this->options['extra']['auth'])) {
-
-                        return false;
-
-                    }
-
-                    // You can pass additional options to the Memcached handler
-                    if (count($this->options['extra']) > 1 && isset($this->options['extra']['auth'])) {
-                        foreach ($this->options['extra'] as $opt => $val) {
-
-                            $this->object->setOption($opt, $val);
-
-                        }
-                    }
-
-                }
-
-                break;
-
-            case 'memcache': // php_memcache
-
-                // Extension must be loaded obviously
-                if (extension_loaded('memcache')) {
-
-                    // Initiate Memcache object
-                    $this->object = new Memcache;
-
-                    // Use socket
-                    if ( ! preg_match('/(.*):(\d+)/', $this->options['host'], $host)) {
-
-                        if ($this->object->addServer($this->options['host'], 0)) {
-                            return true;
-                        }
-
-                    } elseif ($this->object->addServer($host[1], $host[2])) {
-
-                        return true;
-
-                    }
-                }
-
-                break;
-
-            case 'memcached': // php_memcached
-
-                // Extension must be loaded obviously
-                if (extension_loaded('memcached')) {
-
-                    // Create new Memcached object
-                    $this->object = new Memcached();
-                    $servers      = $this->object->getServerList();
-
-                    // Check list of servers added to the Memcached extension
-                    if (count($servers) > 1) {
-                        return true;
-                    }
-
-                    if ( ! preg_match('/(.*):(\d+)/', $this->options['host'], $host)) { // Use socket, faster
-
-                        if ($this->object->addServer($this->options['host'], 0, true)) {
-
-                            return true;
-
-                        }
-
-                    } elseif ($this->object->addServer($host[1], $host[2], true)) {
-
-                        return true;
-
-                    }
-
-                    // You can pass additional options to the Memcached handler
-                    if (count($this->options['extra']) > 1) {
-
-                        foreach ($this->options['extra'] as $opt => $val) {
-
-                            $this->object->setOption($opt, $val);
-
-                        }
-
-                    }
-
-                }
-
-                break;
-
+        if ($mode !== 'disk') {
+            return $this->bootBackend('disk');
         }
 
         return false;
-
     }
 
 
-    /**
-     * Cache storage, stores all cached keys and their time out, not their values
-     *
-     * @param  string  $act  clean, check, delete or any value will re-read store
-     * @param  string  $key  name of the key you wish to check/delete from store
-     *
-     * @return array|bool
-     */
-    protected function stack(string $act = 'init', string $key = '')
+    protected function makeBackend(string $mode): BackendInterface
     {
+        switch ($mode) {
+            case 'apc':
+            case 'apcu':
+                return new ApcCache($mode);
 
-        // If class failed on startup, quit now!
-        if ( ! $this->startup) {
+            case 'redis':
+                return new RedisCache($this->options);
+
+            case 'memcache':
+                return new MemcacheCache($this->options);
+
+            case 'memcached':
+                return new MemcachedCache($this->options);
+
+            case 'disk':
+            default:
+                return new DiskCache($this->options);
+        }
+    }
+
+
+    protected function activateDiskFallback(): bool
+    {
+        if ($this->options['mode'] === 'disk') {
             return false;
         }
 
-        // First call should setup store variable which will contain cache keys
-        if ($act === 'init' && count($this->store) === 0) {
+        $backend = new DiskCache($this->options);
+        if ( ! $backend->isAvailable()) {
+            $this->recordFailure('disk', 'fallback', $backend->failureReason() ?? 'Disk cache fallback is unavailable.');
 
-            // Get from cache
-            $v = $this->get("cache_store");
-
-            // Check if cache returned proper result
-            if ($v !== false && is_array($v)) {
-
-                $this->store = $v;
-
-            } else {
-
-                $this->store = [];
-
-            }
-
+            return false;
         }
 
+        $this->backend         = $backend;
+        $this->options['mode'] = 'disk';
+        $this->loadStore();
 
-        // Switch actions
-        switch ($act) {
-
-            // Check key existence/expiration
-            case 'check':
-
-                // First check if key even exists
-                if (isset($this->store[$key])) {
-
-                    // Check if key exists and if it expired (used at GET method)
-                    if ($this->store[$key]['expires'] === 0 || time() < $this->store[$key]['expires']) {
-
-                        return true;
-
-                    }
-
-                }
-
-                return false;
+        return true;
+    }
 
 
-            // Delete a single key from cache
-            case 'delete':
+    protected function recordFailure(string $mode, string $operation, string $reason): void
+    {
+        $message = "[{$mode}] {$operation}: {$reason}";
 
-                if (count($this->store) <= 1) {
-                    return false;
-                }
+        $this->lastError     = $message;
+        $this->debugEvents[] = [
+            'mode'      => $mode,
+            'operation' => $operation,
+            'reason'    => $reason,
+            'date'      => date('Y-m-d H:i:s'),
+        ];
 
-                ## Add key -> ttl to cache_status
-                unset($this->store[$key]);
-                $this->set('cache_store', $this->store, 0);
-
-                return true;
+        $this->writeWarningLog($message);
+    }
 
 
-            // Flush whole cache, meaning delete all keys in store
-            case 'flush':
-
-                // At least return empty array
-                $clean_status = [];
-
-                // Store not empty?
-                if (count($this->store) > 0) {
-
-                    // Loop through stored cache entries and delete them
-                    foreach ($this->store as $index => $more) {
-
-                        $clean_status[] = $index;
-                        $this->delete($index);
-
-                    }
-
-                    // Clear script cache
-                    $this->store = [];
-
-                }
-
-                return $clean_status;
-
+    protected function writeWarningLog(string $message): void
+    {
+        if ( ! is_callable($this->options['logger'])) {
+            return;
         }
 
-        return false;
+        if ((error_reporting() & (E_WARNING | E_USER_WARNING)) === 0) {
+            return;
+        }
 
+        call_user_func($this->options['logger'], "WARNING: Cache {$message}");
     }
 
 
     /**
-     * Get existing record from cache, if it does not exist false is returned
+     * Load the store from the active backend. Pending changes are dropped: they belonged to the
+     * backend that was active before (this runs at boot and when the disk fallback kicks in).
+     */
+    protected function loadStore(): void
+    {
+        $this->store        = [];
+        $this->storeChanges = [];
+
+        $store = $this->backendGet($this->parseKey('cache_store'));
+        if (is_array($store)) {
+            $this->store = $this->normalizeStore($store);
+        }
+    }
+
+
+    /**
+     * Keep only the expiry of each entry. Older releases also stored a "hits" counter that nothing
+     * read; it disappears from the stored copy on the next write.
      *
-     * @param $key
+     * @param  array  $store
      *
-     * @return bool|mixed|string
+     * @return array
+     */
+    protected function normalizeStore(array $store): array
+    {
+        $normalized = [];
+        foreach ($store as $key => $meta) {
+            $normalized[$key] = ['expires' => (int) ($meta['expires'] ?? 0)];
+        }
+
+        return $normalized;
+    }
+
+
+    /**
+     * Persist the pending changes. They are merged into the latest stored copy (another request may
+     * have added or removed keys since this one booted), expired entries are purged while we are
+     * writing anyway, and the result is written once.
+     *
+     * @return bool
+     */
+    protected function writeStore(): bool
+    {
+        if (count($this->storeChanges) < 1) {
+            return true;
+        }
+
+        // When the latest copy cannot be read, fall back to this request's own view of it
+        $latest = $this->backendGet($this->parseKey('cache_store'), false);
+        $store  = is_array($latest) ? $this->normalizeStore($latest) : $this->store;
+
+        foreach ($this->storeChanges as $key => $entry) {
+            if ($entry === null) {
+                unset($store[$key]);
+            } else {
+                $store[$key] = $entry;
+            }
+        }
+
+        $now = time();
+        foreach ($store as $key => $entry) {
+            if ($entry['expires'] !== 0 && $entry['expires'] <= $now) {
+                unset($store[$key]);
+            }
+        }
+
+        $this->store        = $store;
+        $this->storeChanges = [];
+
+        return $this->backendSet($this->parseKey('cache_store'), $store, 0, false);
+    }
+
+
+    protected function isFresh(string $key): bool
+    {
+        if ( ! isset($this->store[$key])) {
+            return false;
+        }
+
+        return $this->store[$key]['expires'] === 0 || time() < $this->store[$key]['expires'];
+    }
+
+
+    protected function remember(string $key, int $ttl): void
+    {
+        $entry = ['expires' => ($ttl === 0) ? 0 : time() + $ttl];
+
+        $this->store[$key]        = $entry;
+        $this->storeChanges[$key] = $entry;
+    }
+
+
+    /**
+     * Drop a key from the store. Keys this request never saw (lock keys, for instance) are not tracked,
+     * so forgetting them changes nothing and does not cause a write.
+     *
+     * @param  string  $key
+     *
+     * @return bool  Whether the store changed
+     */
+    protected function forget(string $key): bool
+    {
+        if ( ! isset($this->store[$key])) {
+            return false;
+        }
+
+        unset($this->store[$key]);
+        $this->storeChanges[$key] = null;
+
+        return true;
+    }
+
+
+    /**
+     * @param  string  $key
+     * @param  bool  $fallback
+     *
+     * @return mixed|false
+     */
+    protected function backendGet(string $key, bool $fallback = true)
+    {
+        $mode = $this->backend->mode();
+
+        try {
+            return $this->backend->get($key);
+        } catch (Throwable $e) {
+            $this->recordFailure($mode, 'get', $this->backend->failureReason() ?? $e->getMessage());
+
+            if ($fallback && $this->activateDiskFallback()) {
+                return $this->backend->get($key);
+            }
+        }
+
+        return false;
+    }
+
+
+    /**
+     * @param  string  $key
+     * @param  mixed  $data
+     * @param  int  $ttl
+     * @param  bool  $fallback
+     *
+     * @return bool
+     */
+    protected function backendSet(string $key, $data, int $ttl, bool $fallback = true): bool
+    {
+        $mode = $this->backend->mode();
+
+        try {
+            $stored = $this->backend->set($key, $data, $ttl);
+            if ( ! $stored) {
+                $this->recordFailure($mode, 'set', $this->backend->failureReason() ?? "Cache backend \"{$mode}\" returned false.");
+            }
+
+            if ($stored || ! $fallback || $this->options['mode'] === 'disk') {
+                return $stored;
+            }
+        } catch (Throwable $e) {
+            $this->recordFailure($mode, 'set', $this->backend->failureReason() ?? $e->getMessage());
+
+            if ( ! $fallback) {
+                return false;
+            }
+        }
+
+        if ($this->activateDiskFallback()) {
+            return $this->backend->set($key, $data, $ttl);
+        }
+
+        return false;
+    }
+
+
+    protected function backendDelete(string $key, bool $fallback = true): bool
+    {
+        $mode = $this->backend->mode();
+
+        try {
+            return $this->backend->delete($key);
+        } catch (Throwable $e) {
+            $this->recordFailure($mode, 'delete', $this->backend->failureReason() ?? $e->getMessage());
+
+            if ($fallback && $this->activateDiskFallback()) {
+                return $this->backend->delete($key);
+            }
+        }
+
+        return false;
+    }
+
+
+    /**
+     * Get existing record from cache. Missing records return false.
+     *
+     * @param  string  $key
+     *
+     * @return mixed|false
      */
     public function get($key)
     {
-
-        // If class failed to startup, quit now!
         if ( ! $this->startup) {
             return false;
         }
 
-        // Use Prefix
-        $name = $this->parseKey($key);
-        $data = false;
-
-        // Various Modes / Actions
-        switch ($this->options['mode']) {
-
-            // APC extension uses its own calls
-            case 'apc':
-
-                // Fetch from store
-                $apc = apc_fetch($name, $success);
-
-                // If successful, return the data
-                if ($success) {
-                    $data = $apc;
-                }
-                break;
-
-
-            // APCu extension uses its own calls
-            case 'apcu':
-
-                // Fetch from store
-                $apc = apcu_fetch($name, $success);
-
-                // If successful, return the data
-                if ($success) {
-                    $data = $apc;
-                }
-                break;
-
-
-            // Redis method (simple)
-            case 'memcache':
-            case 'memcached':
-            case 'redis':
-                $data = $this->object->get($name);
-                break;
-
-            // Default is always disk cache
-            default:
-
-                // Check if cache exists
-                if (is_file("{$this->options[ 'path' ]}/{$name}{$this->options[ 'ext' ]}")) {
-
-                    // Validate key expiration date and data (allow cache_store without actual valid expiration)
-                    if ($key === 'cache_store' || $this->stack('check', $key) === true) {
-
-                        $cache_data = file_get_contents("{$this->options[ 'path' ]}/{$name}{$this->options[ 'ext' ]}");             ## Read file into variable
-                        $cache_data = (($this->options['encrypt'] === true) ? base64_decode($cache_data) : $cache_data);      ## Encryption
-                        try {
-                            $serialized = @unserialize($cache_data, ['allowed_classes' => false]);
-                        } catch (\Throwable $e) {
-                            $serialized = false;
-                        }
-
-                        // If un-serialize function returned ANY sort of data, return it
-                        if ($serialized !== false || $cache_data === 'b:0;') {
-
-                            $data = $serialized;
-
-                        } else { // Nope, just data
-
-                            $data = $cache_data;
-
-                        }
-
-                    }
-
-                }
-
-                break;
-
+        $wasDisk = $this->options['mode'] === 'disk';
+        if ($wasDisk && $key !== 'cache_store' && ! $this->isFresh($key)) {
+            return false;
         }
 
-        // Update hit count if data isn't false
-        if ($data !== false && isset($this->store[$key]['hits'])) {
-            $this->store[$key]['hits']++;
+        $data = $this->backendGet($this->parseKey($key));
+
+        if ( ! $wasDisk && $this->options['mode'] === 'disk' && $key !== 'cache_store' && ! $this->isFresh($key)) {
+            return false;
         }
 
-        // Return information received from a method
         return $data;
-
     }
 
 
     /**
-     * Set cache by key data and expiration time
+     * Set cache by key, data and expiration time.
      *
-     * @param  string  $key  Name of the key to store
-     * @param  string|array  $data  Value to store (string, array, int, float or object)
-     * @param  int  $ttl  how long cache should be stored (0 = unlimited)
-     *
-     * @return array|bool
-     */
-    public function set($key, $data, $ttl = 600)
-    {
-
-        // If class failed to startup, quit now!
-        if ( ! $this->startup) {
-            return false;
-        }
-
-        // Prefix / Default response
-        $name   = $this->parseKey($key);
-        $return = false;
-
-
-        // Various Modes / Actions
-        switch ($this->options['mode']) {
-
-            // APC extension uses its own calls
-            case 'apc':
-                $return = apc_store($name, $data, $ttl);
-                break;
-
-
-            // APCu extension uses its own calls
-            case 'apcu':
-                $return = apcu_store($name, $data, $ttl);
-                break;
-
-
-            // Redis method
-            case 'redis':
-                $return = $this->object->set($name, $data, $ttl);
-                break;
-
-
-            // Memcache method
-            case 'memcache':
-
-                // Try to replace key, else make new one
-                if ( ! $return = $this->object->replace($name, $data, false, $ttl)) {
-                    $return = $this->object->set($name, $data, false, $ttl);
-                }
-
-                break;
-
-
-            // Memcached
-            case 'memcached':
-
-                // Try to replace key, else make new one
-                if ( ! $return = $this->object->replace($name, $data, $ttl)) {
-                    $return = $this->object->set($name, $data, $ttl);
-                }
-
-                break;
-
-
-            // Default is always disk cache
-            default:
-
-                // Encryption
-                if ($this->options['encrypt'] === true) {
-                    $data = base64_encode($data);
-                }
-
-                // Write cache if its writable
-                if (is_writable($this->options['path']) && is_dir($this->options['path'])) {
-
-                    // Serialize non-string data
-                    if (!is_string($data)) {
-                        $data = serialize($data);
-                    }
-
-                    file_put_contents("{$this->options[ 'path' ]}/{$name}{$this->options[ 'ext' ]}", $data);
-                    $return = true;
-
-                }
-
-                break;
-
-
-        }
-
-        // The cache_store key is little different because it has no expiration
-        if ($key === 'cache_store') {
-
-            return $return;
-
-        }
-
-        // Also set expire/hits ONLY if SET was success
-        if ($return !== false) {
-
-            // Reset store hits on SET, logical...
-            $this->store[$key]['hits'] = 0;
-
-            // Set expire TTL (basically just expire time)
-            $this->store[$key]['expires'] = (($ttl === 0) ? 0 : time() + $ttl);
-
-        }
-
-        // Return success/false
-        return $return;
-
-    }
-
-
-    /**
-     * Delete key from cache by the definition
-     *
-     * @param $key
+     * @param  string  $key
+     * @param  mixed  $data
+     * @param  int  $ttl  0 means unlimited
      *
      * @return bool
      */
-    public function delete($key)
+    public function set($key, $data, $ttl = 600): bool
     {
-
-        // If class failed to startup, quit now!
         if ( ! $this->startup) {
             return false;
         }
 
-        // Use prefix
-        $name    = $this->parseKey($key);
-        $deleted = false;
-
-        // Various Modes / Actions
-        switch ($this->options['mode']) {
-
-            // APC extension uses its own calls
-            case 'apc':
-                $deleted = apc_delete($name);
-                break;
-
-            // APCu extension uses its own calls
-            case 'apcu':
-                $deleted = apcu_delete($name);
-                break;
-
-            // Redis method
-            case 'memcache':
-            case 'memcached':
-            case 'redis':
-                $deleted = $this->object->delete($name);
-                break;
-
-            // Default is always disk cache
-            default:
-
-                if (is_file("{$this->options[ 'path' ]}/{$name}{$this->options[ 'ext' ]}")) {
-
-                    // Del cache
-                    $deleted = unlink("{$this->options[ 'path' ]}/{$name}{$this->options[ 'ext' ]}");
-
-                }
-
-                break;
-
+        $stored = $this->backendSet($this->parseKey($key), $data, (int) $ttl);
+        if ($key === 'cache_store') {
+            return $stored;
         }
 
-        // If cache key was successfully deleted, also clean it from cache_store
-        // Ignore cache_store, should never be deleted
-        if (($deleted === true) && $key !== 'cache_store') {
-            $this->stack('delete', $key);
+        if ($stored) {
+            $this->remember($key, (int) $ttl);
+        }
+
+        return $stored;
+    }
+
+
+    /**
+     * Delete key from cache.
+     *
+     * @param  string  $key
+     *
+     * @return bool
+     */
+    public function delete($key): bool
+    {
+        if ( ! $this->startup) {
+            return false;
+        }
+
+        $deleted = $this->backendDelete($this->parseKey($key));
+        if ($deleted && $key !== 'cache_store') {
+            $this->forget($key);
         }
 
         return $deleted;
-
     }
 
 
     /**
-     * Small function to convert keys to proper values supported by all caching modes
+     * Convert keys to values supported by all caching modes.
      *
-     * @param $key
+     * @param  string  $key
      *
-     * @return mixed
+     * @return string
      */
-    protected function parseKey($key)
+    protected function parseKey($key): string
     {
-
         return str_replace(' ', '_', $this->options['prefix'].$key);
-
     }
 
 
     /**
-     * Useful function to delete all keys with specific REGEX match, comes very handy when using caching for different things
-     * Example: deleteAll( 'page_cache_.*' );
+     * Delete all keys matching a regex.
      *
      * @param  string  $regex
      *
@@ -645,142 +506,124 @@ class Cache
      */
     public function deleteAll($regex = '.*')
     {
-
-        // If class failed to startup, quit now!
         if ( ! $this->startup || count($this->store) < 1) {
             return false;
         }
 
-        // Default variable
         $deleted = [];
-
-        // We loop through whole cache store
-        foreach ($this->store as $key => $expire) {
-
-            // Skip cache store
+        foreach (array_keys($this->store) as $key) {
             if ($key === 'cache_store') {
                 continue;
             }
 
-            // Use regex
-            if (preg_match('/'.$regex.'/i', $key)) {    ## Use regex for deleteAll
-
+            if (preg_match('/'.$regex.'/i', $key)) {
                 $deleted[] = $key;
                 $this->delete($key);
-
             }
-
         }
 
-        // Return list of deleted keys (useful)
         return $deleted;
-
     }
 
 
     /**
-     * Access the caching object directly, useful for memcached, memcache, redis, apcu and apc.
+     * Access the underlying caching object directly.
      *
-     * @return mixed
+     * @return mixed|false
      */
     public function direct()
     {
-
-        // If class failed on startup, quit now!
         if ( ! $this->startup) {
             return false;
         }
 
-        // If using disk method, return this object
         if ($this->options['mode'] === 'disk') {
             return $this;
         }
 
-        // Return whichever object we're using
-        return $this->object;
+        return $this->backend->direct();
+    }
 
+
+    public function getLastError(): ?string
+    {
+        return $this->lastError;
+    }
+
+
+    public function getDebugInfo(): array
+    {
+        return [
+            'requested_mode'  => $this->requestedMode,
+            'active_mode'     => $this->options['mode'],
+            'fallback_active' => $this->startup && $this->requestedMode !== $this->options['mode'],
+            'startup'         => $this->startup,
+            'path'            => $this->options['path'],
+            'host'            => $this->options['host'],
+            'last_error'      => $this->lastError,
+            'events'          => $this->debugEvents,
+        ];
     }
 
 
     /**
-     * Simple function to clean up absolute/missing caches from cache store
+     * Clean up expired or missing cache entries from the metadata store.
      *
      * @return array
      */
-    public function clean()
+    public function clean(): array
     {
-
-        // Pre-defined array
         $cleaned = [];
+        if ( ! $this->startup || count($this->store) < 1) {
+            return $cleaned;
+        }
 
-        // Check if store is array
-        if ($this->startup && count($this->store) > 0) {
+        foreach (array_keys($this->store) as $key) {
+            if ( ! $this->get($key)) {
+                $this->forget($key);
+                $cleaned[] = $key;
 
-            // Loop through stored cache entries and delete them
-            foreach ($this->store as $key => $more) {
-
-                // Check if key is active, if not, clean it from store
-                if ( ! $this->get($key)) {
-
-                    // Remove from store and add key to array of cleaned so far
-                    $this->stack('delete', $key);
-                    $cleaned[] = $key;
-
-                    // When using disk cache, also remove the file directly
-                    // (don't use $this->delete() — it calls stack('delete') again)
-                    if ($this->options['mode'] === 'disk') {
-                        $name = $this->parseKey($key);
-                        $file = "{$this->options['path']}/{$name}{$this->options['ext']}";
-                        if (is_file($file)) {
-                            unlink($file);
-                        }
-                    }
-
+                if ($this->options['mode'] === 'disk') {
+                    $this->backendDelete($this->parseKey($key), false);
                 }
-
             }
-
         }
 
         return $cleaned;
-
     }
 
 
     /**
-     * Flush whole cache created with this extension, use with extreme caution!
+     * Flush all cache keys tracked by this cache instance.
      *
      * @return array|bool
      */
     public function flush()
     {
+        if ( ! $this->startup) {
+            return false;
+        }
 
-        // Attempt cleaning up cache_store
-        $tmp = $this->stack('flush');
+        $deleted = [];
+        foreach (array_keys($this->store) as $key) {
+            $deleted[] = $key;
+            $this->backendDelete($this->parseKey($key));
+        }
 
-        // We call this here so changes are permanent
-        $this->__destruct();
+        // The store itself is gone, so there is nothing left to write back at the end of the request
+        $this->store        = [];
+        $this->storeChanges = [];
+        $this->backendDelete($this->parseKey('cache_store'), false);
 
-        // Return what ever we got from stack clean
-        return $tmp;
-
+        return $deleted;
     }
 
 
-    /**
-     * This function must always be run after you have completed working with cache
-     * it ensures that cache_store is written to the caching method
-     */
     public function __destruct()
     {
-
-        // Save cache_store
-        if ($this->startup !== false && count($this->store) > 0) {
-
-            $this->set('cache_store', $this->store, 0);
-
+        if ($this->startup && count($this->storeChanges) > 0) {
+            $this->writeStore();
         }
-
     }
 
 }

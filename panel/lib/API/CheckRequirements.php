@@ -96,6 +96,19 @@ class CheckRequirements extends Base
             $response[] = ['type' => 'warning', 'message' => 'Directory **'.$this->pawtunes->config('cache')['path'].'** is not writable! This will cause extreme slow performance! You can fix this issue by setting **chmod** of folder **'.$this->pawtunes->config('cache')['path'].'** to **755**.'];
         }
 
+        $cacheDebug = $this->pawtunes->cache->getDebugInfo();
+        if ($cacheDebug['fallback_active']) {
+            $response[] = [
+                'type'    => 'warning',
+                'message' => 'Configured cache backend **'.$cacheDebug['requested_mode'].'** failed, PawTunes is using **'.$cacheDebug['active_mode'].'** fallback. Reason: '.$cacheDebug['last_error'],
+            ];
+        } elseif ( ! $cacheDebug['startup']) {
+            $response[] = [
+                'type'    => 'warning',
+                'message' => 'Cache could not start. Reason: '.($cacheDebug['last_error'] ?? 'Unknown error'),
+            ];
+        }
+
         // Images folder
         if ( ! is_writable("data/images")) {
             $response[] = ['type' => 'warning', 'message' => 'Directory **/data/images/** is not writable! You will not be able to upload custom artist images or channel logo(s)! You can fix this issue by setting **chmod** of folder **/data/images/** to **755**.'];

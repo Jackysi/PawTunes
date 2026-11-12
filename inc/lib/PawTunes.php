@@ -93,19 +93,13 @@ class PawTunes
             $this->channels = require($channelsFile);
         }
 
-        // If DISK cache and path is set, do realpath as we need full path for cache to work
-        if (empty($this->settings['cache']['mode']) || $this->settings['cache']['mode'] === 'disk') {
-            if ( ! empty($this->settings['cache']['path'])) {
-                $cachePath = $this->settings['cache']['path'];
-            }
-        }
+        $cacheOptions           = $this->settings['cache'] ?? [];
+        $cacheOptions['prefix'] = $cacheOptions['prefix'] ?? $this->prefix;
+        $cacheOptions['logger'] = function (string $message): void {
+            $this->writeLog('player_errors', $message);
+        };
 
-        $this->cache = new Cache(
-            [
-                'prefix' => $this->settings['cache']['prefix'] ?? $this->prefix,
-                'path'   => $cachePath ?? null,
-            ] + $this->settings['cache']
-        );
+        $this->cache = new Cache($cacheOptions);
 
         // HTTP client with error logging callback
         $this->http = new HttpClient(
@@ -520,7 +514,7 @@ class PawTunes
      */
     public function getTemplateEngineOpts(): array
     {
-        $host = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? 'localhost';
+        $host                   = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? 'localhost';
         $this->settings['host'] = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https://' : 'http://').$host;
         $this->settings['url']  = "{$this->settings['host']}{$_SERVER['REQUEST_URI']}";
 
@@ -714,7 +708,7 @@ class PawTunes
 
                     if ( ! empty($loadedFile['name']) && is_file("templates/{$dir}/{$loadedFile['template']}")) {
 
-                        $templates[$dir] = $loadedFile;
+                        $templates[$dir]         = $loadedFile;
                         $templates[$dir]['path'] = "templates/{$dir}";
 
                     }
