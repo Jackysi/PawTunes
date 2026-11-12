@@ -9,6 +9,8 @@
         }
     ],
     "size":     "720x355",
+    "theme_color":      "#62a8ea",
+    "background_color": "#4e4e4e",
     "screenshot": "screenshot.webp",
     "template": "template.html",
     "url":      "https://prahec.com",

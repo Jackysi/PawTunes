@@ -15,6 +15,8 @@
     ],
     "template": "template.html",
     "size":     "1024x650",
+    "theme_color":      "#62a8ea",
+    "background_color": "#ffffff",
     "screenshot": "screenshot.webp",
     "url":      "https://prahec.com",
     "extra":    {

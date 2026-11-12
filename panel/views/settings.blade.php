@@ -48,6 +48,7 @@
             'description' => '(Tracking ID)',
         ],
         'override-share-image',
+        'app-icon',
         [
             'label'       => 'Search Engine Index',
             'name'        => 'disable_index',
@@ -298,6 +299,33 @@
                         @continue
                     @endif
 
+                    @if ( $input === 'app-icon' )
+                        @php $appIcons = $pawtunes->getAppIcons(); @endphp
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label" for="app_icon">App Icon</label>
+                            <div class="col-sm-10">
+                                <div class="input-group col-sm-6">
+                                    <input type="text" id="app_icon_name" class="form-control" value="" placeholder="Square image, at least 512 x 512 px" readonly>
+                                    <div class="input-group-btn">
+                                        <label for="app_icon" class="btn btn-primary">
+                                            <input type="file" id="app_icon" class="hidden" name="app_icon" accept="image/png,image/jpeg,image/webp"><i class="icon fa fa-folder-open"></i> Browse
+                                        </label>
+                                    </div>
+                                </div>
+                                <i>Icon of the player when listeners add it to their home screen (JPG, PNG or WebP, cropped to a square). Without one the PawTunes icon is used.</i>
+                                @if ( $appIcons[ 'custom' ] )
+                                    <div class="logo-container"><br>
+                                        <div class="override-image">
+                                            <img src="./../{{ltrim( $appIcons[ 192 ], './' )}}" width="64" height="64" alt="App icon">
+                                        </div>
+                                        <button type="submit" form="remove-app-icon" class="btn btn-link remove-app-icon" data-confirm><i class="icon fa fa-times"></i> Remove</button>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                        @continue
+                    @endif
+
                     @if ( $input === 'default_language' )
                         <div class="form-group">
                             <label class="col-sm-2 control-label" for="isocode">Default Language</label>
@@ -485,6 +513,12 @@
         </div>
     </form>
 
+    {{-- App icon removal: its own POST form (CSRF-checked), the Remove button inside the settings form targets it --}}
+    <form method="POST" action="index.php?page=settings" id="remove-app-icon">
+        {!! $panel->csrfField() !!}
+        <input type="hidden" name="remove_app_icon" value="1">
+    </form>
+
     <!-- Template Options Modals (one per template, outside the main form since forms can't be nested) -->
     @foreach ( $templates as $index => $data )
         @if ( !empty( $data[ 'extra' ] ) )
@@ -543,7 +577,7 @@
             $('input[type="file"]').on('change', function() {
                 let cVal = $(this).val().replace(/.*\\fakepath\\/, '');
                 let elm = $(this).closest('.form-group');
-                elm.find('input#override_share_image').val(cVal);
+                elm.find('input#override_share_image, input#app_icon_name').val(cVal);
                 elm.find('.logo-container').remove();
             });
 

@@ -12,6 +12,7 @@
  */
 
 use lib\Helpers;
+use lib\ImageResize;
 use lib\PawTunes;
 
 class Panel
@@ -676,6 +677,66 @@ class Panel
         $result['mimetype']  = $image['mimetype'];
 
         return $result;
+
+    }
+
+
+    /**
+     * Stores the uploaded app icon (home screen / web app manifest) as the three PNG sizes the player
+     * links: data/images/app-icon-512.png, -192 and -180. Each is a fresh center crop of the uploaded
+     * source (never a resample of a resample), the source is removed once the sizes exist, and a failure
+     * half way leaves no partial set behind (PawTunes::getAppIcons() only uses a complete set).
+     *
+     * @param  string  $form_name  $_FILES field name
+     *
+     * @return string|null  Error message for the admin, null on success
+     */
+    public function storeAppIcon(string $form_name): ?string
+    {
+        $upload = $this->upload($form_name, 'data/images/', 'app-icon-source', ['jpg', 'jpeg', 'png', 'webp']);
+        if ($upload['error'] !== null) {
+            return $upload['error'];
+        }
+
+        $source = $upload['path'];
+        $info   = @getimagesize($source);
+        if ($info === false || $info[0] < 512 || $info[1] < 512) {
+            PawTunes::deleteFile($source);
+
+            return 'The app icon must be at least 512 x 512 pixels.';
+        }
+
+        $sizes = [512, 192, 180];
+        foreach ($sizes as $size) {
+
+            if (ImageResize::handle($source, "{$size}x{$size}", 'crop', "data/images/app-icon-{$size}.png") === false) {
+
+                PawTunes::deleteFile($source);
+                foreach ($sizes as $cleanup) {
+                    PawTunes::deleteFile("data/images/app-icon-{$cleanup}.png");
+                }
+
+                return 'Unable to process the app icon, the image could not be read by GD.';
+
+            }
+
+        }
+
+        PawTunes::deleteFile($source);
+
+        return null;
+
+    }
+
+
+    /**
+     * Removes the generated app icon sizes, the bundled PawTunes icons are used again
+     */
+    public function removeAppIcon(): void
+    {
+        foreach ([512, 192, 180] as $size) {
+            PawTunes::deleteFile("data/images/app-icon-{$size}.png");
+        }
 
     }
 

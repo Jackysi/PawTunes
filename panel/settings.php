@@ -85,6 +85,14 @@ if (isset($_GET['delete']) && $_GET['delete'] === 'override-share-image') {
 
 }
 
+// App icon removal: its own small POST form (CSRF-checked like every panel POST), nothing else is saved
+if ( ! empty($_POST['remove_app_icon'])) {
+
+    $panel->removeAppIcon();
+    $panel->flash($panel->alert('App icon removed, the bundled PawTunes icon is used again.', 'success'), 'index.php?page=settings');
+
+}
+
 // Checkbox fields of views/settings.blade.php, with the value the player assumes while the key is missing.
 // Browsers do not post unchecked boxes, so each one is written explicitly: otherwise unchecking would drop the
 // key from general.php, and an option that defaults to on (clean_artwork_search) could never be turned off.
@@ -135,6 +143,15 @@ if ( ! empty($_POST)) {
         }
     }
 
+    // App icon (home screen / web app manifest): stored as files, not in the config
+    if ( ! empty($_FILES['app_icon']['name'])) {
+
+        $iconError = $panel->storeAppIcon('app_icon');
+        if ($iconError !== null) {
+            $message = $panel->alert($iconError, 'error');
+        }
+
+    }
 
 
     if (isset($message)) {

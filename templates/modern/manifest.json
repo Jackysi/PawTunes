@@ -3,6 +3,8 @@
     "name": "Modern",
     "template": "template.html",
     "size": "480x700",
+    "theme_color": "#6C5CE7",
+    "background_color": "#FAFAFA",
     "screenshot": "screenshot.webp",
     "url": "https://prahec.com",
     "schemes": [

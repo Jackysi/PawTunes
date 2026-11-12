@@ -57,6 +57,12 @@ try {
         exit;
     }
 
+    ## Web app manifest (home screen / PWA install)
+    if (isset($_GET['manifest'])) {
+        require 'inc/manifest-handler.php';
+        exit;
+    }
+
     ## Handle requests & other backend stuff
     if (isset($_GET['channel'])) {
         require 'inc/handler.php';

@@ -708,16 +708,46 @@ class PawTunes
         $tpl  = ['tpl' => Helpers::arrayKeysCaseToSnakeCase($json['tpl'])];
 
         $opts = [
-            'url'             => $this->config('url'),
-            'indexing'        => ($this->config('disable_index') ? 'NOINDEX, NOFOLLOW' : 'INDEX, FOLLOW'),
-            'default_artwork' => $json['trackInfo']['default']['artwork'],
-            'og_image'        => $facebookShare ?? $this->settings['share_image_override'],
-            'og_site_title'   => (( ! empty($this->config('site_title'))) ? '<meta property="og:site_name" content="'.$this->config('site_title').'">' : ' '),
-            'timestamp'       => time(),
-            'json_settings'   => json_encode($json, JSON_THROW_ON_ERROR),
+            'url'              => $this->config('url'),
+            'indexing'         => ($this->config('disable_index') ? 'NOINDEX, NOFOLLOW' : 'INDEX, FOLLOW'),
+            'default_artwork'  => $json['trackInfo']['default']['artwork'],
+            'og_image'         => $facebookShare ?? $this->settings['share_image_override'],
+            'og_site_title'    => (( ! empty($this->config('site_title'))) ? '<meta property="og:site_name" content="'.$this->config('site_title').'">' : ' '),
+            'timestamp'        => time(),
+            'manifest_url'     => './index.php?manifest',
+            'apple_touch_icon' => $this->getAppIcons()[180],
+            'json_settings'    => json_encode($json, JSON_THROW_ON_ERROR),
         ];
 
         return array_merge($opts, $pass, $this->getLanguage(), $tpl);
+
+    }
+
+
+    /**
+     * App icons for the web app manifest and the apple-touch-icon link: the set uploaded in the panel
+     * (data/images/app-icon-<size>.png, the three sizes are always written together) when present, the
+     * bundled PawTunes icons otherwise. URLs are relative to the install directory and versioned by file
+     * mtime, so a replaced icon is not served from a stale browser cache.
+     *
+     * @return array  [180 => url, 192 => url, 512 => url, 'custom' => bool]
+     */
+    public function getAppIcons(): array
+    {
+        $custom = is_file('data/images/app-icon-512.png')
+            && is_file('data/images/app-icon-192.png')
+            && is_file('data/images/app-icon-180.png');
+
+        $files = $custom
+            ? [180 => 'data/images/app-icon-180.png', 192 => 'data/images/app-icon-192.png', 512 => 'data/images/app-icon-512.png']
+            : [180 => 'assets/img/apple-touch-icon.png', 192 => 'assets/img/android-chrome-192x192.png', 512 => 'assets/img/android-chrome-512x512.png'];
+
+        $icons = ['custom' => $custom];
+        foreach ($files as $size => $file) {
+            $icons[$size] = "./{$file}?v=".(is_file($file) ? filemtime($file) : 0);
+        }
+
+        return $icons;
 
     }
 

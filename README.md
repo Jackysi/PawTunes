@@ -119,6 +119,7 @@ Explore the live demo:
 - **Stream History**: Track stream history for each channel using API data or generate it dynamically.
 - **Auto-Reconnect**: Automatically reconnects streams in case of browser disconnection or network errors.
 - **Casting**: Chromecast (Chromium browsers) and AirPlay (Safari, iOS) buttons in every template, see [Casting](#casting-chromecast-and-airplay).
+- **Installable**: a web app manifest with your station's name and icon, so "Add to Home Screen" installs a branded app.
 - **and much more...**
 
 ### Backend
@@ -235,6 +236,9 @@ Every template has a cast button that appears once a device is available: Chrome
 - **MP3 and AAC** streams play on every Cast device. FLAC, Ogg and WebM are supported by Cast audio devices only; the player prefers MP3, then AAC, then the rest of the stream group. A stream the device cannot play ends the cast session with a message and keeps playing in the browser.
 - While casting, the play, stop and volume controls drive the device, track info keeps updating in the page, and the sleep timer stops the device. The device screen shows the channel name, the station title and the channel logo (or the default artwork); it cannot show track names, because the Cast receiver would have to reload the stream for every change.
 - **Privacy**: Chromecast support loads `cast_sender.js` from `gstatic.com` in Chromium browsers; mention it in your privacy policy or turn casting off. AirPlay loads nothing.
+
+### Home screen icon (web app manifest)
+The player serves a web app manifest at `index.php?manifest` with the player title, description, template colours and an icon, so listeners who add the player to their home screen get your station, not a generic icon. Upload a square image of at least 512 x 512 px under Settings > App Icon; without one the PawTunes icon is used.
 
 ## Developer API & Customization
 **PawTunes** is designed to be easily extended, upgraded, and customized.

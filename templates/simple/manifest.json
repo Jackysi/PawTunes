@@ -10,6 +10,8 @@
         }
     ],
     "size":     "360x475",
+    "theme_color":      "#c0392b",
+    "background_color": "#962d22",
     "screenshot": "screenshot.webp",
     "template": "template.html",
     "extra":    {
