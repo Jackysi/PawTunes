@@ -38,6 +38,10 @@ export default class ModernTpl {
         controller: null as AbortController | null,
     };
 
+    // Sleep timer picker: the minutes picked here (the core only knows the end time) and the countdown tick
+    private sleepMinutes: number = 0;
+    private sleepTick: any = 0;
+
 
     constructor(PawTunes: PawTunes) {
 
@@ -142,6 +146,7 @@ export default class ModernTpl {
 
         this.bindPawEvents();
         this.bindButtons();
+        this.bindSleepTimer();
         this.switchPage('main');
         this.fitArtwork();
 
@@ -645,6 +650,114 @@ export default class ModernTpl {
                 el.classList.add('hidden');
             }, 2500);
         });
+
+    }
+
+
+    // ── Sleep timer picker ────────────────────────────────────────────────
+    /**
+     * The moon button in the header opens a chip menu (Off, 15, 30, 60, 90 min) that drives the core's
+     * setSleepTimer(); the UI follows the core's sleep.change event, so a stop or a cast session that
+     * ends the timer is reflected too. Menu closes on pick, outside tap or Escape.
+     */
+    bindSleepTimer() {
+
+        const button = this.pawtunes._('.header .sleep')[0] as HTMLElement | undefined;
+        const menu = this.pawtunes._('.header .sleep-menu')[0] as HTMLElement | undefined;
+        if (!button || !menu) return;
+
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.toggleSleepMenu(menu.classList.contains('hidden'));
+        });
+
+        menu.addEventListener('click', (e) => e.stopPropagation());
+
+        this.pawtunes._('.sleep-menu .sleep-option', (option: HTMLElement) => {
+            option.addEventListener('click', () => {
+
+                // setSleepTimer() emits sleep.change synchronously (null first when it replaces a running
+                // timer, which clears the picked minutes), so the pick is recorded after it returns
+                const minutes = Number(option.dataset.minutes) || 0;
+                this.pawtunes.setSleepTimer(minutes || null);
+                this.sleepMinutes = minutes;
+                this.updateSleepUI();
+                this.toggleSleepMenu(false);
+
+            });
+        });
+
+        document.addEventListener('click', () => this.toggleSleepMenu(false));
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') this.toggleSleepMenu(false);
+        });
+
+        this.pawtunes.on('sleep.change', () => this.updateSleepUI());
+        this.updateSleepUI();
+
+    }
+
+    private toggleSleepMenu(open: boolean) {
+
+        this.pawtunes._('.header .sleep-menu', (el: HTMLElement) => el.classList.toggle('hidden', !open));
+        this.pawtunes._('.header .sleep', (el: HTMLElement) => el.setAttribute('aria-expanded', open ? 'true' : 'false'));
+
+    }
+
+    /**
+     * Button state, active chip and the countdown (ticks once a second only while a timer runs)
+     */
+    private updateSleepUI() {
+
+        const endsAt = this.pawtunes.getSleepTimerEnd();
+        if (!endsAt) this.sleepMinutes = 0;
+
+        // Off is highlighted only while no timer runs; a timer set elsewhere (another control, a cast
+        // session) has no known minutes, so no chip is highlighted for it
+        this.pawtunes._('.header .sleep', (el: HTMLElement) => el.classList.toggle('active', !!endsAt));
+        this.pawtunes._('.sleep-menu .sleep-option', (option: HTMLElement) => {
+            const minutes = Number(option.dataset.minutes) || 0;
+            option.classList.toggle('active', endsAt ? (this.sleepMinutes > 0 && minutes === this.sleepMinutes) : minutes === 0);
+        });
+
+        clearInterval(this.sleepTick);
+
+        const tick = () => {
+
+            const remaining = (this.pawtunes.getSleepTimerEnd() ?? 0) - Date.now();
+            const clock = this.formatClock(remaining);
+
+            this.pawtunes._('.header .sleep-remaining', (el: HTMLElement) => {
+                el.classList.toggle('hidden', !endsAt);
+                el.textContent = endsAt ? clock : '';
+            });
+
+            this.pawtunes._('.sleep-menu .sleep-menu-status', (el: HTMLElement) => {
+                el.classList.toggle('hidden', !endsAt);
+                el.textContent = endsAt ? this.pawtunes.translate('sleep_remaining', 'TIME', clock) : '';
+            });
+
+        };
+
+        tick();
+        if (endsAt) this.sleepTick = setInterval(tick, 1000);
+
+    }
+
+    /**
+     * "42:10", or "1:30:00" from one hour up
+     */
+    private formatClock(ms: number): string {
+
+        const total = Math.max(0, Math.ceil(ms / 1000));
+        const hours = Math.floor(total / 3600);
+        const minutes = Math.floor((total % 3600) / 60);
+        const seconds = total % 60;
+        const mm = String(minutes).padStart(2, '0');
+        const ss = String(seconds).padStart(2, '0');
+
+        return hours > 0 ? `${hours}:${mm}:${ss}` : `${minutes}:${ss}`;
 
     }
 

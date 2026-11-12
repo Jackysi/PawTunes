@@ -78,6 +78,24 @@
 
             <!-- Header -->
             <header class="header">
+                <!-- Sleep timer: the moon opens a small menu, the label next to it counts down while a timer runs -->
+                <a class="sleep" href="#" role="button" aria-haspopup="true" aria-expanded="false" aria-label="{{$sleep_timer}}" title="{{$sleep_timer}}">
+                    <svg class="icon-sleep" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                    </svg>
+                    <span class="sleep-remaining hidden"></span>
+                </a>
+                <div class="sleep-menu hidden" role="menu" aria-label="{{$sleep_timer}}">
+                    <div class="sleep-menu-title">{{$sleep_timer}}</div>
+                    <div class="sleep-options">
+                        <button type="button" class="sleep-option" data-minutes="0">{{$sleep_off}}</button>
+                        <button type="button" class="sleep-option" data-minutes="15">15 {{$unit_min_short}}</button>
+                        <button type="button" class="sleep-option" data-minutes="30">30 {{$unit_min_short}}</button>
+                        <button type="button" class="sleep-option" data-minutes="60">60 {{$unit_min_short}}</button>
+                        <button type="button" class="sleep-option" data-minutes="90">90 {{$unit_min_short}}</button>
+                    </div>
+                    <div class="sleep-menu-status hidden"></div>
+                </div>
                 <div class="current-channel"></div>
                 <!-- Cast (Chromecast / AirPlay): shown by the player once a device is available -->
                 <a class="cast hidden" href="#" role="button" aria-label="{{$ui_cast}}" title="{{$ui_cast}}">

@@ -78,12 +78,129 @@ body {
         font-size: 1.8rem;
         font-weight: 600;
         overflow: hidden;
+        max-width: calc(100% - 6rem); // room for the sleep and cast buttons at the edges
         text-align: center;
         white-space: nowrap;
         text-overflow: ellipsis;
 
         img {
+            max-width: 100%;
             height: 68px;
+            object-fit: contain;
+        }
+    }
+
+    // Sleep timer button at the left edge of the header (mirrors the cast button on the right)
+    .header .sleep {
+        position: absolute;
+        top: 50%;
+        left: 1.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 44px;
+        height: 44px;
+        margin-top: -22px;
+        padding: 0 .5rem;
+        cursor: pointer;
+        transition: color $duration-fast ease, transform $duration-fast $ease-spring;
+        text-decoration: none;
+        color: $text-secondary;
+        border-radius: 22px;
+        gap: .35rem;
+
+        &:hover {
+            color: $text-color;
+        }
+
+        &:active {
+            transform: scale(.9);
+        }
+
+        &.active, &.active:hover {
+            color: $accent-color;
+        }
+
+        .sleep-remaining {
+            font-size: $font-size-xs;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+
+            &.hidden {
+                display: none;
+            }
+        }
+    }
+
+    // The menu hangs below the header, above the pages
+    .sleep-menu {
+        position: absolute;
+        z-index: 30;
+        top: calc(100% - .5rem);
+        left: 1.25rem;
+        min-width: 15rem;
+        padding: .9rem 1rem 1rem;
+        animation: fade-up $duration-fast $ease-out;
+        border: 1px solid $border-color;
+        border-radius: $radius-lg;
+        background: $surface-color;
+        box-shadow: 0 12px 32px rgba(0, 0, 0, .14), 0 2px 8px rgba(0, 0, 0, .06);
+
+        &.hidden {
+            display: none;
+        }
+
+        .sleep-menu-title {
+            font-size: $font-size-xs;
+            font-weight: 600;
+            margin-bottom: .6rem;
+            letter-spacing: .05em;
+            text-transform: uppercase;
+            color: $text-secondary;
+        }
+
+        .sleep-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .4rem;
+        }
+
+        .sleep-option {
+            font-family: inherit;
+            font-size: $font-size-sm;
+            font-weight: 500;
+            padding: .4rem .75rem;
+            cursor: pointer;
+            transition: all $duration-fast ease;
+            color: $text-color;
+            border: 1px solid $border-color;
+            border-radius: $radius-full;
+            background: transparent;
+
+            &:hover {
+                background: $border-color;
+            }
+
+            &:active {
+                transform: scale(.96);
+            }
+
+            &.active {
+                color: #fff;
+                border-color: $accent-color;
+                background: $accent-color;
+            }
+        }
+
+        .sleep-menu-status {
+            font-size: $font-size-xs;
+            margin-top: .7rem;
+            color: $text-secondary;
+            font-variant-numeric: tabular-nums;
+
+            &.hidden {
+                display: none;
+            }
         }
     }
 
@@ -992,8 +1109,13 @@ html.artwork-tint-accent .pawtunes {
         border-top-color: var(--artwork-color, #{$accent-color});
     }
 
-    .listeners-total, .listener-time {
+    .listeners-total, .listener-time, .header .sleep.active, .header .sleep.active:hover {
         color: var(--artwork-color, #{$accent-color});
+    }
+
+    .sleep-menu .sleep-option.active {
+        border-color: var(--artwork-color, #{$accent-color});
+        background: var(--artwork-color, #{$accent-color});
     }
 
     .listeners-total {

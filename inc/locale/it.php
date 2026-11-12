@@ -48,4 +48,7 @@ return array (
   'unit_hour_short' => 'h',
   'unit_min_short' => 'min',
   'unit_sec_short' => 's',
+  'sleep_timer' => 'Timer di spegnimento',
+  'sleep_off' => 'Spento',
+  'sleep_remaining' => 'Si ferma tra {TIME}',
 );

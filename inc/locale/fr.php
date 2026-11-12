@@ -48,4 +48,7 @@ return array (
   'unit_hour_short' => 'h',
   'unit_min_short' => 'min',
   'unit_sec_short' => 's',
+  'sleep_timer' => 'Minuterie de veille',
+  'sleep_off' => 'Désactivée',
+  'sleep_remaining' => 'Arrêt dans {TIME}',
 );

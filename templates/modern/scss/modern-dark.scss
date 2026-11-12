@@ -232,6 +232,43 @@ $overlay-color:   rgba(255, 255, 255, .04);
     }
 
 
+    // ── Sleep timer ──────────────────────────────────────────────────────
+    .header .sleep {
+        color: rgba(255, 255, 255, .5);
+
+        &:hover {
+            color: #fff;
+        }
+
+        &.active, &.active:hover {
+            color: lighten($accent-color, 10%);
+        }
+    }
+
+    .sleep-menu {
+        border-color: rgba(255, 255, 255, .08);
+        background: rgba($surface-color, .92);
+        box-shadow: 0 12px 32px rgba(0, 0, 0, .5);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+
+        .sleep-option {
+            border-color: rgba(255, 255, 255, .08);
+            background: rgba(255, 255, 255, .03);
+
+            &:hover {
+                background: rgba(255, 255, 255, .08);
+            }
+
+            &.active {
+                border-color: $accent-color;
+                background: $accent-color;
+                box-shadow: 0 2px 12px rgba($accent-color, .3);
+            }
+        }
+    }
+
+
     // ── Listeners ────────────────────────────────────────────────────────
     .listeners-total {
         color: #fff;

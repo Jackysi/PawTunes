@@ -48,4 +48,7 @@ return array (
   'unit_hour_short' => 'Std.',
   'unit_min_short' => 'Min.',
   'unit_sec_short' => 'Sek.',
+  'sleep_timer' => 'Sleep-Timer',
+  'sleep_off' => 'Aus',
+  'sleep_remaining' => 'Stoppt in {TIME}',
 );
