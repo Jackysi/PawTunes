@@ -13,6 +13,7 @@ return array (
   'status_stopped' => 'Predvajalnik ustavljen.',
   'status_volume' => 'Glasnost: {LEVEL}',
   'status_muted' => 'Predvajalnik utišan.',
+  'status_reconnecting' => 'Povezava prekinjena, ponovno povezujem...',
   'song_history' => 'Zgodovina Pesmi',
   'ui_history' => 'Prikaži Zgodovino',
   'history_artist_title' => 'Avtor/Pesem',

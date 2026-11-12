@@ -13,6 +13,7 @@ return array (
   'status_stopped' => 'Player stopped.',
   'status_volume' => 'Volume: {LEVEL}',
   'status_muted' => 'Player muted.',
+  'status_reconnecting' => 'Connection lost, reconnecting...',
   'song_history' => 'Song History',
   'ui_history' => 'Show Track History',
   'history_artist_title' => 'Artist/Title',

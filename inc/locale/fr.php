@@ -13,6 +13,7 @@ return array (
   'status_stopped' => 'Lecteur arrêté.',
   'status_volume' => 'Volume : {LEVEL}',
   'status_muted' => 'Lecteur muet.',
+  'status_reconnecting' => 'Connexion perdue, reconnexion...',
   'song_history' => 'Historique des chansons',
   'ui_history' => 'Afficher l\'historique des pistes',
   'history_artist_title' => 'Artiste/Titre',

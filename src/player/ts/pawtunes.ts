@@ -8,7 +8,7 @@
  * This file is part of the PawTunes open-source project.
  * Contributions and feedback are welcome! Visit the repository or website for more details.
  */
-import {OnAir, PawMediaSource, Channel} from "./types";
+import {OnAir, PawMediaSource, Channel, ReconnectEvent} from "./types";
 import PawTunesWS from "./pawtunes-ws";
 import HTML5Audio from "./html5-audio";
 import Storage from "./storage";
@@ -167,6 +167,7 @@ export default class PawTunes extends HTML5Audio {
         status_init         : "Loading {STREAM}...",
         status_muted        : "Player muted.",
         status_playing      : "Playing {STREAM}...",
+        status_reconnecting : "Connection lost, reconnecting...",
         status_stopped      : "Player stopped.",
         status_volume       : "Volume: {LEVEL}",
         twitter_share       : "I am listening to {TRACK}!",
@@ -897,28 +898,25 @@ export default class PawTunes extends HTML5Audio {
         this.temp.resizePaginationEvent = () => this.pagination("", false)
         window.addEventListener('resize', this.temp.resizePaginationEvent);
 
-        // Network status change, when online start playback and reconnect to websocket
+        // Network status change: restart track info and run a deferred stream reconnect right away
         window.addEventListener('online', () => {
 
             this.state = 'online'
             this.emit('status', 'online');
+            if (this.debug) console.log("Network is back online");
 
             this.trackInfoInit();
-            if (this.temp.lastState?.paused === false) {
-                this.play();
-            }
-
-            console.log("Network is back online...")
+            this.resumeReconnect();
 
         });
 
-        // Network status change, when offline stop playback
+        // Network status change: the stream drop that follows is detected by the player itself and its
+        // retry waits for the online event (see scheduleReconnect), nothing else to do here
         window.addEventListener('offline', () => {
 
             this.state = 'offline'
             this.emit('status', 'offline');
-            this.temp.lastState = this.status();
-            console.warn("Network is offline!");
+            if (this.debug) console.warn("Network is offline");
 
         });
 
@@ -927,6 +925,20 @@ export default class PawTunes extends HTML5Audio {
             if (this.ws && this.ws.isWebSocketActive()) {
                 this.ws.close();
             }
+        })
+
+        // The browser stops the audio itself while leaving (or entering the back/forward cache):
+        // the resulting events are not drops, nothing may reconnect
+        window.addEventListener('pagehide', () => {
+            this.unloading = true;
+            this.clearReconnect();
+        })
+
+        // Restored from the back/forward cache: the page is live again, so later drops may reconnect.
+        // Without this, "unloading" would stay set and every drop after a bfcache restore would fall
+        // through to stop() with no retry.
+        window.addEventListener('pageshow', () => {
+            this.unloading = false;
         })
 
     }
@@ -943,6 +955,11 @@ export default class PawTunes extends HTML5Audio {
                 navigator.mediaSession.playbackState = 'playing';
             }
 
+            // Reconnect retries fire play as well: the "reconnecting" toast and the timer stay as they are
+            if (this.isReconnecting()) {
+                return;
+            }
+
             this.toast(this.translate('status_init', 'STREAM', this.channel.name), true);
 
             if (this.settings.showTimer) {
@@ -955,6 +972,7 @@ export default class PawTunes extends HTML5Audio {
         // PLAYING: This is called when media is playing
         this.on('playing', () => {
 
+            this.temp.reconnecting = false; // the outage (if any) is over
             this.handleMetaChange();
             if ('mediaSession' in navigator) {
                 navigator.mediaSession.playbackState = 'playing';
@@ -967,6 +985,11 @@ export default class PawTunes extends HTML5Audio {
         // STOPPED: Custom PawTunes event when the player is stopped
         this.on('stopped', () => {
 
+            this.temp.reconnecting = false;
+
+            // Reset the sticky status so the transient "stopped" toast cannot revert to a stale
+            // permanent one (e.g. "reconnecting..." left over when the listener stops mid-outage)
+            this.temp.notification = this.translate('status_stopped');
             this.toast(this.translate('status_stopped'), false);
 
             if ('mediaSession' in navigator) {
@@ -980,11 +1003,26 @@ export default class PawTunes extends HTML5Audio {
 
         })
 
-        // ERROR: An error occurred
-        this.on('error', (err: MediaError) => {
+        // RECONNECTING: the stream dropped and the core retries by itself. One toast per outage
+        // (not per attempt, and the attempt counter may start above 1 after a brief recovery), later
+        // attempts stay quiet because the UI already shows the connecting state.
+        this.on('reconnecting', (info: ReconnectEvent) => {
 
-            // Ignore autoplay errors
-            if (err.code && err.code === 4 && (this.status()?.networkState ?? 0) >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+            if (this.debug) console.log(`Stream ${info.reason}, reconnect attempt ${info.attempt} in ${info.delay} ms`);
+            if (!this.temp.reconnecting) {
+                this.temp.reconnecting = true;
+                this.toast(this.translate('status_reconnecting'), true);
+            }
+
+        });
+
+        // ERROR: An error occurred and no reconnect follows (the user stopped, no playable source, autoplay blocked)
+        this.on('error', (err: MediaError | { code: number, message: any }) => {
+
+            this.temp.reconnecting = false;
+
+            // Autoplay blocked by the browser: not an error for the listener, the play button is back
+            if (err && 'message' in err && err.message instanceof DOMException && err.message.name === 'NotAllowedError') {
                 return;
             }
 

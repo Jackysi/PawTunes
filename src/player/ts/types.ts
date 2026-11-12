@@ -39,6 +39,15 @@ export interface Format {
     media: string;
 }
 
+/**
+ * Payload of the `reconnecting` event, emitted when a retry is scheduled after a stream drop
+ */
+export interface ReconnectEvent {
+    attempt: number;                           // 1-based retry number since the last stable playback
+    delay: number;                             // ms until the retry runs (deferred to the online event while offline)
+    reason: 'error' | 'ended' | 'stalled';     // what was detected
+}
+
 export enum ReadyState {
     HAVE_NOTHING = 0,
     HAVE_METADATA = 1,

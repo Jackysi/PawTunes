@@ -13,6 +13,7 @@ return array (
   'status_stopped' => 'Lettore arrestato.',
   'status_volume' => 'Volume: {LEVEL}',
   'status_muted' => 'Audio disattivato.',
+  'status_reconnecting' => 'Connessione persa, riconnessione in corso...',
   'song_history' => 'Cronologia brani',
   'ui_history' => 'Mostra cronologia dei brani',
   'history_artist_title' => 'Artista/Titolo',
