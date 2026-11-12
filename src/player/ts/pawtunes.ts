@@ -127,6 +127,22 @@ export default class PawTunes extends HTML5Audio {
     timers: { [key: string]: any } = {};
 
     /**
+     * Sleep timer state: endsAt is the unix time (ms) playback stops, null when no timer runs.
+     * restoreVolume is the listener's volume (0-100) before the fade-out, fading is true while the
+     * fade and its volume restore are in progress (those volume changes are neither announced nor saved).
+     *
+     * @var {object} sleep
+     */
+    sleep: { endsAt: number | null, restoreVolume: number, fading: boolean } = {endsAt: null, restoreVolume: 0, fading: false};
+
+    /**
+     * How long before the sleep timer ends the volume fades out (ms)
+     *
+     * @var {number} sleepFadeDuration
+     */
+    sleepFadeDuration: number = 30000;
+
+    /**
      * URL of the player without channel hash
      *
      * @var {string} url
@@ -325,6 +341,141 @@ export default class PawTunes extends HTML5Audio {
 
         // Analytics
         this.createGoogleAnalytics();
+
+    }
+
+    /**
+     * A stop is listener intent (see HTML5Audio.stop): it also ends a running sleep timer
+     */
+    async stop(): Promise<void> {
+
+        await super.stop();
+        this.clearSleepTimer();
+
+    }
+
+    /**
+     * Releases the audio element and every timer this class owns
+     */
+    destroy(): void {
+
+        this.clearSleepTimer();
+        super.destroy();
+
+    }
+
+    /**
+     * Starts (or with null cancels) the sleep timer. Playback fades out over the last 30 seconds and
+     * then stops like a user stop, so no reconnect follows. The timer survives channel switches.
+     *
+     * @param minutes number|null - minutes from now, null or 0 cancels
+     */
+    public setSleepTimer(minutes: number | null): void {
+
+        this.clearSleepTimer();
+
+        if (!minutes || minutes <= 0) {
+            return;
+        }
+
+        const total = minutes * 60000;
+        this.sleep.endsAt = Date.now() + total;
+
+        // The fade covers the final 30 seconds (the whole duration for shorter timers)
+        this.timers.sleep = setTimeout(() => this.sleepFade(), Math.max(0, total - this.sleepFadeDuration));
+        this.emit('sleep.change', {endsAt: this.sleep.endsAt});
+
+    }
+
+    /**
+     * Unix time (ms) the sleep timer stops playback, null when none is set
+     */
+    public getSleepTimerEnd(): number | null {
+
+        return this.sleep.endsAt;
+
+    }
+
+    /**
+     * Lowers the element volume linearly until the end time, then stops.
+     * Only the element is touched: the stored volume and the toasts stay untouched (see sleep.fading).
+     */
+    protected sleepFade(): void {
+
+        const endsAt = this.sleep.endsAt;
+        if (!endsAt || !this.audio) {
+            return;
+        }
+
+        // Nothing to fade on devices without volume control (iOS) or when already silent: stop on time
+        if (this.isNoVolume || this.volume < 1) {
+            this.timers.sleep = setTimeout(() => this.stop(), Math.max(0, endsAt - Date.now()));
+            return;
+        }
+
+        const startVolume = this.audio.volume;
+        const fadeStart = Date.now();
+
+        this.sleep.restoreVolume = this.volume;
+        this.sleep.fading = true;
+
+        this.timers.sleepFade = setInterval(() => {
+
+            if (!this.audio) {
+                return;
+            }
+
+            const remaining = endsAt - Date.now();
+            if (remaining <= 0) {
+                this.stop();
+                return;
+            }
+
+            // Floor at 1%: 0 would flip the element to muted, which fires extra volumechange events on restore
+            this.audio.volume = Math.max(0.01, startVolume * remaining / (endsAt - fadeStart));
+
+        }, 250);
+
+    }
+
+    /**
+     * Cancels the sleep timer and undoes a running fade. Called by stop() after the element is paused,
+     * so the restored volume never plays audibly.
+     */
+    protected clearSleepTimer(): void {
+
+        clearTimeout(this.timers.sleep);
+        clearInterval(this.timers.sleepFade);
+
+        if (this.sleep.fading && this.audio) {
+
+            const target = this.sleep.restoreVolume / 100;
+            if (this.audio.volume === target) {
+
+                this.sleep.fading = false;
+
+            } else {
+
+                // The restore fires one more volumechange. The player's own handler (registered earlier,
+                // so it runs first) must still ignore it, this one-time listener clears the flag after that.
+                this.audio.addEventListener('volumechange', () => {
+                    this.sleep.fading = false;
+                }, {once: true});
+                this.audio.volume = target;
+
+            }
+
+        } else {
+
+            this.sleep.fading = false;
+
+        }
+
+        const wasActive = this.sleep.endsAt !== null;
+        this.sleep.endsAt = null;
+        if (wasActive) {
+            this.emit('sleep.change', null);
+        }
 
     }
 
@@ -1037,6 +1188,11 @@ export default class PawTunes extends HTML5Audio {
 
         // VOLUMECHANGE: Simple volume change binding, replaces default with a storage option
         this.on('volumechange', () => {
+
+            // Sleep timer fade: a transient volume, neither announced nor remembered
+            if (this.sleep.fading) {
+                return;
+            }
 
             // Change main volume icons
             if (this.volume < 1) {
