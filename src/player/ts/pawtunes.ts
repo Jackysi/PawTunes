@@ -135,6 +135,31 @@ export default class PawTunes extends HTML5Audio {
     timers: { [key: string]: any } = {};
 
     /**
+     * Track info polling generation, bumped by every trackInfoInit(). A poll response, or a trackInfoInit()
+     * resuming after its await, that belongs to an older generation is dropped: after a channel switch a
+     * slow response for the previous channel must not overwrite the new one, and only the newest call may
+     * arm the interval (otherwise overlapping calls leave an orphaned interval polling forever).
+     *
+     * @var {number} trackInfoGeneration
+     */
+    protected trackInfoGeneration: number = 0;
+
+    /**
+     * Aborts the in-flight polls of the previous generation, so they do not hold connections open
+     *
+     * @var {AbortController|null} trackInfoAbort
+     */
+    protected trackInfoAbort: AbortController | null = null;
+
+    /**
+     * True once the current channel delivered a valid track. A failed poll then keeps the last good track
+     * on screen instead of flashing the defaults; reset on every channel switch.
+     *
+     * @var {boolean} trackInfoReceived
+     */
+    protected trackInfoReceived: boolean = false;
+
+    /**
      * Sleep timer state: endsAt is the unix time (ms) playback stops, null when no timer runs.
      * restoreVolume is the listener's volume (0-100) before the fade-out, fading is true while the
      * fade and its volume restore are in progress (those volume changes are neither announced nor saved).
@@ -585,14 +610,21 @@ export default class PawTunes extends HTML5Audio {
      */
     public async trackInfoInit(): Promise<void> {
 
-        // API Interval? Stop it.
-        if (this.timers.trackInfo) {
-            clearInterval(this.timers.trackInfo);
-        }
+        const generation = ++this.trackInfoGeneration;
+
+        // API Interval? Stop it, and drop the polls still in flight (they belong to the old generation)
+        this.stopTrackInfoPolling();
+        this.trackInfoAbort?.abort();
+        this.trackInfoAbort = null;
 
         // Already connected to a web socket? Close it.
         if (this.ws.isWebSocketActive()) {
             await this.ws.close();
+        }
+
+        // A newer call (channel switch, back online) started while the socket was closing: it owns the setup
+        if (generation !== this.trackInfoGeneration) {
+            return;
         }
 
         // Invalid channel config?
@@ -617,9 +649,12 @@ export default class PawTunes extends HTML5Audio {
 
         // Every other method. A plain fetch keeps HTTP caching (Cache-Control, ETag) effective:
         // no cache busters and no "no-store", the server decides how long a poll result is fresh.
+        const abort = new AbortController();
+        this.trackInfoAbort = abort;
+
         let pawTunesAPI = () => {
 
-            fetch(`${this.settings.api}?channel=${encodeURIComponent(this.channel.name)}`)
+            fetch(`${this.settings.api}?channel=${encodeURIComponent(this.channel.name)}`, {signal: abort.signal})
                 .then(response => {
 
                     if (!response.ok) {
@@ -631,19 +666,38 @@ export default class PawTunes extends HTML5Audio {
                 })
                 .then(data => {
 
-                    this.handleOnAirResponse(data);
+                    if (generation === this.trackInfoGeneration) {
+                        this.handleOnAirResponse(data);
+                    }
 
                 })
                 .catch(error => {
 
-                    this.handleOnAirError(error);
+                    // Superseded (aborted or merely late): the newer generation renders its own result
+                    if (generation === this.trackInfoGeneration) {
+                        this.handleOnAirError(error);
+                    }
 
                 });
 
         }
 
+        // The first request runs even offline: it fails fast and shows the defaults for a channel picked
+        // while offline. Polling itself waits for the online event, which calls trackInfoInit() again.
         pawTunesAPI();
-        this.timers.trackInfo = setInterval(pawTunesAPI, this.settings.refreshRate * 1000)
+        if (this.state === 'online') {
+            this.timers.trackInfo = setInterval(pawTunesAPI, this.settings.refreshRate * 1000);
+        }
+
+    }
+
+    /**
+     * Stops the track info interval (offline, or before a new one is armed)
+     */
+    protected stopTrackInfoPolling(): void {
+
+        clearInterval(this.timers.trackInfo);
+        this.timers.trackInfo = null;
 
     }
 
@@ -658,10 +712,14 @@ export default class PawTunes extends HTML5Audio {
         if (!data || !data.artist || !data.title) {
             // An error-shaped response must not leave a stale LIVE badge or queued track on screen
             this.updateTrackExtra({});
-            this.hideLoading();
             console.error('Invalid data or no data received from the server.');
+
+            // Otherwise a failed poll: keeps the last good track, or shows the defaults for a fresh channel
+            this.handleOnAirError(new Error('Invalid track info response'));
             return;
         }
+
+        this.trackInfoReceived = true;
 
         // Up next / live DJ ride along with the track and change independently of it
         this.updateTrackExtra(data);
@@ -765,8 +823,22 @@ export default class PawTunes extends HTML5Audio {
 
         if (this.debug) console.warn('Track info request failed:', error);
 
+        // A transient failure (one lost poll, a server restart): the last good track and its extras are
+        // still the best guess, the next successful poll corrects them. Resetting would flash the defaults.
+        if (this.trackInfoReceived) {
+            this.hideLoading();
+            return;
+        }
+
         // Whatever was queued or live is unknown now
         this.updateTrackExtra({});
+
+        // Defaults already shown by an earlier failure: nothing to re-render or announce
+        const defaults = this.settings.trackInfo.default;
+        if (this.onAir.artist === defaults.artist && this.onAir.title === defaults.title && this.onAir.artwork === defaults.artwork) {
+            this.hideLoading();
+            return;
+        }
 
         // Set default on air
         this.onAir = {
@@ -1156,12 +1228,15 @@ export default class PawTunes extends HTML5Audio {
         });
 
         // Network status change: the stream drop that follows is detected by the player itself and its
-        // retry waits for the online event (see scheduleReconnect), nothing else to do here
+        // retry waits for the online event (see scheduleReconnect). Track info polling pauses until then,
+        // the online handler re-arms it through trackInfoInit() (which clears first, so never two intervals).
         window.addEventListener('offline', () => {
 
             this.state = 'offline'
             this.emit('status', 'offline');
             if (this.debug) console.warn("Network is offline");
+
+            this.stopTrackInfoPolling();
 
         });
 
@@ -1729,6 +1804,7 @@ export default class PawTunes extends HTML5Audio {
         this.history = [];
         this.updateHistoryDOM();
         this.updateTrackExtra({});
+        this.trackInfoReceived = false;
         this.trackInfoInit();
 
     }
