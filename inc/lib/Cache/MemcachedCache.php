@@ -99,6 +99,26 @@ class MemcachedCache implements BackendInterface
     }
 
 
+    public function add(string $key, $data, int $ttl): bool
+    {
+        // Memcached::add is atomic; RES_NOTSTORED means the key exists, anything else is a failure
+        if ($this->memcached->add($key, $data, $ttl)) {
+            $this->clearFailure();
+
+            return true;
+        }
+
+        if (defined('Memcached::RES_NOTSTORED') && $this->memcached->getResultCode() === Memcached::RES_NOTSTORED) {
+            return false;
+        }
+
+        $reason = "Memcached add failed for key \"{$key}\": ".$this->resultMessage();
+        $this->fail($reason);
+
+        throw new \RuntimeException($reason);
+    }
+
+
     public function delete(string $key): bool
     {
         $deleted = (bool) $this->memcached->delete($key);

@@ -388,6 +388,34 @@ class Cache
     }
 
 
+    /**
+     * Atomic "store only when missing". A false return without an exception means the key exists,
+     * which is the normal outcome for a lock and not a backend failure.
+     *
+     * @param  string  $key
+     * @param  mixed  $data
+     * @param  int  $ttl
+     *
+     * @return bool
+     */
+    protected function backendAdd(string $key, $data, int $ttl): bool
+    {
+        $mode = $this->backend->mode();
+
+        try {
+            return $this->backend->add($key, $data, $ttl);
+        } catch (Throwable $e) {
+            $this->recordFailure($mode, 'add', $this->backend->failureReason() ?? $e->getMessage());
+
+            if ($this->activateDiskFallback()) {
+                return $this->backend->add($key, $data, $ttl);
+            }
+        }
+
+        return false;
+    }
+
+
     protected function backendDelete(string $key, bool $fallback = true): bool
     {
         $mode = $this->backend->mode();
@@ -459,6 +487,47 @@ class Cache
         }
 
         return $stored;
+    }
+
+
+    /**
+     * Store a value only when the key does not exist yet, atomically on every backend, so that exactly
+     * one concurrent caller gets true. Meant for short-lived locks: pass a TTL above zero that outlives
+     * the work being guarded, and delete() the key when done. Lock keys are not tracked in the store
+     * (the backend TTL expires them), so taking and releasing one never rewrites the store.
+     *
+     * @param  string  $key
+     * @param  mixed  $data
+     * @param  int  $ttl  Seconds, must be above zero
+     *
+     * @return bool  true when this call created the key
+     */
+    public function add($key, $data, int $ttl): bool
+    {
+        if ( ! $this->startup) {
+            return false;
+        }
+
+        return $this->backendAdd($this->parseKey($key), $data, $ttl);
+    }
+
+
+    /**
+     * Read a key's raw backend value, bypassing the disk-mode store-freshness gate that get() applies.
+     * Meant for keys created with add() (locks), which are not tracked in the store, so get() would miss
+     * them in disk mode. Returns false when the key is absent.
+     *
+     * @param  string  $key
+     *
+     * @return mixed  false when missing
+     */
+    public function peek($key)
+    {
+        if ( ! $this->startup) {
+            return false;
+        }
+
+        return $this->backendGet($this->parseKey($key));
     }
 
 

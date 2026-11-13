@@ -91,6 +91,15 @@ class RedisCache implements BackendInterface
     }
 
 
+    public function add(string $key, $data, int $ttl): bool
+    {
+        // SET NX EX is a single atomic command; Redis answers nil (false here) when the key exists
+        $options = ($ttl > 0) ? ['nx', 'ex' => $ttl] : ['nx'];
+
+        return (bool) $this->redis->set($key, $data, $options);
+    }
+
+
     public function delete(string $key): bool
     {
         if (method_exists($this->redis, 'delete')) {

@@ -245,6 +245,41 @@ Check out the demo and feel free to contribute or provide feedback: [Live ICY Me
 - **High Performance**: Optimized to handle thousands of simultaneous listeners.
 - **Caching** using APC, APCu, Redis, Memcached, and Disk cache (can be on shared storage).
 - **Artwork Optimization**: Images are cropped, optimized, and stored on PawTunes for fast access. This feature can be disabled in the settings, using only direct API requests, which are also cached.
+- **One upstream request per refresh interval**: when the cached track info expires, a single request refreshes it while every other listener keeps getting the previous copy, so Icecast, Shoutcast, AzuraCast and friends see one request per interval per channel, however many listeners are polling.
+
+### High traffic
+Track info responses (`index.php?channel=<name>`) carry HTTP caching headers:
+`Cache-Control: public, max-age=<seconds until the cached copy expires>`
+plus a weak `ETag`, and conditional requests (`If-None-Match`) are answered with `304 Not Modified`.
+Browsers reuse a poll result within the refresh interval on their own, and any shared cache in front of PHP
+(a CDN such as Cloudflare, Varnish, or an nginx microcache) serves the same copy to every listener, so PHP
+runs about once per interval per channel instead of once per listener.
+
+With nginx and PHP-FPM, a microcache keyed on the request URI is all it takes:
+
+```nginx
+# http { } context: 10 MB of keys, entries unused for 10 minutes are dropped
+fastcgi_cache_path /var/cache/nginx/pawtunes levels=1:2 keys_zone=pawtunes:10m inactive=10m max_size=100m;
+
+# server { } context, inside your location ~ \.php$ block
+fastcgi_cache pawtunes;
+fastcgi_cache_key "$scheme$host$request_uri";
+fastcgi_cache_valid 200 1s;            # floor; the Cache-Control max-age sent by PawTunes extends it
+fastcgi_cache_use_stale updating error timeout;
+fastcgi_cache_lock on;                 # one request refreshes a stale entry, the others get the old copy
+fastcgi_ignore_headers Set-Cookie;
+add_header X-Cache $upstream_cache_status;
+```
+
+`fastcgi_cache_use_stale updating` together with `fastcgi_cache_lock on` is the safe, up-to-date combination:
+while an entry is being refreshed, the one request that holds the lock reaches PHP and every other listener is
+served the previous copy, so the upstream sees one request per interval. There is deliberately no
+`fastcgi_cache_background_update` (and PawTunes sends no `stale-while-revalidate`): background revalidation
+hands a listener the stale copy and refreshes behind it, which shows each track change one poll late.
+
+Only cache the player endpoints: add `fastcgi_cache_bypass $no_cache; fastcgi_no_cache $no_cache;` with a
+`map $request_uri $no_cache { default 1; ~^/index\.php\?channel= 0; }` so the control panel (`/panel/`)
+is never cached. The channel list (`?channel=all`) is cacheable for 60 seconds.
 
 ---
 

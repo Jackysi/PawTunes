@@ -66,6 +66,15 @@ class ApcCache implements BackendInterface
     }
 
 
+    public function add(string $key, $data, int $ttl): bool
+    {
+        // apc(u)_add is atomic and returns false when the key already exists
+        $add = $this->mode.'_add';
+
+        return (bool) $add($key, $data, $ttl);
+    }
+
+
     public function delete(string $key): bool
     {
         $delete = $this->mode.'_delete';

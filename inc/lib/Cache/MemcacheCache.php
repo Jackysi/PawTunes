@@ -77,6 +77,13 @@ class MemcacheCache implements BackendInterface
     }
 
 
+    public function add(string $key, $data, int $ttl): bool
+    {
+        // Memcache::add is atomic and returns false when the key already exists
+        return (bool) $this->memcache->add($key, $data, false, $ttl);
+    }
+
+
     public function delete(string $key): bool
     {
         $deleted = (bool) $this->memcache->delete($key);
