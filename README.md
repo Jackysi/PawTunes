@@ -120,12 +120,14 @@ Explore the live demo:
 - **Auto-Reconnect**: Automatically reconnects streams in case of browser disconnection or network errors.
 - **Casting**: Chromecast (Chromium browsers) and AirPlay (Safari, iOS) buttons in every template, see [Casting](#casting-chromecast-and-airplay).
 - **Installable**: a web app manifest with your station's name and icon, so "Add to Home Screen" installs a branded app.
+- **Now Playing Widget**: embed the current track on any website or in OBS as a browser source.
 - **and much more...**
 
 ### Backend
 - **PHP Backend**: Powers advanced features like track info, artwork management, API integrations, and more
 - **Caching Options**: Supports APCu, Redis, Memcached, and disk-based caching for high performance.
 - **Control Panel**: Manage all settings, templates, and tracks via an intuitive dashboard.
+- **AI Assistant** (optional): reads stream titles your regex cannot split, suggests a regex from samples and translates the player. Works with OpenAI, Anthropic or a local Ollama.
 - **API Support**: Integrates seamlessly with APIs like Spotify and FanArtTV for enhanced metadata (details below).
 - **Templates**: Use variables in HTML templates, with future support planned for the Blade templating engine.
 - **Advanced Template Options**: Add custom templates with metadata-driven options (e.g. enable/disable spectrum, song search URL and much more) see `metadata.json` in the template folders.
@@ -142,9 +144,12 @@ Explore the live demo:
 
 ### Artwork APIs
 - **iTunes**: Public API, no API key required.
+- **Deezer**: Public API, no API key required. Good coverage of independent and electronic releases.
 - **Spotify**: Public API, API key required.
 - **LastFM**: Public API, API key required.
 - **FanArt TV**: Public API, API key required.
+- **Apple Music**: Apple Music API, developer key required.
+- **AI Artwork** (optional): abstract art from OpenAI, Gemini or fal.ai for artists no other source knows, with a daily cost limit.
 - **Custom**: Use your own sources, e.g., point to a folder or a URL like `https://page.com/{{$artist}}%20-%20{{$title}}.jpg`. You can also integrate with any other artwork service.
 
 ---

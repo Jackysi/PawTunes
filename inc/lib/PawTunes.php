@@ -65,6 +65,7 @@ class PawTunes
         = [
             'itunes'     => 'iTunes',
             'applemusic' => 'AppleMusic',
+            'deezer'     => 'Deezer',
             'fanarttv'   => 'FanArtTV',
             'lastfm'     => 'LastFM',
             'spotify'    => 'Spotify',

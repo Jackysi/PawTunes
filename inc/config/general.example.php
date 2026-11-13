@@ -16,6 +16,12 @@ return array(
                     'state' => 'enabled',
                     'index' => 25,
                 ),
+            // Keyless like iTunes, finds many independent and electronic releases iTunes does not have
+            'deezer'   =>
+                array(
+                    'state' => 'enabled',
+                    'index' => 26,
+                ),
             'spotify'  =>
                 array(
                     'index'   => 26,

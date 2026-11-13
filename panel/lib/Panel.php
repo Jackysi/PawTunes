@@ -70,6 +70,9 @@ class Panel
             'itunes'   => [
                 'name' => 'iTunes (no API keys)',
             ],
+            'deezer'   => [
+                'name' => 'Deezer (no API keys)',
+            ],
             'applemusic' => [
                 'name'   => 'Apple Music (API key required)',
                 'fields' => [
