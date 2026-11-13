@@ -234,14 +234,9 @@ select[multiple].input-lg {
 
 .help-block {
     font-size: 12px;
-    font-style: italic;
-    display: block;
+    display: inline-block;
     padding: $input-padding-base 0 0 0;
-    color: #808080;
-
-    &.extra {
-        font-style: normal;
-    }
+    color: $slate-500;
 }
 
 @media (min-width: 768px) {
@@ -626,18 +621,26 @@ select[multiple].input-lg {
         font-weight: $font-bold;
         display: flex;
         align-items: center;
-        justify-content: center;
+        justify-content: flex-start;
         padding: 7px 12px;
         cursor: pointer;
         user-select: none;
         transition: border-color 200ms ease-out, box-shadow 200ms ease-out;
+        overflow: hidden;
         white-space: nowrap;
-        text-overflow: ellipsis;
         color: $slate-700;
         border: 1px solid $slate-300;
         border-radius: 6px;
         outline-style: none;
         background: #fff;
+
+        // Long option labels shrink and end in an ellipsis instead of spilling out of the box
+        .placeholder {
+            overflow: hidden;
+            flex: 1 1 auto;
+            min-width: 0;
+            text-overflow: ellipsis;
+        }
 
         .drop-arrow {
             margin-left: auto;

@@ -895,10 +895,13 @@ tbody .handle {
 .js-tooltip {
     position: fixed;
     z-index: 10000;
+    // Short titles stay on one line, long hints wrap into a readable column
+    width: max-content;
+    max-width: min(22rem, calc(100vw - 16px));
     padding: 0.5rem 0.75rem;
     font-size: 0.85rem;
-    line-height: 1;
-    white-space: nowrap;
+    line-height: 1.45;
+    white-space: normal;
     color: #fff;
     background: $slate-800;
     border-radius: 6px;
@@ -1010,8 +1013,107 @@ tbody .handle {
     padding-top: 20px;
 }
 
+// Inline help stays one quiet line, longer explanations live in .info-hint tooltips
 .help-block {
-    font-size: $base-font-size;
+    font-size: 13px;
+}
+
+.text-muted {
+    color: $slate-500;
+}
+
+// Checkbox text: balanced line breaks, so a wrap never leaves one word alone on the last line
+.checkbox label .description {
+    text-wrap: pretty;
+}
+
+// Info icon next to a label or heading, its tooltip carries the long explanation
+.info-hint {
+    // Padding is the hover/tap area around the glyph. The negative vertical margin cancels it, so a bigger
+    // target never makes the row taller, horizontally it doubles as the gap to the neighbouring text.
+    --hint-pad: 6px;
+
+    font-size: 17px;
+    font-style: normal;
+    line-height: 1;
+    display: inline-block;
+    margin: calc(var(--hint-pad) * -1) 0;
+    padding: var(--hint-pad);
+    cursor: help;
+    vertical-align: -2px; // Optical centre against 13-14px text, the glyph is taller than the x-height
+    color: $slate-400;
+    border-radius: 50%;
+    transition: color 150ms ease;
+
+    &:hover, &:focus-visible {
+        color: $primary-bg-color;
+    }
+
+    &:focus-visible {
+        outline: 2px solid $primary-bg-color;
+        outline-offset: -2px;
+    }
+
+    // Fingers need roughly a 40px target: 17px glyph + 2 x 11px padding
+    @media (pointer: coarse) {
+        --hint-pad: 11px;
+    }
+}
+
+// Folded reference text (e.g. the AI Artwork safeguards), keeps long explanations off the page until asked for
+details.more-info {
+    color: $slate-500;
+
+    summary {
+        display: inline-block;
+        cursor: pointer;
+        color: $primary-bg-color;
+    }
+
+    ul {
+        margin: .5rem 0 0;
+    }
+}
+
+// App icon: preview of the icon in use plus upload/remove actions
+.app-icon-picker {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    .app-icon-preview {
+        flex: none;
+        width: 56px;
+        height: 56px;
+        object-fit: cover;
+        border: 1px solid $slate-200;
+        border-radius: 12px; // Home screen icons are rounded squares
+        background: $slate-50;
+    }
+
+    .app-icon-body {
+        min-width: 0;
+    }
+
+    .app-icon-buttons {
+        display: flex;
+        align-items: center;
+        gap: .25rem;
+
+        label.btn {
+            margin: 0;
+        }
+    }
+
+    .app-icon-status {
+        font-size: 13px;
+        margin-top: .35rem;
+        color: $slate-500;
+
+        &.is-error {
+            color: $danger-color;
+        }
+    }
 }
 
 /**

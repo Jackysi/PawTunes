@@ -307,7 +307,7 @@ return [
             [
                 'label'        => 'HTTP-Auth Username',
                 'name'         => 'custom-user',
-                'map'          => 'user',
+                'map'          => 'auth-user',
                 'placeholder'  => 'JohnDoe',
                 'class'        => 'col-sm-4',
                 'description'  => '(Optional)',
@@ -316,7 +316,7 @@ return [
             [
                 'label'        => 'HTTP-Auth Password',
                 'name'         => 'custom-pass',
-                'map'          => 'pass',
+                'map'          => 'auth-pass',
                 'placeholder'  => 'Password',
                 'class'        => 'col-sm-4',
                 'description'  => '(Optional)',

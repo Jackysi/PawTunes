@@ -42,7 +42,7 @@ window.toast = function (message, type, duration) {
 };
 
 /**
- * JS-positioned tooltips — replaces CSS pseudo-element tooltips.
+ * JS-positioned tooltips, replacing CSS pseudo-element tooltips.
  * Supports: default (above), .left (to the left), auto-flip when near edges.
  */
 (function () {
@@ -122,19 +122,24 @@ window.toast = function (message, type, duration) {
             arrow.style.top = Math.max(8, Math.min(arrowTop, th - 8)) + 'px';
         }
 
-        requestAnimationFrame(function () { tip.classList.add('visible'); });
+        // Keep a local reference, hide() may null `tip` before the next frame
+        let shown = tip;
+        requestAnimationFrame(function () { shown.classList.add('visible'); });
     }
 
     function hide() {
         if (tip) { tip.remove(); tip = null; currentEl = null; }
     }
 
-    document.addEventListener('mouseover', function (e) {
+    // Hover is for real mice only: a touch tap also fires pointerover/pointerout, which would flash the tooltip
+    document.addEventListener('pointerover', function (e) {
+        if (e.pointerType !== 'mouse') return;
         let el = e.target.closest('.css-hint[data-title]');
         if (el) show(el);
     });
 
-    document.addEventListener('mouseout', function (e) {
+    document.addEventListener('pointerout', function (e) {
+        if (e.pointerType !== 'mouse') return;
         let el = e.target.closest('.css-hint[data-title]');
         if (!el) return;
 
@@ -144,6 +149,42 @@ window.toast = function (message, type, duration) {
 
         hide();
     });
+
+    // Keyboard users reach hints with Tab, so keyboard focus shows the tooltip as well. Mouse and programmatic
+    // focus (e.g. Bootstrap returning focus after a modal) are not :focus-visible, so they leave it hidden.
+    document.addEventListener('focusin', function (e) {
+        let el = e.target.closest && e.target.closest('.css-hint[data-title]');
+        if (el && el.matches(':focus-visible')) show(el);
+    });
+
+    document.addEventListener('focusout', function (e) {
+        if (e.target.closest && e.target.closest('.css-hint[data-title]')) hide();
+    });
+
+    // Pointer type of the last press: click events do not carry it in every browser
+    let lastPointer = 'mouse';
+    document.addEventListener('pointerdown', function (e) {
+        lastPointer = e.pointerType;
+    }, {capture: true});
+
+    // Touch screens have no hover: a tap on an info hint toggles its tooltip, a tap anywhere else closes it.
+    // preventDefault also stops hints inside a <label> from toggling the checkbox or focusing the input.
+    document.addEventListener('click', function (e) {
+        let el = e.target.closest('.info-hint');
+        if (!el) {
+            if (tip && currentEl && currentEl.classList.contains('info-hint')) hide();
+            return;
+        }
+
+        e.preventDefault();
+        if (lastPointer === 'mouse') return; // Hover already shows it, a click must not close it
+
+        if (tip && currentEl === el) hide();
+        else show(el);
+    });
+
+    // The tooltip is position: fixed, so it would drift away from its element on scroll
+    window.addEventListener('scroll', hide, {passive: true, capture: true});
 
 })();
 
@@ -299,10 +340,10 @@ function shouldUpdate(serverVersion, localVersion, segments = 3) {
 
                 $menu.addClass('active').stop(true, true).fadeIn(250);
 
-                // Close the menu when clicking outside of it
-                $(document).on('click', function () {
+                // Close the menu when clicking outside of it. Namespaced: a bare off('click') would also unbind the
+                // delegated data-confirm handler, and confirmations would silently stop working after one dropdown
+                $(document).off('click.dropdown-close').one('click.dropdown-close', function () {
                     $menu.removeClass('active').stop(true, true).fadeOut(150);
-                    $(document).off('click');
                 });
             }
 

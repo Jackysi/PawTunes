@@ -143,11 +143,13 @@ class Forms
             $output .= $this->generateFieldHtml($o, $fieldValue);
         }
 
-        // Add description/help text if provided
-        if ( ! empty($o['description']) && ! in_array($o['type'], ['checkbox', 'radio'])) {
+        // Help area right of the control: the hint icon first (next to the field), then the short description.
+        // Checkboxes and radios render both inside their own label instead.
+        $hasHelp = ! empty($o['description']) || ! empty($o['hint']);
+        if ($hasHelp && ! in_array($o['type'], ['checkbox', 'radio'])) {
 
             $output .= $o['label-full'] ? '<div class="col-sm-12">' : '';
-            $output .= '<div class="help-block">'.$o['description'].'</div>';
+            $output .= '<div class="help-block">'.( ! empty($o['hint']) ? self::hint($o['hint']) : '').($o['description'] ?? '').'</div>';
             $output .= $o['label-full'] ? '</div>' : '';
 
         }
@@ -156,6 +158,23 @@ class Forms
         $output .= '</div>';
 
         return $output;
+    }
+
+
+    /**
+     * Info icon whose tooltip carries a field's long explanation, so the form itself stays one line per field.
+     * The text is plain (the tooltip renders it with textContent), so it is escaped here.
+     *
+     * @param  string  $text  Explanation shown on hover or keyboard focus.
+     *
+     * @return string
+     */
+    public static function hint(string $text): string
+    {
+        return sprintf(
+            '<span class="info-hint css-hint" tabindex="0" role="img" aria-label="%1$s" data-title="%1$s"><i class="fa fa-circle-info"></i></span>',
+            htmlspecialchars($text, ENT_QUOTES, 'UTF-8')
+        );
     }
 
 
@@ -236,7 +255,7 @@ class Forms
                 $output    .= sprintf(
                     '<div class="%s"><div class="%s"><label for="%s" tabindex="0">'.
                     '<input type="%s" name="%s" id="%s" value="%s"%s %s>'.
-                    '<span class="icon fa fa-check"></span> <span class="description">%s</span></label></div></div>',
+                    '<span class="icon fa fa-check"></span> <span class="description">%s%s</span></label></div></div>',
                     $fieldClass,
                     $inputType,
                     $fieldId,
@@ -246,7 +265,8 @@ class Forms
                     $o['value'],
                     $checked,
                     $extras,
-                    $o['description'] ?? ''
+                    $o['description'] ?? '',
+                    ! empty($o['hint']) ? self::hint($o['hint']) : ''
                 );
                 break;
 

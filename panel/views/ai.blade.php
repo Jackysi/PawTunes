@@ -9,10 +9,9 @@
                 <i class="icon fa fa-wand-magic-sparkles"></i> AI Assistant
             </div>
             <div class="content form-content">
-                <p>
-                    A language model that reads stream titles your Track RegEx cannot split, and powers the tools below.
-                    Each distinct stream title is asked about once and cached for 30 days, so a station costs cents per month.
-                    It only ever sees text from your own stream server, never listener input.
+                <p class="text-muted">
+                    Reads stream titles your Track RegEx cannot split, and powers the AI tools below.
+                    {!! Forms::hint('Each distinct stream title is asked about once and cached for 30 days, so a station costs cents per month. The model only ever sees text from your own stream server, never listener input.') !!}
                 </p>
 
                 <div class="form-group">
@@ -21,7 +20,7 @@
                         <div class="checkbox">
                             <label for="text-enabled" tabindex="0">
                                 <input type="checkbox" name="text[enabled]" id="text-enabled" value="true"{{ $ai['text']['enabled'] ? ' checked' : '' }}>
-                                <span class="icon fa fa-check"></span> <span class="description">Use AI Assistant (off by default)</span>
+                                <span class="icon fa fa-check"></span> <span class="description">Use AI Assistant</span>
                             </label>
                         </div>
                     </div>
@@ -30,9 +29,10 @@
                 <div class="form-group">
                     <label class="col-sm-2 control-label" for="text-provider">Provider</label>
                     <div class="col-sm-4">
-                        <select name="text[provider]" id="text-provider" class="form-control">
+                        {{-- data-model feeds the Model placeholder, so the default of the picked provider is shown in place --}}
+                        <select name="text[provider]" id="text-provider" class="form-control ai-provider" data-model-input="#text-model">
                             @foreach ($textProviders as $key => $provider)
-                                <option value="{{ $key }}"{{ $ai['text']['provider'] === $key ? ' selected' : '' }}>{{ $provider['name'] }}</option>
+                                <option value="{{ $key }}" data-model="{{ $provider['model'] }}"{{ $ai['text']['provider'] === $key ? ' selected' : '' }}>{{ $provider['name'] }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -59,11 +59,9 @@
                 <div class="form-group">
                     <label class="col-sm-2 control-label" for="text-model">Model</label>
                     <div class="col-sm-4">
-                        <input type="text" name="text[model]" id="text-model" class="form-control" value="{{ $ai['text']['model'] }}" placeholder="Provider default">
+                        <input type="text" name="text[model]" id="text-model" class="form-control" value="{{ $ai['text']['model'] }}" placeholder="{{ $textProviders[$ai['text']['provider']]['model'] ?? 'Provider default' }}">
                     </div>
-                    <div class="help-block">
-                        Blank uses the default: <code>{{ implode(', ', array_column($textProviders, 'model')) }}</code>
-                    </div>
+                    <div class="help-block">Empty uses the provider default</div>
                 </div>
 
                 <div class="form-group">
@@ -71,9 +69,7 @@
                     <div class="col-sm-4">
                         <input type="url" name="text[base_url]" id="text-base-url" class="form-control" value="{{ $ai['text']['base_url'] }}" placeholder="https://api.openai.com/v1">
                     </div>
-                    <div class="help-block">
-                        OpenAI-compatible servers only, e.g. <code>http://localhost:11434/v1</code> for a local Ollama (no API key, no cloud).
-                    </div>
+                    <div class="help-block">{!! Forms::hint('Only for OpenAI-compatible servers, e.g. http://localhost:11434/v1 for a local Ollama (no API key, no cloud).') !!}Optional</div>
                 </div>
 
                 <div class="form-group">
@@ -83,7 +79,7 @@
                             <label for="text-clean" tabindex="0">
                                 <input type="checkbox" name="text[clean_metadata]" id="text-clean" value="true"{{ $ai['text']['clean_metadata'] ? ' checked' : '' }}>
                                 <span class="icon fa fa-check"></span>
-                                <span class="description">Fix stream titles the Track RegEx cannot read (ALL CAPS, odd separators, glued URLs); station IDs and ads keep the default track</span>
+                                <span class="description">Fix titles the Track RegEx cannot read{!! Forms::hint('Handles ALL CAPS, odd separators and glued URLs. Station IDs and ads keep the default track.') !!}</span>
                             </label>
                         </div>
                     </div>
@@ -119,16 +115,19 @@
                 <i class="icon fa fa-palette"></i> AI Artwork
             </div>
             <div class="content form-content">
-                <p>
-                    Abstract artwork drawn by an image model for artists no artwork source knows. It is checked after every
-                    real source, so a real cover always wins, and it never shows text, people or a cover layout.
+                <p class="text-muted mb-1">
+                    Abstract artwork for artists no artwork source knows. Every real source is checked first, so a real cover always wins.
                 </p>
-                <ul class="mb-4">
-                    <li>Only artists your own stream played get artwork, a URL alone can never start a generation (WebSocket channels are not covered).</li>
-                    <li>The artist and title never reach the image model, the prompt is built from fixed words, so no fake covers.</li>
-                    <li>At most one attempt per artist per day, and a hard daily limit kept outside the cache (Flush Cache cannot reset it).</li>
-                    <li>Images live in <code>data/ai-artwork</code>, which Flush Cache and updates never touch, so nothing is paid for twice.</li>
-                </ul>
+                {{-- The safeguards matter but are reference material, so they fold away --}}
+                <details class="more-info mb-4">
+                    <summary>How it stays safe and cheap</summary>
+                    <ul>
+                        <li>Only artists your own stream played get artwork, a URL alone can never start a generation (WebSocket channels are not covered).</li>
+                        <li>The artist and title never reach the image model, the prompt is built from fixed words, so no fake covers, text or people.</li>
+                        <li>At most one attempt per artist per day, and a hard daily limit kept outside the cache (Flush Cache cannot reset it).</li>
+                        <li>Images live in <code>data/ai-artwork</code>, which Flush Cache and updates never touch, so nothing is paid for twice.</li>
+                    </ul>
+                </details>
 
                 <div class="form-group">
                     <label class="col-sm-2 control-label" for="images-enabled">Enable</label>
@@ -136,7 +135,7 @@
                         <div class="checkbox">
                             <label for="images-enabled" tabindex="0">
                                 <input type="checkbox" name="images[enabled]" id="images-enabled" value="true"{{ $ai['images']['enabled'] ? ' checked' : '' }}>
-                                <span class="icon fa fa-check"></span> <span class="description">Use AI Artwork (off by default, paid per image)</span>
+                                <span class="icon fa fa-check"></span> <span class="description">Use AI Artwork (paid per image)</span>
                             </label>
                         </div>
                     </div>
@@ -145,9 +144,9 @@
                 <div class="form-group">
                     <label class="col-sm-2 control-label" for="images-provider">Provider</label>
                     <div class="col-sm-4">
-                        <select name="images[provider]" id="images-provider" class="form-control">
+                        <select name="images[provider]" id="images-provider" class="form-control ai-provider" data-model-input="#images-model">
                             @foreach ($imageProviders as $key => $provider)
-                                <option value="{{ $key }}"{{ $ai['images']['provider'] === $key ? ' selected' : '' }}>{{ $provider['name'] }}</option>
+                                <option value="{{ $key }}" data-model="{{ $provider['model'] }}"{{ $ai['images']['provider'] === $key ? ' selected' : '' }}>{{ $provider['name'] }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -174,11 +173,9 @@
                 <div class="form-group">
                     <label class="col-sm-2 control-label" for="images-model">Model</label>
                     <div class="col-sm-4">
-                        <input type="text" name="images[model]" id="images-model" class="form-control" value="{{ $ai['images']['model'] }}" placeholder="Provider default">
+                        <input type="text" name="images[model]" id="images-model" class="form-control" value="{{ $ai['images']['model'] }}" placeholder="{{ $imageProviders[$ai['images']['provider']]['model'] ?? 'Provider default' }}">
                     </div>
-                    <div class="help-block">
-                        Blank uses the default: <code>{{ implode(', ', array_column($imageProviders, 'model')) }}</code>
-                    </div>
+                    <div class="help-block">Empty uses the provider default</div>
                 </div>
 
                 <div class="form-group">
@@ -186,7 +183,7 @@
                     <div class="col-sm-4">
                         <input type="url" name="images[base_url]" id="images-base-url" class="form-control" value="{{ $ai['images']['base_url'] }}" placeholder="https://api.openai.com/v1">
                     </div>
-                    <div class="help-block">OpenAI-compatible servers only, e.g. a self-hosted LocalAI.</div>
+                    <div class="help-block">{!! Forms::hint('Only for OpenAI-compatible servers, e.g. a self-hosted LocalAI.') !!}Optional</div>
                 </div>
 
                 <div class="form-group">
@@ -197,7 +194,7 @@
                             <input type="number" name="images[daily_limit]" id="images-limit" class="form-control" min="0" max="500" value="{{ $ai['images']['daily_limit'] }}">
                         </div>
                     </div>
-                    <div class="help-block">Used today: <b>{{ $usage['count'] }}</b>, all time: <b>{{ $usage['total'] }}</b>. Tests count too.</div>
+                    <div class="help-block">{!! Forms::hint('Test images count too. The counter is kept outside the cache, so Flush Cache cannot reset it.') !!}Today <b>{{ $usage['count'] }}</b> &middot; all time <b>{{ $usage['total'] }}</b></div>
                 </div>
 
                 <div class="form-group">
@@ -207,14 +204,12 @@
                             <label for="images-verify" tabindex="0">
                                 <input type="checkbox" name="images[verify]" id="images-verify" value="true"{{ $ai['images']['verify'] ? ' checked' : '' }}>
                                 <span class="icon fa fa-check"></span>
-                                <span class="description">
-                                    Let AI Assistant inspect every image (also contrast-enhanced, to catch hidden text) and discard any with text, people or a cover layout.
-                                    @if (!$ai['text']['enabled'])
-                                        <span class="text-danger">AI Assistant is off, so images are used unchecked.</span>
-                                    @endif
-                                </span>
+                                <span class="description">Discard images with text, people or a cover layout{!! Forms::hint('AI Assistant inspects every image, plus a contrast-enhanced copy to catch hidden text.') !!}</span>
                             </label>
                         </div>
+                        @if (!$ai['text']['enabled'])
+                            <div class="help-block text-danger">AI Assistant is off, so images are used unchecked.</div>
+                        @endif
                     </div>
                 </div>
 
@@ -284,7 +279,7 @@
             @if (!$ai['text']['enabled'])
                 <p class="text-muted">Enable and save AI Assistant above to use these tools.</p>
             @else
-                <h5>Track RegEx helper</h5>
+                <h5 class="pt-4">Track RegEx helper</h5>
                 <p>Paste a few "now playing" titles exactly as your stream sends them, one per line. The suggested pattern is tested on them before you can use it.</p>
                 <form method="POST" action="index.php?page=ai">
                     {!! $panel->csrfField() !!}
@@ -334,7 +329,7 @@
 
                 <div class="divider mt-5"></div>
 
-                <h5>Translation helper</h5>
+                <h5 class="pt-2">Translation helper</h5>
                 <p>Creates a new language from the English texts and opens it in the language editor for review.</p>
                 <form method="POST" action="index.php?page=ai" class="row">
                     {!! $panel->csrfField() !!}
@@ -350,5 +345,13 @@
             @endif
         </div>
     </div>
+
+    <script type="text/javascript">
+        // Model placeholder follows the picked provider, so its default is shown where it applies
+        $('.ai-provider').on('change', function() {
+            let model = $(this).find('option:selected').attr('data-model') || 'Provider default';
+            $($(this).attr('data-model-input')).attr('placeholder', model);
+        });
+    </script>
 @endsection
 @include('template')

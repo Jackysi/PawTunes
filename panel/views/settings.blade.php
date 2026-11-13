@@ -11,26 +11,28 @@
     $form = new Forms;
 
     // General Player Settings
+    // Inline text stays one short line, longer explanations go into 'hint' (an info icon tooltip next to the label)
     $general = [
         [
             'label'       => 'Player Title',
             'name'        => 'title',
             'placeholder' => 'PawTunes',
             'size'        => 64,
-            'description' => '(SEO)',
+            'hint'        => 'Shown in the browser tab, search results and playlist files.',
         ],
         [
-            'label'       => 'Player Description',
-            'name'        => 'description',
-            'type'        => 'textarea',
-            'description' => '(SEO)',
+            'label' => 'Player Description',
+            'name'  => 'description',
+            'type'  => 'textarea',
+            'hint'  => 'Meta description used by search engines and link previews.',
         ],
         [
             'label'       => 'Site Title',
             'name'        => 'site_title',
             'size'        => 64,
             'placeholder' => 'PawTunes Radio',
-            'description' => '(Optional, more at <a href="http://ogp.me/" target="_blank">http://ogp.me/</a>)',
+            'description' => 'Optional',
+            'hint'        => 'Site name shown in social media link previews (Open Graph og:site_name).',
         ],
         [
             'label'       => 'Cache Path',
@@ -39,13 +41,14 @@
             'value'       => './data/cache',
             'placeholder' => './data/cache',
             'reset'       => true,
-            'description' => ' (Images and API cache, leave empty for default)',
+            'description' => 'Empty uses the default',
+            'hint'        => 'Folder for the API cache and downloaded artwork, relative to the PawTunes folder. Must be writable.',
         ],
         [
             'label'       => 'Google Analytics',
             'name'        => 'google_analytics',
-            'placeholder' => 'UA-1113571-5',
-            'description' => '(Tracking ID)',
+            'placeholder' => 'G-XXXXXXXXXX',
+            'description' => 'Measurement ID',
         ],
         'override-share-image',
         'app-icon',
@@ -55,7 +58,8 @@
             'value'       => "true",
             'type'        => 'checkbox',
             'class'       => 'col-sm-9',
-            'description' => 'Disable search engine indexing (does not instantly remove search results, more at <a href="https://support.google.com/webmasters/answer/93710?hl=en" target="_blank">Google FAQ</a>)',
+            'description' => 'Hide the player from search engines',
+            'hint'        => 'Adds a noindex robots tag. Pages that are already indexed only disappear after search engines crawl them again.',
         ],
         'default_language',
         [
@@ -64,7 +68,7 @@
             'class'       => 'col-sm-9',
             'value'       => 'true',
             'type'        => 'checkbox',
-            'description' => ' When checked, player will also support auto language detection based on browser settings.',
+            'description' => 'Detect the listener\'s language from the browser',
         ],
         [
             'label'       => 'Auto Play',
@@ -72,7 +76,8 @@
             'class'       => 'col-sm-9',
             'value'       => 'true',
             'type'        => 'checkbox',
-            'description' => ' Start playback automatically (some devices and browsers do not support this feature)',
+            'description' => 'Start playback when the player opens',
+            'hint'        => 'Many browsers and devices block autoplay with sound until the listener interacts with the page.',
         ],
         [
             'label'       => 'Casting',
@@ -80,7 +85,8 @@
             'class'       => 'col-sm-9',
             'value'       => 'true',
             'type'        => 'checkbox',
-            'description' => ' Chromecast and AirPlay buttons in the player. Chromecast support loads Google\'s Cast SDK from gstatic.com in Chromium browsers (Chrome, Edge, Opera, Android), which may need a mention in your privacy policy (GDPR). AirPlay uses Safari\'s built-in support and loads nothing.',
+            'description' => 'Show Chromecast and AirPlay buttons',
+            'hint'        => 'Chromecast loads Google\'s Cast SDK from gstatic.com in Chromium browsers (Chrome, Edge, Opera, Android), which may need a mention in your privacy policy (GDPR). AirPlay uses Safari\'s built-in support and loads nothing.',
         ],
         [
             'label'   => 'Debug Mode',
@@ -88,21 +94,22 @@
             'name'    => 'debugging',
             'type'    => 'select',
             'options' => [ 'log-only' => 'Logging only (recommended)', 'enabled' => 'Enabled', 'disabled' => 'Disabled' ],
+            'hint'    => 'Enabled shows error details in the player, use it only while troubleshooting. Logs are written to data/logs.',
         ],
         [
-            'label'       => 'Initial Channel',
-            'name'        => 'default_channel',
-            'class'       => 'col-sm-4',
-            'type'        => 'select',
-            'description' => ' (Used when no hash or previous selection present)',
-            'options'     => $channels,
+            'label'   => 'Initial Channel',
+            'name'    => 'default_channel',
+            'class'   => 'col-sm-4',
+            'type'    => 'select',
+            'options' => $channels,
+            'hint'    => 'Played when the link names no channel and the listener has no saved choice.',
         ],
         [
             'label'       => 'Initial Volume',
             'name'        => 'default_volume',
             'class'       => 'col-sm-2',
             'type'        => 'number',
-            'description' => 'in percent % (only used for new listeners)',
+            'description' => 'Percent, new listeners only',
             'max'         => '100',
             'min'         => 0,
             'placeholder' => '50',
@@ -113,14 +120,18 @@
     // Track Information
     $trackInfo = [
         [
-            'label' => 'Default Artist',
-            'name'  => 'artist_default', 'placeholder' => 'Various Artists',
-            'class' => 'col-sm-4', 'description' => '(if there is no stream information or stat\'s is not responding, this will be shown)',
+            'label'       => 'Default Artist',
+            'name'        => 'artist_default',
+            'placeholder' => 'Various Artists',
+            'class'       => 'col-sm-4',
+            'hint'        => 'Shown when the stream has no track information or its stats server does not respond.',
         ],
         [
-            'label' => 'Default Title',
-            'name'  => 'title_default', 'placeholder' => 'Unknown Track',
-            'class' => 'col-sm-4', 'description' => '(if there is no stream information or stat\'s is not responding, this will be shown)',
+            'label'       => 'Default Title',
+            'name'        => 'title_default',
+            'placeholder' => 'Unknown Track',
+            'class'       => 'col-sm-4',
+            'hint'        => 'Shown when the stream has no track information or its stats server does not respond.',
         ],
         [
             'label'       => 'Dynamic Title',
@@ -128,14 +139,15 @@
             'class'       => 'col-sm-9',
             'value'       => 'true',
             'type'        => 'checkbox',
-            'description' => ' Dynamic popup window title (show currently playing Track in window title bar)',
+            'description' => 'Show the playing track in the window title',
         ],
         [
-
             'label'       => 'Artist Max Length',
-            'name'        => 'artist_maxlength', 'placeholder' => 48,
+            'name'        => 'artist_maxlength',
+            'placeholder' => 48,
             'class'       => 'col-sm-2',
-            'description' => '<b>0 = disabled</b> (maximum number of characters before shortening artist name)',
+            'description' => '0 = no limit',
+            'hint'        => 'Longer artist names are shortened with an ellipsis.',
             'type'        => 'number',
         ],
         [
@@ -143,7 +155,8 @@
             'name'        => 'title_maxlength',
             'placeholder' => 58,
             'class'       => 'col-sm-2',
-            'description' => '<b>0 = disabled</b> (maximum number of characters before shortening track name)',
+            'description' => '0 = no limit',
+            'hint'        => 'Longer track titles are shortened with an ellipsis.',
             'type'        => 'number',
         ],
         // Little hacky
@@ -154,7 +167,7 @@
             'class'       => 'col-sm-9',
             'value'       => 'true',
             'type'        => 'checkbox',
-            'description' => ' Enables JSONP, CORS on track info and the now playing widget (<a target="_blank" href="https://doc.prahec.com/pawtunes#live-information-external-api"><i class="icon fa fa-question-circle"></i> Documentation</a>)',
+            'description' => 'Enable JSONP, CORS and the now playing widget &middot; <a target="_blank" href="https://doc.prahec.com/pawtunes#live-information-external-api">Docs</a>',
         ],
         [
             'label'       => 'Artist/Title regex',
@@ -162,7 +175,7 @@
             'class'       => 'col-sm-5',
             'placeholder' => "(?P<artist>[^-]*)[ ]?-[ ]?(?P<title>.*)",
             'reset'       => true,
-            'description' => '<span class="text-red">(only change if you know what you are doing)</span>',
+            'hint'        => 'Splits the stream title with the named groups "artist" and "title". Only change it when your stream uses a different format, the AI page can suggest one from samples.',
         ],
         [
             'label'       => 'Show Track History',
@@ -170,7 +183,8 @@
             'class'       => 'col-sm-9',
             'value'       => 'true',
             'type'        => 'checkbox',
-            'description' => ' When enabled listeners will be able to see their playback history or from stream (if supported/enabled)',
+            'description' => 'Show recently played tracks',
+            'hint'        => 'Uses the stream server\'s history when the source provides one, otherwise the tracks played since the listener opened the player.',
         ],
     ];
 
@@ -181,7 +195,7 @@
             'class'       => 'col-sm-9',
             'value'       => 'true',
             'type'        => 'checkbox',
-            'description' => ' Cache images on the server (crop & optimize artwork images)',
+            'description' => 'Download, crop and serve artwork from this server',
         ],
         [
             'label'       => 'Cache API Requests',
@@ -189,7 +203,8 @@
             'class'       => 'col-sm-9',
             'value'       => 'true',
             'type'        => 'checkbox',
-            'description' => ' Cache artwork API searches (found for 7 days, not found for 1 day), avoids repeated lookups and API rate limits',
+            'description' => 'Remember artwork lookups',
+            'hint'        => 'Found artwork is remembered for 7 days, misses for 1 day. Avoids repeated lookups and API rate limits.',
         ],
         [
             'label'       => 'Clean Searches',
@@ -197,7 +212,8 @@
             'class'       => 'col-sm-9',
             'value'       => 'true',
             'type'        => 'checkbox',
-            'description' => ' Remove "(Radio Edit)", "(Remastered 2011)", "feat. Guest" and similar from artwork searches, and skip results by a different artist',
+            'description' => 'Strip edition notes from artwork searches',
+            'hint'        => 'Removes "(Radio Edit)", "(Remastered 2011)", "feat. Guest" and similar, and skips results by a different artist.',
         ],
         [
             'label'       => 'Generated Artwork',
@@ -205,7 +221,8 @@
             'class'       => 'col-sm-9',
             'value'       => 'true',
             'type'        => 'checkbox',
-            'description' => ' When no source has artwork, show abstract gradient art drawn from the artist name (free, no AI) instead of the default image',
+            'description' => 'Draw gradient art when no artwork is found',
+            'hint'        => 'Abstract art built from the artist name (free, no AI), shown instead of the default image.',
         ],
         [
             'label'       => 'Serve via Web',
@@ -213,7 +230,8 @@
             'class'       => 'col-sm-9',
             'value'       => 'true',
             'type'        => 'checkbox',
-            'description' => ' Uses Apache/LiteSpeed (X-Sendfile) or Nginx (X-Accel-Redirect) to serve images, significantly reducing server load.',
+            'description' => 'Let the web server send artwork files',
+            'hint'        => 'Uses X-Sendfile (Apache, LiteSpeed) or X-Accel-Redirect (nginx), which greatly reduces PHP load. Needs Cache Images and a web server configured for it.',
         ],
         [
             'label'       => 'Artist Images Mode',
@@ -221,16 +239,17 @@
             'class'       => 'col-sm-9',
             'value'       => 'true',
             'type'        => 'checkbox',
-            'description' => ' When selected, only images for artists will be cached (greatly reduces artwork collection)',
+            'description' => 'One image per artist instead of per track',
+            'hint'        => 'Greatly reduces the number of lookups and stored images.',
         ],
         [
-
             'label'       => 'Lazy Artwork Loading',
             'name'        => 'artwork_lazy_loading',
             'class'       => 'col-sm-9',
             'value'       => 'true',
             'type'        => 'checkbox',
-            'description' => ' Lazy loading of artwork images (artwork is lazy loaded after track info is displayed)',
+            'description' => 'Load artwork after the track info',
+            'hint'        => 'Track info is returned right away and artwork is fetched separately, so a slow artwork source never delays the title.',
         ],
     ];
 
@@ -275,26 +294,27 @@
 
                     @if ( $input === 'override-share-image' )
                         <div class="form-group">
-                            <label class="col-sm-2 control-label" for="override_share_image">Override Share Image</label>
-                            <div class="col-sm-10">
-                                <div class="input-group col-sm-6">
-                                    <input type="text" name="override_share_image" id="override_share_image" class="form-control" value="{{$_POST[ 'override_share_image' ] ?? ''}}">
+                            <label class="col-sm-2 control-label" for="override_share_image">Share Image  <div class="help-block">{!! Forms::hint( 'Image shown when the player link is shared on social media. JPG, PNG, WebP or SVG.' ) !!}</div></label>
+                            {{-- Same column layout as Forms fields, so the hint sits right of the control like everywhere else --}}
+                            <div class="col-sm-6">
+                                {{-- .input-group is display: table, a col-* class is what stretches it to the column width --}}
+                                <div class="input-group col-sm-12">
+                                    <input type="text" name="override_share_image" id="override_share_image" class="form-control" value="{{$_POST[ 'override_share_image' ] ?? ''}}" placeholder="Image URL, or upload one">
                                     <div class="input-group-btn">
                                         <label for="override_image" class="btn btn-primary">
-                                            <input type="file" id="override_image" class="hidden" name="override_image"><i class="icon fa fa-folder-open"></i> Browse
+                                            <input type="file" id="override_image" class="hidden" name="override_image" accept="image/jpeg,image/png,image/webp,image/svg+xml"><i class="icon fa fa-folder-open"></i> Browse
                                         </label>
                                     </div>
                                 </div>
-                                <i>JPEG, JPG, PNG, WEBP and SVG accepted. You can also provide URL to the image!</i>
-                                @if ( !empty( $_POST[ 'override_share_image' ] ) && is_file( $_POST[ 'override_share_image' ] ) )
-                                    <div class="logo-container"><br>
-                                        <div class="override-image">
-                                            <img src="{{$_POST[ 'override_share_image' ]}}" width="auto" height="80">
-                                        </div>
-                                        <a href="#" class="delete-override"><i class="icon fa fa-times"></i> Delete</a>
-                                    </div>
-                                @endif
                             </div>
+                            @if ( !empty( $_POST[ 'override_share_image' ] ) && is_file( $_POST[ 'override_share_image' ] ) )
+                                <div class="col-sm-10 col-sm-offset-2 logo-container">
+                                    <div class="override-image">
+                                        <img src="{{$_POST[ 'override_share_image' ]}}" width="auto" height="80">
+                                    </div>
+                                    <a href="#" class="delete-override"><i class="icon fa fa-times"></i> Delete</a>
+                                </div>
+                            @endif
                         </div>
                         @continue
                     @endif
@@ -304,23 +324,25 @@
                         <div class="form-group">
                             <label class="col-sm-2 control-label" for="app_icon">App Icon</label>
                             <div class="col-sm-10">
-                                <div class="input-group col-sm-6">
-                                    <input type="text" id="app_icon_name" class="form-control" value="" placeholder="Square image, at least 512 x 512 px" readonly>
-                                    <div class="input-group-btn">
-                                        <label for="app_icon" class="btn btn-primary">
-                                            <input type="file" id="app_icon" class="hidden" name="app_icon" accept="image/png,image/jpeg,image/webp"><i class="icon fa fa-folder-open"></i> Browse
-                                        </label>
+                                {{-- Preview of the icon in use (custom or bundled), the file is stored when the form is saved --}}
+                                <div class="app-icon-picker">
+                                    <img class="app-icon-preview" src="./../{{ltrim( $appIcons[ 192 ], './' )}}" width="56" height="56" alt="Current app icon">
+                                    <div class="app-icon-body">
+                                        <div class="app-icon-buttons">
+                                            <label for="app_icon" class="btn btn-default btn-sm">
+                                                <input type="file" id="app_icon" class="hidden" name="app_icon" accept="image/png,image/jpeg,image/webp">
+                                                <i class="icon fa fa-upload"></i> {{ $appIcons[ 'custom' ] ? 'Replace' : 'Upload' }}
+                                            </label>
+                                            @if ( $appIcons[ 'custom' ] )
+                                                <button type="submit" form="remove-app-icon" class="btn btn-link btn-sm remove-app-icon" data-confirm><i class="icon fa fa-times"></i> Remove</button>
+                                            @endif
+                                            {!! Forms::hint( 'Icon shown when listeners add the player to their home screen. Cropped to a square, the PawTunes icon is used until you upload one.' ) !!}
+                                        </div>
+                                        <div class="app-icon-status">
+                                            {{ $appIcons[ 'custom' ] ? 'Custom icon' : 'PawTunes icon' }} &middot; square JPG, PNG or WebP, at least 512 &times; 512 px
+                                        </div>
                                     </div>
                                 </div>
-                                <i>Icon of the player when listeners add it to their home screen (JPG, PNG or WebP, cropped to a square). Without one the PawTunes icon is used.</i>
-                                @if ( $appIcons[ 'custom' ] )
-                                    <div class="logo-container"><br>
-                                        <div class="override-image">
-                                            <img src="./../{{ltrim( $appIcons[ 192 ], './' )}}" width="64" height="64" alt="App icon">
-                                        </div>
-                                        <button type="submit" form="remove-app-icon" class="btn btn-link remove-app-icon" data-confirm><i class="icon fa fa-times"></i> Remove</button>
-                                    </div>
-                                @endif
                             </div>
                         </div>
                         @continue
@@ -338,7 +360,7 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="help-block">(Used if language is not found or Multi-language support is disabled)</div>
+                            <div class="help-block">{!! Forms::hint( 'Used when the listener\'s language is not available, or for everyone when Multi-language is off.' ) !!}</div>
                         </div>
                         @continue
                     @endif
@@ -408,7 +430,7 @@
                                     <input type="number" name="stats_refresh" class="form-control" id="stats_refresh" placeholder="15" required="" value="{{$_POST[ 'stats_refresh' ]}}">
                                 </div>
                             </div>
-                            <div class="help-block">(Default: 15 - <span class="text-red">Caution: this may have big performance impact on your web server!</span>)</div>
+                            <div class="help-block">{!! Forms::hint( 'How often each listener asks for track info. Lower values mean more requests to your web and stream servers.' ) !!}Default 15</div>
                         </div>
                         @continue
                     @endif
@@ -425,23 +447,19 @@
 
                 {!! $form->generateForm( $artworks ) !!}
 
-                <div class="form-group"><label class="col-sm-2 control-label" for="images_size">Artist images size</label>
+                <div class="form-group"><label class="col-sm-2 control-label" for="images_size">Artwork Size</label>
                     <div class="col-sm-2">
                         <div class="input-append">
-                            <div class="append">pix</div>
+                            <div class="append">px</div>
                             <input class="form-control" id="images_size" name="images_size" placeholder="280" type="number" value="{{( !empty( $_POST[ 'images_size' ] ) ? $_POST[ 'images_size' ] : '' )}}">
                         </div>
                     </div>
-                    <div class="help-block">(Default: 280 - <span class="text-red">Caution: this may have big performance impact on your web server!</span>)</div>
+                    <div class="help-block">{!! Forms::hint( 'Square size artwork is cropped to. Larger images cost more disk space, bandwidth and processing.' ) !!}Default 280</div>
                 </div>
 
                 <div class="divider mt-5"></div>
-                <h5>Artwork Sources</h5>
-                <p>
-                    Configure order and settings for each artwork system, drag & drop to change the order. Checkboxes are used to enable/disable the artwork source.
-                    If all checkboxes are left unchecked, the artwork system will be disabled and only default artwork will be shown.
-                    <span class="text-danger">Note: This should be used with caution, if you have a lot of switching between various tracks, it may cause many requests to the APIs.</span>
-                </p>
+                <h5>Artwork Sources{!! Forms::hint( 'Sources are asked in this order until one has artwork. Each enabled source can add an API request per new track, so enable only the ones you need.' ) !!}</h5>
+                <p class="text-muted">Tick to enable, drag to reorder. With none enabled only the default artwork is shown.</p>
                 <table class="table hover artwork-apis sortable-table mt-4 vertical-center">
                     <tbody>
                         @foreach($artworkAPIs as $key => $api)
@@ -497,10 +515,9 @@
             <div class="content form-content">
                 @php $form->generateForm( $others ) @endphp
                 <div class="row">
-                    <div class="col-sm-9 col-sm-offset-2">
-                        <b>Note</b>: Your password will be one-way encrypted (hashed).
-                        To regain access, remove "admin_password" configuration key from the configuration file (<strong>inc/config/general.php</strong>).
-                        That will reset the password to default (password).
+                    <div class="col-sm-9 col-sm-offset-2 help-block">
+                        Leave the password empty to keep the current one.
+                        {!! Forms::hint( 'Passwords are stored hashed. Locked out? Remove the "admin_password" key from inc/config/general.php and the password resets to "password".' ) !!}
                     </div>
                 </div>
             </div>
@@ -573,12 +590,37 @@
 
             });
 
-            // Change input value for browse
-            $('input[type="file"]').on('change', function() {
+            // Share image: show the picked file name in the URL field
+            $('#override_image').on('change', function() {
                 let cVal = $(this).val().replace(/.*\\fakepath\\/, '');
                 let elm = $(this).closest('.form-group');
-                elm.find('input#override_share_image, input#app_icon_name').val(cVal);
+                elm.find('#override_share_image').val(cVal);
                 elm.find('.logo-container').remove();
+            });
+
+            // App icon: preview the picked file and check its size before upload (the server checks again)
+            $('#app_icon').on('change', function() {
+
+                let file = this.files && this.files[0];
+                if (!file) return;
+
+                let picker = $(this).closest('.app-icon-picker');
+                let status = picker.find('.app-icon-status');
+                let url = URL.createObjectURL(file);
+                let probe = new Image();
+
+                probe.onload = function() {
+                    let tooSmall = probe.naturalWidth < 512 || probe.naturalHeight < 512;
+                    picker.find('.app-icon-preview').attr('src', url);
+                    status.toggleClass('is-error', tooSmall).text(tooSmall
+                        ? file.name + ' is ' + probe.naturalWidth + ' × ' + probe.naturalHeight + ' px, it needs at least 512 × 512 px'
+                        : file.name + ' · saved when you click Save');
+                };
+                probe.onerror = function() {
+                    status.addClass('is-error').text(file.name + ' is not a readable image');
+                };
+                probe.src = url;
+
             });
 
             // Template options save on change (debounced), progress is reported in the modal footer
