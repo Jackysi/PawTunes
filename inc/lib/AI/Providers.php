@@ -35,24 +35,40 @@ final class Providers
     ];
 
     /**
-     * Seconds per text request: answers are short, and the player waits for track info cleanup
+     * AI Artwork providers: key => class, panel label, default model
      */
-    private const TEXT_TIMEOUT = 20;
+    public const IMAGE = [
+        'openai' => ['class' => Image\OpenAI::class, 'name' => 'OpenAI GPT Image or compatible (LocalAI)', 'model' => 'gpt-image-2.6-flare'],
+        'gemini' => ['class' => Image\Gemini::class, 'name' => 'Google Gemini', 'model' => 'gemini-3.1-flash-lite-image'],
+        'fal'    => ['class' => Image\Fal::class, 'name' => 'fal.ai FLUX', 'model' => 'fal-ai/flux/schnell'],
+    ];
+
+    /**
+     * Default seconds per text request, for the panel tools and work that runs after the response: a local model
+     * (Ollama on a small CPU) can take most of a minute. Callers inside a listener's request pass a shorter one.
+     */
+    public const TEXT_TIMEOUT = 60;
+
+    /**
+     * Seconds per image request: GPT Image can take up to two minutes, generation runs after the response anyway
+     */
+    private const IMAGE_TIMEOUT = 150;
 
 
     /**
      * The configured AI Assistant model, or null while AI Assistant is disabled
      *
      * @param  PawTunes  $pawtunes
+     * @param  int  $timeout  Seconds per request
      *
      * @return TextModel|null
      * @throws PawException When enabled but misconfigured (missing key, unknown provider)
      */
-    public static function textModel(PawTunes $pawtunes): ?TextModel
+    public static function textModel(PawTunes $pawtunes, int $timeout = self::TEXT_TIMEOUT): ?TextModel
     {
         $config = $pawtunes->config('ai')['text'] ?? [];
 
-        return empty($config['enabled']) ? null : self::buildText($pawtunes, $config);
+        return empty($config['enabled']) ? null : self::buildText($pawtunes, $config, $timeout);
     }
 
 
@@ -61,13 +77,45 @@ final class Providers
      *
      * @param  PawTunes  $pawtunes
      * @param  array  $config
+     * @param  int  $timeout  Seconds per request
      *
      * @return TextModel
      * @throws PawException
      */
-    public static function buildText(PawTunes $pawtunes, array $config): TextModel
+    public static function buildText(PawTunes $pawtunes, array $config, int $timeout = self::TEXT_TIMEOUT): TextModel
     {
-        return self::build(self::TEXT, $pawtunes, $config, self::TEXT_TIMEOUT);
+        return self::build(self::TEXT, $pawtunes, $config, $timeout);
+    }
+
+
+    /**
+     * The configured AI Artwork model, or null while AI Artwork is disabled
+     *
+     * @param  PawTunes  $pawtunes
+     *
+     * @return ImageModel|null
+     * @throws PawException When enabled but misconfigured (missing key, unknown provider)
+     */
+    public static function imageModel(PawTunes $pawtunes): ?ImageModel
+    {
+        $config = $pawtunes->config('ai')['images'] ?? [];
+
+        return empty($config['enabled']) ? null : self::buildImage($pawtunes, $config);
+    }
+
+
+    /**
+     * Build an image model from a config block, enabled or not
+     *
+     * @param  PawTunes  $pawtunes
+     * @param  array  $config
+     *
+     * @return ImageModel
+     * @throws PawException
+     */
+    public static function buildImage(PawTunes $pawtunes, array $config): ImageModel
+    {
+        return self::build(self::IMAGE, $pawtunes, $config, self::IMAGE_TIMEOUT);
     }
 
 

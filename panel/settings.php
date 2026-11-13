@@ -98,6 +98,7 @@ $checkboxes = [
     'cache_images'         => false,
     'cache_api_requests'   => false,
     'clean_artwork_search' => true,
+    'generated_artwork'    => false,
     'serve_via_web'        => false,
     'artist_images_only'   => false,
     'artwork_lazy_loading' => false,

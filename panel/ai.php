@@ -19,6 +19,7 @@
  * @var Panel $panel
  */
 
+use lib\AI\ArtworkGenerator;
 use lib\AI\Assistant;
 use lib\AI\Providers;
 
@@ -40,9 +41,19 @@ $ai['text'] = ($ai['text'] ?? []) + [
         'clean_metadata' => true,
     ];
 
+$ai['images'] = ($ai['images'] ?? []) + [
+        'enabled'     => false,
+        'provider'    => 'openai',
+        'api_key'     => '',
+        'model'       => '',
+        'base_url'    => '',
+        'daily_limit' => ArtworkGenerator::DEFAULT_DAILY_LIMIT,
+        'verify'      => true,
+    ];
+
 /**
- * Merge one feature's posted fields into its stored block. A blank API key keeps the saved one, so keys never
- * have to be sent back to the browser.
+ * Merge one feature's posted fields into its stored block. A blank API key keeps the saved one (as long as the
+ * provider and base URL stay the same), so keys never have to be sent back to the browser.
  *
  * @param  array  $stored
  * @param  array  $posted
@@ -52,6 +63,7 @@ $ai['text'] = ($ai['text'] ?? []) + [
  */
 $mergePosted = static function (array $stored, array $posted, array $registry): array {
 
+    $previous = $stored;
     $stored['enabled']  = ($posted['enabled'] ?? '') === 'true';
     $stored['provider'] = isset($registry[$posted['provider'] ?? '']) ? $posted['provider'] : $stored['provider'];
 
@@ -62,6 +74,12 @@ $mergePosted = static function (array $stored, array $posted, array $registry): 
     $baseURL            = rtrim(trim((string) ($posted['base_url'] ?? '')), '/');
     $validURL           = filter_var($baseURL, FILTER_VALIDATE_URL) && in_array(parse_url($baseURL, PHP_URL_SCHEME), ['http', 'https'], true);
     $stored['base_url'] = ($baseURL === '' || $validURL) ? $baseURL : $stored['base_url'];
+
+    // A saved key belongs to the provider and server it was entered for: never send it to another one. Switching
+    // the provider or the base URL without entering a new key forgets the old key.
+    if ($stored['provider'] !== $previous['provider'] || $stored['base_url'] !== $previous['base_url']) {
+        $stored['api_key'] = '';
+    }
 
     if (trim((string) ($posted['api_key'] ?? '')) !== '') {
         $stored['api_key'] = trim($posted['api_key']);
@@ -108,10 +126,11 @@ $saveSettings = static function () use ($pawtunes, $panel, &$ai): bool {
     return $panel->storeConfig('config/general', $pawtunes->getConfigAll());
 };
 
-$action  = $_POST['action'] ?? '';
-$message = null;
-$test    = null;
-$regex   = null;
+$action    = $_POST['action'] ?? '';
+$message   = null;
+$test      = null;
+$imageTest = null;
+$regex     = null;
 
 try {
 
@@ -132,10 +151,70 @@ try {
             $message = $panel->alert('AI Assistant settings saved.', 'success');
 
             if ($action === 'test-text') {
+                set_time_limit(Providers::TEXT_TIMEOUT + 30); // a local model may use the whole request timeout
                 $sample = 'DAFT PUNK - ONE MORE TIME (RADIO EDIT) | www.my-station.fm';
                 $track  = (new Assistant(Providers::buildText($pawtunes, $ai['text'])))->splitTrack($sample);
                 $test   = ['input' => $sample, 'track' => $track];
             }
+            break;
+
+        // Save (and optionally test) AI Artwork settings
+        case 'save-images':
+        case 'test-images':
+
+            $ai['images']                = $mergePosted($ai['images'], $_POST['images'] ?? [], Providers::IMAGE);
+            $ai['images']['verify']      = ($_POST['images']['verify'] ?? '') === 'true';
+            $ai['images']['daily_limit'] = max(0, min(500, (int) ($_POST['images']['daily_limit'] ?? ArtworkGenerator::DEFAULT_DAILY_LIMIT)));
+
+            if ( ! $saveSettings()) {
+                $message = $panel->alert('Unable to save configuration changes, you may not have sufficient permissions!', 'error', true);
+                break;
+            }
+
+            $message = $panel->alert('AI Artwork settings saved.', 'success');
+
+            if ($action === 'test-images') {
+
+                // The test is a real, paid generation: it goes through the same daily budget and check. Image request,
+                // download, mood lookup and vision check can each take up to their timeout.
+                set_time_limit(360);
+                $generator = new ArtworkGenerator($pawtunes);
+                $model     = $generator->model(); // a misconfiguration fails here, before budget is spent
+
+                if ( ! $generator->reserveBudget()) {
+                    $message = $panel->alert('Today\'s AI Artwork limit is used up (or <b>data/ai-artwork</b> is not writable), no test image was generated.', 'warning');
+                    break;
+                }
+
+                [$bytes, $prompt] = $generator->draw($model, 'Daft Punk', 'test.preview');
+                $imageTest = [
+                    'image'  => 'data:image/jpeg;base64,'.base64_encode(lib\AI\ImageCheck::sideBySide($bytes)),
+                    'prompt' => $prompt,
+                    'reject' => $generator->rejectReason($bytes),
+                ];
+
+            }
+            break;
+
+        // Remove one stored AI image (the artist can get a new one a day after its last attempt)
+        case 'delete-ai-image':
+
+            $file = ArtworkGenerator::existing(basename((string) ($_POST['name'] ?? '')));
+            if ($file !== null && unlink($file)) {
+                $panel->flash($panel->alert('AI artwork deleted. The artist gets a new one at most once a day, the next time it plays without other artwork.', 'success'), 'index.php?page=ai');
+            }
+
+            $message = $panel->alert('Unable to delete that image.', 'error');
+            break;
+
+        // Remove every stored AI image
+        case 'delete-ai-artwork':
+
+            foreach (glob(ArtworkGenerator::DIRECTORY.'/*.jpg') ?: [] as $file) {
+                @unlink($file);
+            }
+
+            $panel->flash($panel->alert('All AI artwork deleted.', 'success'), 'index.php?page=ai');
             break;
 
         // Suggest a Track RegEx from sample titles
@@ -152,6 +231,8 @@ try {
                 $message = $panel->alert('Enable and save AI Assistant first.', 'warning');
                 break;
             }
+
+            set_time_limit(Providers::TEXT_TIMEOUT + 30); // a local model may use the whole request timeout
 
             $regex            = (new Assistant($model))->suggestRegex($samples);
             $regex['samples'] = $samples;
@@ -231,13 +312,23 @@ foreach ($languages as $iso => $language) {
     }
 }
 
+// Stored AI artwork, newest first
+$aiImages = glob(ArtworkGenerator::DIRECTORY.'/*.jpg') ?: [];
+usort($aiImages, static function ($a, $b) {
+    return filemtime($b) <=> filemtime($a);
+});
+
 $panel->view(
     'ai',
     [
         'ai'               => $ai,
         'textProviders'    => Providers::TEXT,
+        'imageProviders'   => Providers::IMAGE,
+        'usage'            => ArtworkGenerator::usage(),
+        'aiImages'         => $aiImages,
         'message'          => $message,
         'test'             => $test,
+        'imageTest'        => $imageTest,
         'regex'            => $regex,
         'missingLanguages' => $missingLanguages,
     ]

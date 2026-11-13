@@ -20,6 +20,23 @@ while (ob_get_level()) {
     ob_end_clean();
 }
 
+// Generated Artwork: drawn from the name on every request, nothing is stored. The image depends on the name only,
+// so browsers may keep it for good.
+if (isset($_GET['generated'])) {
+
+    $name = (string) $_GET['generated'];
+    if ( ! $pawtunes->config('generated_artwork') || ! lib\GeneratedArtwork::isValidName($name)) {
+        http_response_code(404);
+        exit;
+    }
+
+    header('Content-Type: image/svg+xml');
+    header('Cache-Control: public, max-age=31536000, immutable');
+    header('X-Content-Type-Options: nosniff');
+    exit(lib\GeneratedArtwork::svg($name));
+
+}
+
 if ( ! isset($_GET['artist'])) {
     http_response_code(404);
     exit;
@@ -55,9 +72,11 @@ if ( ! $art) {
     exit;
 }
 
-// Real artwork is cached by browsers for 14 days. The default only for an hour: it stands in for "nothing found
-// yet", and a cover found later (provider back up, generated art, an upload) should reach listeners soon.
-$browserCache = ($art === $pawtunes->defaultArtwork()) ? 3600 : 1209600;
+// Real artwork is cached by browsers for 14 days. Placeholders (the default image, Generated Artwork) only for an
+// hour: they stand in for "nothing found yet", and a cover found later (provider back up, AI Artwork drawn after
+// this response, an upload) should reach listeners soon.
+$placeholder  = ($art === $pawtunes->defaultArtwork()) || (strpos($art, 'artwork&generated=') !== false);
+$browserCache = $placeholder ? 3600 : 1209600;
 
 // File hosted on the server? Attempt serving it via web server
 if (

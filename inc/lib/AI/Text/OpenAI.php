@@ -66,7 +66,8 @@ final class OpenAI implements TextModel
     {
         $user = [['type' => 'text', 'text' => $input]];
         if ($image !== null) {
-            $user[] = ['type' => 'image_url', 'image_url' => ['url' => "data:{$image['mime']};base64,{$image['data']}", 'detail' => 'low']];
+            // Full detail: the image check must read small, faint text that "low" would downscale away
+            $user[] = ['type' => 'image_url', 'image_url' => ['url' => "data:{$image['mime']};base64,{$image['data']}", 'detail' => 'high']];
         }
 
         $answer = $this->http->post(

@@ -13,6 +13,7 @@
 
 namespace lib;
 
+use lib\AI\ArtworkGenerator;
 use RuntimeException;
 use Throwable;
 
@@ -352,10 +353,12 @@ class PawTunes
      * @param  string  $title
      * @param  string  $override
      * @param  bool  $skipCache
+     * @param  bool  $fallback  False skips the art PawTunes makes itself (Generated Artwork URL, AI Artwork and its
+     *                          queueing): for tools that ask "does a source know this artist", like the panel lookup
      *
      * @return string|null
      */
-    public function getArtwork($artist, string $title = "", string $override = "", bool $skipCache = false): ?string
+    public function getArtwork($artist, string $title = "", string $override = "", bool $skipCache = false, bool $fallback = true): ?string
     {
 
         $sources = $this->getSortedArtworkSourcesList();
@@ -388,8 +391,148 @@ class PawTunes
             }
         }
 
-        return ( ! $found) ? $this->defaultArtwork() : $found;
+        if ($found) {
+            return $found;
+        }
 
+        // Nothing uploaded, downloaded or found by a provider. Art we make ourselves is checked only now,
+        // so a real cover always wins, also one that shows up later.
+        $made = $fallback ? $this->fallbackArtwork((string) $artist) : null;
+
+        return $made ?? $this->defaultArtwork();
+
+    }
+
+
+    /**
+     * Art PawTunes makes itself for artists no source knows, null to show the default artwork
+     *
+     * @param  string  $artist
+     *
+     * @return string|null
+     */
+    protected function fallbackArtwork(string $artist): ?string
+    {
+        // The station's own placeholder artist keeps the branded default image
+        if (trim($artist) === '' || $artist === $this->config('artist_default')) {
+            return null;
+        }
+
+        $name = $this->parseTrack($artist);
+        if ($name === '') {
+            return null;
+        }
+
+        // AI Artwork: a stored image, or one drawn after this response (all safeguards in ArtworkGenerator)
+        if (ArtworkGenerator::enabled($this)) {
+
+            if ($stored = ArtworkGenerator::existing($name)) {
+                return $stored;
+            }
+
+            ArtworkGenerator::queue($this, (string) $artist);
+
+        }
+
+        if ($this->config('generated_artwork')) {
+            return GeneratedArtwork::url($name);
+        }
+
+        return null;
+    }
+
+
+    /**
+     * Run work after the response reached the client, so slow work (AI Artwork) never keeps a listener waiting.
+     * When this request's response cannot be ended early, the work is skipped (and logged) instead of blocking it.
+     *
+     * @param  callable  $task
+     *
+     * @return void
+     */
+    public function afterResponse(callable $task): void
+    {
+        // Every path in PawTunes is relative to the install root, but shutdown functions may run in another working
+        // directory (Apache with CGI/FastCGI switches to the PHP binary's), which silently put AI Artwork, its
+        // ledger and the logs next to php.exe. Return to the directory the request ran in first.
+        $cwd = getcwd();
+
+        register_shutdown_function(function () use ($task, $cwd) {
+
+            if ($cwd !== false) {
+                chdir($cwd);
+            }
+
+            if ( ! $this->finishResponse()) {
+                $this->writeLog('player_errors', 'Background work skipped: this server cannot end the response early (headers already sent, or an output buffer that cannot be removed). PHP-FPM or LiteSpeed always can.');
+
+                return;
+            }
+
+            set_time_limit(360);
+
+            try {
+                $task();
+            } catch (Throwable $e) {
+                $this->handleException($e);
+            }
+
+        });
+    }
+
+
+    /**
+     * End the HTTP response so the client is done with it, while this process keeps running. Runs at shutdown:
+     * output buffers are still open then (PHP flushes them after the shutdown functions).
+     *
+     * @return bool False when the response cannot be ended early, nothing slow may run in this request then
+     */
+    private function finishResponse(): bool
+    {
+        // The client disconnects as soon as it has the whole response, which must not abort the work after it
+        ignore_user_abort(true);
+
+        if (function_exists('fastcgi_finish_request')) { // PHP-FPM
+            return fastcgi_finish_request();
+        }
+
+        if (function_exists('litespeed_finish_request')) { // LiteSpeed LSAPI
+            return litespeed_finish_request();
+        }
+
+        if (PHP_SAPI === 'cli') { // no client to wait
+            return true;
+        }
+
+        // Other SAPIs (Apache mod_php, CGI): end the response by framing it ourselves. Content-Length tells the
+        // client where the body ends and Connection: close that nothing follows. That needs the headers unsent
+        // (the sendfile branch of handle-artwork.php flushes them) and every output buffer removable.
+        if (headers_sent()) {
+            return false;
+        }
+
+        foreach (ob_get_status(true) as $buffer) {
+            if ( ! (($buffer['flags'] ?? 0) & PHP_OUTPUT_HANDLER_REMOVABLE)) {
+                return false;
+            }
+        }
+
+        // Collect the raw body from the innermost buffer outwards. Raw on purpose: a compressing handler
+        // (zlib.output_compression) would make Content-Length wrong, so it is dropped together with its buffer.
+        $body = '';
+        while (ob_get_level() > 0) {
+            $body = ob_get_clean().$body;
+        }
+
+        header('Content-Length: '.strlen($body));
+        header('Connection: close');
+
+        echo $body;
+        flush();
+
+        // Note: an Apache output filter that buffers (mod_deflate) can still hold the end of the body. Redirects,
+        // the usual artwork answer, are not affected: browsers follow them as soon as the headers arrive.
+        return true;
     }
 
 

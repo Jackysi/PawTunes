@@ -20,8 +20,9 @@ use Throwable;
  * AI Assistant's "Fix unreadable track titles": stream titles that the Track RegEx cannot split get a second
  * chance with the language model instead of showing the default artist and title.
  *
- * Cost stays bounded: each distinct raw text is asked about once, and the answer (also "not a song") is cached
- * for 30 days. Only text from the configured stream server reaches this, never listener input.
+ * Cost stays bounded: each distinct raw text is asked about once, the answer (also "not a song") is cached
+ * for 30 days, and a daily cap covers streams whose title never repeats. Only text from the configured stream
+ * server reaches this, never listener input.
  */
 final class TrackCleaner
 {
@@ -38,11 +39,33 @@ final class TrackCleaner
      */
     private const PENDING_TTL = 30;
 
+    /**
+     * Seconds per model call. This runs inside a listener's track info request while it holds the stream info
+     * refresh lock (30 s, see handler.php) on top of the stream server request: a slow model must not outlive it.
+     */
+    private const TIMEOUT = 10;
+
+    /**
+     * Daily cap ledger, next to the AI Artwork one: AI state stays out of the cache path in one folder
+     */
+    private const LEDGER = ArtworkGenerator::DIRECTORY.'/.assistant-ledger.json';
+
+    /**
+     * Hard cap per day (about 5 cents with the default model): a stream whose title changes on every poll,
+     * like a clock or a counter, would otherwise make one call per poll
+     */
+    private const DAILY_LIMIT = 500;
+
     private const NOT_MUSIC = 'not-music';
 
     private const FAILED = 'failed';
 
     private const PENDING = 'pending';
+
+    /**
+     * Answers are cached as "track:" + JSON, a plain string: the Redis backend cannot store arrays
+     */
+    private const TRACK_PREFIX = 'track:';
 
 
     /**
@@ -61,25 +84,35 @@ final class TrackCleaner
         $key    = 'ai.track.'.md5($text);
         $cached = $pawtunes->cache->get($key);
 
-        if (is_array($cached)) {
-            return $cached;
+        if (is_string($cached) && strpos($cached, self::TRACK_PREFIX) === 0) {
+            $track = json_decode(substr($cached, strlen(self::TRACK_PREFIX)), true);
+
+            return is_array($track) ? $track : null;
         }
 
         if ($cached !== false) {
             return null; // not a song, recently failed, or another request is asking right now
         }
 
-        // Fail closed: if the cache cannot remember that we asked, every poll would ask again (and cost again)
-        if ( ! $pawtunes->cache->set($key, self::PENDING, self::PENDING_TTL)) {
+        // Atomic, so two requests that both missed above cannot both ask. Fails closed as well: if the cache cannot
+        // remember that we asked, every poll would ask again (and cost again).
+        if ( ! $pawtunes->cache->add($key, self::PENDING, self::PENDING_TTL)) {
+            return null;
+        }
+
+        // The daily cap: when it is used up, the text is tried again after RETRY_AFTER without a call
+        if ( ! (new DailyBudget(self::LEDGER))->take(self::DAILY_LIMIT)) {
+            $pawtunes->cache->set($key, self::FAILED, self::RETRY_AFTER);
+
             return null;
         }
 
         try {
 
-            $model = Providers::textModel($pawtunes);
+            $model = Providers::textModel($pawtunes, self::TIMEOUT);
             $track = ($model !== null) ? (new Assistant($model))->splitTrack($text) : null;
 
-            $pawtunes->cache->set($key, $track ?? self::NOT_MUSIC, self::CACHE_TTL);
+            $pawtunes->cache->set($key, ($track !== null) ? self::TRACK_PREFIX.json_encode($track) : self::NOT_MUSIC, self::CACHE_TTL);
 
             return $track;
 

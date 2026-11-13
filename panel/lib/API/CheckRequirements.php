@@ -14,6 +14,7 @@
 namespace API;
 
 use JsonException;
+use lib\AI\ArtworkGenerator;
 use RuntimeException;
 
 class CheckRequirements extends Base
@@ -114,6 +115,21 @@ class CheckRequirements extends Base
         // Images folder
         if ( ! is_writable("data/images")) {
             $response[] = ['type' => 'warning', 'message' => 'Directory **/data/images/** is not writable! You will not be able to upload custom artist images or channel logo(s)! You can fix this issue by setting **chmod** of folder **/data/images/** to **755**.'];
+        }
+
+        // AI Artwork folder (created on first use) and its image check
+        $aiImages = ArtworkGenerator::DIRECTORY;
+        if (ArtworkGenerator::enabled($this->pawtunes)) {
+
+            if ( ! is_writable(is_dir($aiImages) ? $aiImages : dirname($aiImages))) {
+                $response[] = ['type' => 'warning', 'message' => 'Directory **'.$aiImages.'** is not writable! AI Artwork is enabled, but no image can be stored or counted against the daily limit, so none is generated. You can fix this issue by setting **chmod** of the folder to **755**.'];
+            }
+
+            $ai = $this->pawtunes->config('ai') ?? [];
+            if ( ! empty($ai['images']['verify']) && empty($ai['text']['enabled'])) {
+                $response[] = ['type' => 'info', 'message' => 'AI Artwork images are used **unchecked**: "Check Images" needs AI Assistant, which is disabled (panel > AI).'];
+            }
+
         }
 
         // Logs folder

@@ -461,12 +461,16 @@ export default class PawTunes extends HTML5Audio {
             return;
         }
 
+        // Same track, new artwork only: AI Artwork is drawn after the first poll, so a later poll swaps the
+        // default image for the drawn one. That is not a new song: keep its start time and history entry.
+        const sameTrack = data.artist === this.onAir.artist && data.title === this.onAir.title;
+
         // Set ON AIR (coerced to strings: the JSON may carry anything)
         this.onAir = {
             artist : String(data.artist),
             title  : String(data.title),
             artwork: artwork,
-            time   : new Date().getTime()
+            time   : sameTrack ? this.onAir.time : new Date().getTime()
         };
 
         // Track metadata comes from the stream and is untrusted: it is rendered as text, never as HTML
@@ -505,7 +509,8 @@ export default class PawTunes extends HTML5Audio {
 
         } else {
 
-            // Basic history - track onair songs
+            // Basic history - track onair songs (the same track replaces its entry, to pick up the new artwork)
+            if (sameTrack && this.history.length > 0) this.history.shift();
             this.addHistoryEntry(this.onAir)
             this.updateHistoryDOM();
 

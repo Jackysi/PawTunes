@@ -85,6 +85,15 @@
         background: $slate-800;
     }
 
+    .ai-artwork img {
+        outline-color: rgba(255, 255, 255, 0.08);
+        background: $slate-900;
+    }
+
+    .ai-artwork-name {
+        color: $slate-400;
+    }
+
     .progress-bar {
         background-color: #475569;
 

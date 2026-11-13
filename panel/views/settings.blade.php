@@ -191,6 +191,14 @@
             'description' => ' Remove "(Radio Edit)", "(Remastered 2011)", "feat. Guest" and similar from artwork searches, and skip results by a different artist',
         ],
         [
+            'label'       => 'Generated Artwork',
+            'name'        => 'generated_artwork',
+            'class'       => 'col-sm-9',
+            'value'       => 'true',
+            'type'        => 'checkbox',
+            'description' => ' When no source has artwork, show abstract gradient art drawn from the artist name (free, no AI) instead of the default image',
+        ],
+        [
             'label'       => 'Serve via Web',
             'name'        => 'serve_via_web',
             'class'       => 'col-sm-9',

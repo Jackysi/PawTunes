@@ -606,6 +606,80 @@ tbody .handle {
     }
 }
 
+// Stored AI artwork: square tiles that wrap to the card width
+.ai-artwork-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+    gap: 20px 16px;
+    margin-bottom: 24px;
+}
+
+.ai-artwork {
+    position: relative;
+    min-width: 0; // lets the name ellipsize instead of widening the column
+    margin: 0;
+
+    img {
+        display: block;
+        width: 100%;
+        height: auto;
+        aspect-ratio: 1;
+        object-fit: cover;
+        border-radius: 8px;
+        background: $slate-100;
+        // An edge for artwork with white backgrounds; a border would shrink the image
+        outline: 1px solid rgba(15, 23, 42, 0.08);
+        outline-offset: -1px;
+    }
+}
+
+.ai-artwork-name {
+    display: block;
+    overflow: hidden;
+    margin-top: 6px;
+    font-size: 12px;
+    text-align: center;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: $slate-500;
+}
+
+.ai-artwork-delete {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    cursor: pointer;
+    transition: opacity 150ms ease, background-color 150ms ease;
+    opacity: 0;
+    color: #fff;
+    border: 0;
+    border-radius: 6px;
+    background: rgba(15, 23, 42, 0.7);
+    font-size: 12px;
+
+    &:hover,
+    &:focus-visible {
+        background: $danger-color;
+    }
+}
+
+.ai-artwork:hover .ai-artwork-delete,
+.ai-artwork:focus-within .ai-artwork-delete {
+    opacity: 1;
+}
+
+// Touch screens have no hover, so the button must always show
+@media (hover: none) {
+    .ai-artwork-delete {
+        opacity: 1;
+    }
+}
+
 .schemes-manager {
     @media (max-width: 768px) {
         overflow-x: auto;
