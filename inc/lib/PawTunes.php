@@ -726,8 +726,11 @@ class PawTunes
         $this->settings['host'] = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https://' : 'http://').$host;
         $this->settings['url']  = "{$this->settings['host']}{$_SERVER['REQUEST_URI']}";
 
-        if (empty($this->settings['share_image_override'])) {
-            $facebookShare = $this->settings['host'].dirname($_SERVER['PHP_SELF']).'/'.$this->defaultArtwork();
+        // Share image: the panel's "Share Image" (an upload stored as "./data/images/override-image.<ext>", or a
+        // URL), otherwise the default artwork. 1.x stored it as "override_share_image", post-update.php renames it.
+        $shareImage = $this->settings['share_image_override'] ?? '';
+        if (empty($shareImage)) {
+            $shareImage = (string) $this->defaultArtwork();
         }
 
         $pass       = [];
@@ -743,7 +746,7 @@ class PawTunes
             'url'              => $this->config('url'),
             'indexing'         => ($this->config('disable_index') ? 'NOINDEX, NOFOLLOW' : 'INDEX, FOLLOW'),
             'default_artwork'  => $json['trackInfo']['default']['artwork'],
-            'og_image'         => $facebookShare ?? $this->settings['share_image_override'],
+            'og_image'         => htmlspecialchars($this->absoluteURL((string) $shareImage), ENT_QUOTES),
             'og_site_title'    => (( ! empty($this->config('site_title'))) ? '<meta property="og:site_name" content="'.$this->config('site_title').'">' : ' '),
             'timestamp'        => time(),
             'manifest_url'     => './index.php?manifest',
@@ -753,6 +756,27 @@ class PawTunes
 
         return array_merge($opts, $pass, $this->getLanguage(), $tpl);
 
+    }
+
+
+    /**
+     * Absolute URL of a path inside the install ("./data/images/x.jpg"), as og:image requires. URLs pass unchanged.
+     *
+     * @param  string  $path
+     *
+     * @return string Empty when $path is empty
+     */
+    private function absoluteURL(string $path): string
+    {
+        if ($path === '' || preg_match('~^(https?:)?//~i', $path)) {
+            return $path;
+        }
+
+        // SCRIPT_NAME, not PHP_SELF: PHP_SELF carries any path info the visitor appended ("/index.php/x").
+        // dirname() answers a backslash (Windows) or "/" for an install in the web root, hence the normalization.
+        $base = rtrim(str_replace('\\', '/',dirname($_SERVER['SCRIPT_NAME'] ?? '/')), '/');
+
+        return $this->settings['host'].$base.'/'.ltrim(preg_replace('~^(\./)+~', '', $path), '/');
     }
 
 
@@ -886,9 +910,20 @@ class PawTunes
 
     private function getLanguage()
     {
-        $lang = empty($_GET['language'])
-            ? strtolower(substr($_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '', 0, 2))
-            : $_GET['language'];
+        // An explicit ?language= (embed codes) always applies; the browser's language only with "Multi-language" on
+        $lang = '';
+        if ( ! empty($_GET['language']) && is_string($_GET['language'])) {
+            $lang = $_GET['language'];
+        } elseif ($this->config('multi_lang') ?? true) {
+            $lang = strtolower(substr($_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '', 0, 2));
+
+            // The page now depends on this request header, so a shared cache (proxy, CDN) must key on it
+            // or it hands the first visitor's language to everyone. Replacing keeps it to one header line, since
+            // a page calls this more than once.
+            if ( ! headers_sent()) {
+                header('Vary: Accept-Language');
+            }
+        }
 
         $lang = preg_replace('/[^a-z0-9_-]/i', '', $lang);
 

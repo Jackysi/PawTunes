@@ -81,9 +81,14 @@ if (isset($_GET['advanced-options']) && $_SERVER['REQUEST_METHOD'] === 'POST') {
 // as a full form submission and would wipe every field the AJAX call did not send.
 if ( ! empty($_POST['delete_share_image'])) {
 
-    $pawtunes::deleteFile($pawtunes->config('override_share_image'));
+    // The field is free text (a URL or a path), so only the panel's own upload is ever deleted; anything else is
+    // just cleared. Otherwise saving "inc/config/general.php" there and pressing remove would delete the config.
+    $shareImage = (string) $pawtunes->config('share_image_override');
+    if (preg_match('#^\./data/images/override-image\.[a-z]+$#', $shareImage)) {
+        $pawtunes::deleteFile($shareImage);
+    }
 
-    $pawtunes->setConfig('override_share_image', '');
+    $pawtunes->setConfig('share_image_override', '');
     $stored = $panel->storeConfig('config/general', $pawtunes->getConfigAll());
 
     header('Content-Type: application/json');
@@ -124,7 +129,7 @@ $cacheSignature = function (array $cache): array {
 // key from general.php, and an option that defaults to on (clean_artwork_search) could never be turned off.
 $checkboxes = [
     'disable_index'        => false,
-    'multi_lang'           => false,
+    'multi_lang'           => true,
     'autoplay'             => false,
     'cast'                 => true,
     'dynamic_title'        => false,
@@ -194,7 +199,7 @@ if ( ! empty($_POST)) {
 
         } else {
 
-            $_POST['override_share_image'] = "./{$uploadOverride[ 'path' ]}";
+            $_POST['share_image_override'] = "./{$uploadOverride[ 'path' ]}";
 
         }
     }

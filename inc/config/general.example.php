@@ -1,14 +1,6 @@
 <?php
 return array(
-    'tplOptions'           =>
-        array(
-            'simple' =>
-                array(
-                    'autoWindowResize'   => false,
-                    'visualization'      => true,
-                    'visualizationColor' => false,
-                ),
-        ),
+    'tplOptions'           => array(),
     'artwork_sources'      =>
         array(
             'itunes'   =>
@@ -54,10 +46,10 @@ return array(
     'description'          => 'Discover PawTunes, the ultimate internet radio player with purrfect visuals, customizable templates, and clean code. Built for pros, loved by cats!',
     'site_title'           => 'PawTunes Radio Player',
     'google_analytics'     => '',
-    'override_share_image' => '',
+    'share_image_override' => '',
     'disable_index'        => false,
     'default_lang'         => 'en.php',
-    'multi_lang'           => true,
+    'multi_lang'           => true,            // Pick the locale from the browser's language (?language= always applies)
     'autoplay'             => true,
     'cast'                 => true,            // Chromecast (loads Google's Cast SDK in Chromium browsers) and AirPlay buttons
     'debugging'            => 'log-only',
@@ -80,7 +72,6 @@ return array(
     'artist_images_only'   => true,
     'artwork_lazy_loading' => true,
     'images_size'          => '280',
-    'license'              => '',
     'admin_username'       => 'admin',
     'admin_password'       => '$2y$10$TI7WVV8ZiIktYvjYWzmCseW1/GqQ4oUq/YiRv7yXapHRmXNwz57bm',
     'development'          => false,

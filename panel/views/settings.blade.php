@@ -322,12 +322,12 @@
 
                     @if ( $input === 'override-share-image' )
                         <div class="form-group">
-                            <label class="col-sm-2 control-label" for="override_share_image">Share Image  <div class="help-block">{!! Forms::hint( 'Image shown when the player link is shared on social media. JPG, PNG, WebP or SVG.' ) !!}</div></label>
+                            <label class="col-sm-2 control-label" for="share_image_override">Share Image  <div class="help-block">{!! Forms::hint( 'Image shown when the player link is shared on social media. JPG, PNG, WebP or SVG.' ) !!}</div></label>
                             {{-- Same column layout as Forms fields, so the hint sits right of the control like everywhere else --}}
                             <div class="col-sm-6">
                                 {{-- .input-group is display: table, a col-* class is what stretches it to the column width --}}
                                 <div class="input-group col-sm-12">
-                                    <input type="text" name="override_share_image" id="override_share_image" class="form-control" value="{{$_POST[ 'override_share_image' ] ?? ''}}" placeholder="Image URL, or upload one">
+                                    <input type="text" name="share_image_override" id="share_image_override" class="form-control" value="{{$_POST[ 'share_image_override' ] ?? ''}}" placeholder="Image URL, or upload one">
                                     <div class="input-group-btn">
                                         <label for="override_image" class="btn btn-primary">
                                             <input type="file" id="override_image" class="hidden" name="override_image" accept="image/jpeg,image/png,image/webp,image/svg+xml"><i class="icon fa fa-folder-open"></i> Browse
@@ -335,10 +335,10 @@
                                     </div>
                                 </div>
                             </div>
-                            @if ( !empty( $_POST[ 'override_share_image' ] ) && is_file( $_POST[ 'override_share_image' ] ) )
+                            @if ( !empty( $_POST[ 'share_image_override' ] ) && is_file( $_POST[ 'share_image_override' ] ) )
                                 <div class="col-sm-10 col-sm-offset-2 logo-container">
                                     <div class="override-image">
-                                        <img src="{{$_POST[ 'override_share_image' ]}}" width="auto" height="80">
+                                        <img src="{{$_POST[ 'share_image_override' ]}}" width="auto" height="80">
                                     </div>
                                     <a href="#" class="delete-override"><i class="icon fa fa-times"></i> Delete</a>
                                 </div>
@@ -724,7 +724,7 @@
             $('#override_image').on('change', function() {
                 let cVal = $(this).val().replace(/.*\\fakepath\\/, '');
                 let elm = $(this).closest('.form-group');
-                elm.find('#override_share_image').val(cVal);
+                elm.find('#share_image_override').val(cVal);
                 elm.find('.logo-container').remove();
             });
 
