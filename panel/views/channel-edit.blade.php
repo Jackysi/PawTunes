@@ -5,9 +5,8 @@
         <div class="panel">
             <div class="content">
                 <p style="margin-bottom: 2rem;">
-                    PawTunes player supports multichannel configuration(s) but If a single channel is configured or a single stream, the player will hide the unused buttons.
-                    Other settings that affect all channels are covered in the <b>Settings tab</b>.
-                    <span class="text-red">Please read instructions carefully! Invalid configuration could cause player to stop working properly.</span>
+                    Options shared by all channels live on the <b>Settings</b> tab.
+                    {!! Forms::hint( 'With a single channel or a single stream the player hides the channel and stream pickers. A wrong stream URL or track info setting can stop the player from working.' ) !!}
                 </p>
                 <div class="form-group">
                     <label class="control-label col-sm-2" for="name">Channel Name</label>
@@ -27,7 +26,7 @@
                                 </div>
                             </div>
                         </div>
-                        <i>JPEG, JPG, PNG, WEBP and SVG accepted. Image will be cropped to fit logo area.</i>
+                        <div class="help-block">{!! Forms::hint( 'Resized to 80px height, keeping its proportions. SVG logos are used as they are.' ) !!}JPG, PNG, WEBP or SVG</div>
                         @if ( isset($_GET['channel']) && !empty( $channels[ $_GET[ 'channel' ] ][ 'logo' ] ) && is_file( $channels[ $_GET[ 'channel' ] ][ 'logo' ] ) )
                             <div class="logo-container"><br>
                                 <div class="channel-logo">
@@ -54,7 +53,7 @@
                             @endif
                         </select>
                     </div>
-                    <span class="help-block">Hint: Generate custom color schemes under <b>Advanced</b> tab</span>
+                    <div class="help-block">{!! Forms::hint( 'Create more color schemes with the theme compiler on the Tools tab.' ) !!}</div>
                 </div>
                 <div class="divider"></div>
                 <div class="row">
@@ -71,7 +70,7 @@
                             <ul>
                                 <li><b>Shoutcast v1.x</b> - http://shoutcast-server-url.com:port/;stream.mp3</li>
                                 <li><b>Shoutcast v2.x</b> - http://shoutcast-server-url.com:port/mountpoint</li>
-                                <li><b>Iceacast v2.x</b> - http://icecast-server-url.com:port/mountpoint</li>
+                                <li><b>Icecast v2.x</b> - http://icecast-server-url.com:port/mountpoint</li>
                                 <li><b>Other Software</b> - http://stream-url.com/stream.mp3</li>
                             </ul>
                             <span>

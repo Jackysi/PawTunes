@@ -9,8 +9,9 @@
         <link rel="shortcut icon" href="./assets/favicon.ico">
         <link rel="icon" type="image/png" href="./assets/favicon.png" sizes="32x32" />
 
-        <!-- PawTunes Radio Control Panel Style Sheet -->
-        <link rel="stylesheet" href="./assets/css/pawtunes-panel.css" type="text/css">
+        <!-- PawTunes Radio Control Panel Style Sheet. The file time in the URL makes browsers fetch a rebuilt or
+             updated file at once: without it they kept a stale copy, alone or next to a fresh panel.min.js -->
+        <link rel="stylesheet" href="./assets/css/pawtunes-panel.css?v={{ filemtime('panel/assets/css/pawtunes-panel.css') }}" type="text/css">
 
         <script src="./assets/js/jquery.min.js"></script>
         <script>

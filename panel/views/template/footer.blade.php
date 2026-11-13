@@ -1,8 +1,8 @@
         </section>
         <div class="footer-margin"></div>
 
-        <!-- Scripts -->
-        <script type="text/javascript" src="./assets/js/panel.min.js"></script>
+        <!-- Scripts (file time in the URL: see the style sheet in the header) -->
+        <script type="text/javascript" src="./assets/js/panel.min.js?v={{ filemtime('panel/assets/js/panel.min.js') }}"></script>
         <script type="text/javascript">
             if ( typeof ( window.loadInit ) == "function" ) { window.loadInit(); }
             $( "select" ).selectbox();

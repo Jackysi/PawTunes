@@ -841,7 +841,9 @@ tbody .handle {
         }
     }
 
+    // .confirm-open: the confirm popover lives on <body>, so moving to it leaves the tile; its button must stay
     .artwork-item:hover .artwork-actions,
+    .artwork-item:has(.confirm-open) .artwork-actions,
     .artwork-item:focus-within .artwork-actions {
         opacity: 1;
     }
@@ -1017,12 +1019,10 @@ tbody .handle {
     &:hover { opacity: 1; }
 }
 
-// Confirm popover
+// Confirm popover (fixed on <body> and JS-positioned, so no scroll container clips it and it shows over modals)
 .confirm-popover {
-    position: absolute;
-    bottom: calc(100% + 8px);
-    right: 0;
-    z-index: 100;
+    position: fixed;
+    z-index: 9999;
     background: #fff;
     border: 1px solid $slate-200;
     border-radius: 8px;
@@ -1051,6 +1051,13 @@ tbody .handle {
         border-right: 1px solid $slate-200;
         border-bottom: 1px solid $slate-200;
         transform: rotate(45deg);
+    }
+
+    // Opened under the button (no room above): the arrow moves to the top edge and points up
+    &.below::after {
+        top: -6px;
+        bottom: auto;
+        transform: rotate(225deg);
     }
 
     span {

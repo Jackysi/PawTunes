@@ -472,11 +472,12 @@
     }
 
     .alert.alert-warning {
-        color: #fcd34d;
-        background-color: rgba(245, 158, 11, 0.15);
+        color: #cbd5e1;
+        background-color: rgba(245, 158, 11, 0.08);
 
+        &::before,
         a {
-            color: #fcd34d;
+            color: #fbbf24;
         }
     }
 

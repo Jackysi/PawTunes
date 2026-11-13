@@ -55,6 +55,9 @@ window.toast = function (message, type, duration) {
         let title = el.getAttribute('data-title');
         if (!title) return;
 
+        // An open confirm popover sits where the tooltip would, and the button's purpose is clear by then
+        if (el.classList.contains('confirm-open')) return;
+
         // Already showing for this element, skip
         if (tip && currentEl === el) return;
 
@@ -182,6 +185,11 @@ window.toast = function (message, type, duration) {
         if (tip && currentEl === el) hide();
         else show(el);
     });
+
+    // A click on a data-confirm element opens its popover above it: the tooltip shown by the hover must give way
+    document.addEventListener('click', function (e) {
+        if (e.target.closest('[data-confirm]')) hide();
+    }, {capture: true});
 
     // The tooltip is position: fixed, so it would drift away from its element on scroll
     window.addEventListener('scroll', hide, {passive: true, capture: true});
@@ -510,6 +518,7 @@ function shouldUpdate(serverVersion, localVersion, segments = 3) {
 
             // Remove any existing popover
             $('.confirm-popover').remove();
+            $('.confirm-open').removeClass('confirm-open');
 
             let popover = $('<div class="confirm-popover">' +
                 '<span>Are you sure?</span>' +
@@ -518,13 +527,39 @@ function shouldUpdate(serverVersion, localVersion, segments = 3) {
                 '<a href="#" class="confirm-no btn btn-default btn-small">No</a>' +
                 '</div></div>');
 
-            // Position relative to button
-            btn.css('position', 'relative').append(popover);
+            // Fixed and on <body>, like the tooltip: inside the button it was clipped by scroll containers (the
+            // artwork list) and inherited the button's own styles (sizes of the artwork action buttons)
+            $('body').append(popover);
+            btn.addClass('confirm-open');
+
+            // Above the button, right edges aligned. Below it when there is no room above.
+            const gap = 8;
+            const rect = btn[0].getBoundingClientRect();
+            const below = rect.top - popover.outerHeight() - gap < gap;
+            popover.toggleClass('below', below).css({
+                top: below ? rect.bottom + gap : rect.top - popover.outerHeight() - gap,
+                left: Math.max(gap, rect.right - popover.outerWidth())
+            });
+
             requestAnimationFrame(function () { popover.addClass('visible'); });
+
+            // A fixed popover would drift away from its button on scroll or resize, so both close it
+            const dismiss = function () {
+                popover.remove();
+
+                // A late dismiss (the 5 s timer) of a replaced popover must not unmark a button that has a new one
+                if (!$('.confirm-popover').length) btn.removeClass('confirm-open');
+
+                window.removeEventListener('scroll', dismiss, true);
+                window.removeEventListener('resize', dismiss);
+            };
+
+            window.addEventListener('scroll', dismiss, {passive: true, capture: true});
+            window.addEventListener('resize', dismiss);
 
             popover.find('.confirm-yes').on('click', function (ev) {
                 ev.preventDefault();
-                popover.remove();
+                dismiss();
 
                 // If it's a link with a real href, navigate
                 if (btn.is('a') && btn.attr('href') && btn.attr('href') !== '#') {
@@ -538,11 +573,11 @@ function shouldUpdate(serverVersion, localVersion, segments = 3) {
 
             popover.find('.confirm-no').on('click', function (ev) {
                 ev.preventDefault();
-                popover.remove();
+                dismiss();
             });
 
             // Auto-dismiss after 5s
-            setTimeout(function () { popover.remove(); }, 5000);
+            setTimeout(dismiss, 5000);
 
         });
 

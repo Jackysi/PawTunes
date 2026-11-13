@@ -124,9 +124,19 @@
         background-color: #eff6ff;
     }
 
+    // Amber body text turns brown on a light background, so the text stays neutral
+    // and only the icon and the links carry the warning color
     &.alert-warning {
-        color: #92400e;
+        color: #3f3f46;
         background-color: #fffbeb;
+
+        &::before {
+            color: #d97706;
+        }
+
+        a {
+            color: #b45309;
+        }
     }
 
     &.alert-danger, &.alert-error {
