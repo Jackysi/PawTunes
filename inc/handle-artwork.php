@@ -55,6 +55,10 @@ if ( ! $art) {
     exit;
 }
 
+// Real artwork is cached by browsers for 14 days. The default only for an hour: it stands in for "nothing found
+// yet", and a cover found later (provider back up, generated art, an upload) should reach listeners soon.
+$browserCache = ($art === $pawtunes->defaultArtwork()) ? 3600 : 1209600;
+
 // File hosted on the server? Attempt serving it via web server
 if (
     $pawtunes->config('serve_via_web')
@@ -65,7 +69,7 @@ if (
 ) {
 
     // Web servers require full path
-    header("Cache-Control: public, max-age=1209600");
+    header("Cache-Control: public, max-age={$browserCache}");
     header('Content-Type: '.mime_content_type(realpath($art)));
     //header('Content-Length: ' . filesize($art));
 
@@ -81,6 +85,6 @@ if (
 
 // Art is now downloaded image or URL to the image, redirect to it
 http_response_code(302);
-header("Cache-Control: public, max-age=1209600");
+header("Cache-Control: public, max-age={$browserCache}");
 header("Location: {$art}");
 exit;

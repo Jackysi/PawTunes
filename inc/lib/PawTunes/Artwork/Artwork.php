@@ -20,6 +20,21 @@ abstract class Artwork
 {
 
     /**
+     * Search results are stable (CDN URLs rarely change), a week covers a station's rotation cycle
+     */
+    protected const SEARCH_FOUND_TTL = 7 * 86400;
+
+    /**
+     * Short enough that artwork added to the provider's catalog shows up the next day
+     */
+    protected const SEARCH_NOT_FOUND_TTL = 86400;
+
+    /**
+     * Cached marker for "the API answered, but had no artwork" (cache misses return false, so it cannot be null)
+     */
+    protected const SEARCH_NOT_FOUND = 'not-found';
+
+    /**
      * @var string
      */
     public $path = './data/images';
@@ -54,6 +69,28 @@ abstract class Artwork
     protected $cacheImage = true;
 
     /**
+     * Cache API search results (hits and confirmed misses)
+     *
+     * @var boolean
+     */
+    protected $cacheRequests = false;
+
+    /**
+     * Strip release noise ("(Radio Edit)", "feat. Guest") from searches, see Helpers::cleanSearchTerm()
+     *
+     * @var boolean
+     */
+    protected $cleanSearch = true;
+
+    /**
+     * Set by a provider whose API says "no artwork" with a non-2xx status (fanart.tv answers 404 for an artist
+     * without art): the miss is then cached like a 2xx one. Reset before every search.
+     *
+     * @var boolean
+     */
+    protected $confirmedMiss = false;
+
+    /**
      * @var string
      */
     protected $defaultArtist;
@@ -82,8 +119,12 @@ abstract class Artwork
         $this->imageWidth  = $pawtunes->config('images_size') ?? 360;
         $this->imageHeight = $pawtunes->config('images_size') ?? 360;
 
-        $this->cacheImage = $pawtunes->config('cache_images') ?? false;
-        $this->cachePath  = ( ! empty($pawtunes->config('cache')['path'])) ? $pawtunes->config('cache')['path'] : $this->cachePath;
+        $this->cacheImage    = $pawtunes->config('cache_images') ?? false;
+        $this->cacheRequests = $pawtunes->config('cache_api_requests') ?? false;
+
+        // On unless explicitly disabled: installs that predate the option get it without saving settings
+        $this->cleanSearch = $pawtunes->config('clean_artwork_search') ?? true;
+        $this->cachePath     = ( ! empty($pawtunes->config('cache')['path'])) ? $pawtunes->config('cache')['path'] : $this->cachePath;
 
         $this->defaultArtist = $pawtunes->config('artist_default') ?? 'Various Artists';
         $this->defaultTrack  = $pawtunes->config('title_default') ?? 'Unknown Track';
@@ -116,7 +157,7 @@ abstract class Artwork
         }
 
         // Now let's do magic.
-        $artworkURL = ( ! empty($override)) ? $override : $this->getArtworkURL($artist, $title);
+        $artworkURL = ( ! empty($override)) ? $override : $this->searchArtwork($artist, $title, $skipCache);
         if ( ! $artworkURL || ! filter_var($artworkURL, FILTER_VALIDATE_URL)) {
             return null;
         }
@@ -177,6 +218,87 @@ abstract class Artwork
         }
 
         return null;
+    }
+
+
+    /**
+     * Run the provider search through the cache (when "Cache API Requests" is enabled).
+     * Keys are "<source>_<md5>", e.g. "itunes_9e107d9d372bb6826bd81d3542a419d6".
+     *
+     * @param  string  $artist
+     * @param  string  $title
+     * @param  bool  $skipCache  Force a fresh search (panel lookup tool), the result is still cached
+     *
+     * @return string|null
+     */
+    protected function searchArtwork(string $artist, string $title, bool $skipCache = false): ?string
+    {
+        // Cleaned before the cache key is built, so "Song" and "Song (Radio Edit)" share one search.
+        // Only the search changes: local files keep using the names from the stream.
+        if ($this->cleanSearch) {
+            $artist = Helpers::cleanSearchTerm($artist);
+            $title  = ($title !== '') ? Helpers::cleanSearchTerm($title) : '';
+        }
+
+        // Providers are untyped and may return anything, filter_var() yields the URL or false
+        if ( ! $this->cacheRequests) {
+            return filter_var($this->getArtworkURL($artist, $title), FILTER_VALIDATE_URL) ?: null;
+        }
+
+        $cache = $this->pawtunes->cache;
+        $http  = $this->pawtunes->http;
+
+        // The class name doubles as the source key (iTunes -> itunes, AppleMusic -> applemusic).
+        // serialize() length-prefixes each field, so ("a b", "c") and ("a", "b c") never share a key.
+        // The size is part of the key because iTunes and Apple Music bake it into the returned URL.
+        $source   = strtolower(substr(strrchr(static::class, '\\'), 1));
+        $cacheKey = $source.'_'.md5(serialize([$artist, $title, $this->imageWidth, $this->imageHeight]));
+
+        if ( ! $skipCache) {
+            $cached = $cache->get($cacheKey);
+            if ($cached === self::SEARCH_NOT_FOUND) {
+                return null;
+            }
+
+            if (is_string($cached) && $cached !== '') {
+                return $cached;
+            }
+        }
+
+        // Start clean, so a status left by the previous source is never mistaken for this provider's answer
+        $http->resetLastStatus();
+        $this->confirmedMiss = false;
+        $artworkURL = filter_var($this->getArtworkURL($artist, $title), FILTER_VALIDATE_URL);
+
+        if ($artworkURL !== false) {
+            $cache->set($cacheKey, $artworkURL, self::SEARCH_FOUND_TTL);
+
+            return $artworkURL;
+        }
+
+        // Cache a miss only when the API itself answered 2xx, or the provider confirmed it. Rate limits (403/429),
+        // auth errors and timeouts are our failure to ask, not "no artwork", so the next request retries.
+        $status = $http->getLastStatus();
+        if ($this->confirmedMiss || ($status !== null && $status >= 200 && $status < 300)) {
+            $cache->set($cacheKey, self::SEARCH_NOT_FOUND, self::SEARCH_NOT_FOUND_TTL);
+        }
+
+        return null;
+    }
+
+
+    /**
+     * Does a search result belong to the artist we searched for? Part of "Clean Searches": with the option off,
+     * every result is accepted like before, which is the escape hatch should the loose match ever reject a real one.
+     *
+     * @param  string  $searched
+     * @param  string  $found
+     *
+     * @return bool
+     */
+    protected function isSameArtist(string $searched, string $found): bool
+    {
+        return ! $this->cleanSearch || Helpers::sameArtist($searched, $found);
     }
 
 

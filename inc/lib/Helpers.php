@@ -392,4 +392,132 @@ final class Helpers
 
     }
 
+
+    /**
+     * Remove release noise from an artist or title before it is sent to an artwork API, e.g.
+     * "Song (Radio Edit)" -> "Song", "Song - Remastered 2011" -> "Song", "Artist feat. Guest" -> "Artist".
+     * Store catalogs index the plain names, so the noise mostly causes misses or a wrong version's cover.
+     *
+     * @param  string  $term
+     *
+     * @return string The cleaned term, or the original when nothing would be left
+     */
+    public static function cleanSearchTerm(string $term): string
+    {
+        $dash = '[-\x{2013}\x{2014}]';
+
+        // Edition and version notes. Each one must make up the WHOLE bracket group or dash suffix, so words that
+        // merely occur in a real title part survive: "(Dance With Me)", "(Live Your Life)", "- Edit My Heart".
+        // The placeholder {rest} is "anything up to the end of the group or suffix".
+        $edition = implode('|', [
+            // "(Radio Edit)", "(Single Version)", "(Extended Mix)", "(Clean Edit)", "(Edit)"
+            '(?:(?:radio|single|album|extended|original|club|short|long|clean|explicit|dirty|main|full|mono|stereo|\d{4})\s+){0,2}(?:edit|version|mix)',
+            // "(Remastered 2011)", "(2011 Remaster)", "(Digitally Remastered)", "(2009 Remastered Version)"
+            '(?:\d{4}\s+)?(?:digital(?:ly)?\s+)?remaster(?:ed)?(?:\s+\d{4})?(?:\s+(?:version|edition|mix))?',
+            // "(Live)", "(Live at Wembley)", "(Live from Paris 1985)", "(Live 1985)", "(Live Version)"
+            'live(?:\s+(?:at|from|in|on)\b{rest}|\s+\d{4}|\s+version)?',
+            '(?:explicit|clean|dirty|censored|uncensored|mono|stereo|bonus track)',
+        ]);
+
+        // Only ever in brackets: guests and video upload noise ("(feat. Guest)", "(with Guest)", "[Official Video]")
+        $bracketOnly = '(?:feat\.?|ft\.?|featuring|with)\s+{rest}|official(?:\s+music)?(?:\s+(?:video|audio))?|lyric video|lyrics?|hd|hq|audio|video|visuali[sz]er';
+
+        $inBrackets = str_replace('{rest}', '[^)\]]*', "{$edition}|{$bracketOnly}");
+        $inSuffix   = str_replace('{rest}', '[^-\x{2013}\x{2014}]*', $edition);
+
+        $clean = preg_replace(
+            [
+                // Bracketed qualifiers: "(Radio Edit)", "[Remastered 2011]", "(feat. Guest)", "(Live at Wembley)"
+                '/\s*[(\[]\s*(?:'.$inBrackets.')\s*[)\]]/iu',
+                // A bare year: "(2011)"
+                '/\s*[(\[]\s*\d{4}\s*[)\]]/u',
+                // Dash suffixes the way stores name versions: "Song - Remastered 2011", "Song - Live"
+                '/\s+'.$dash.'\s+(?:'.$inSuffix.')\s*$/iu',
+                // Unbracketed guests at the end: "Artist feat. Guest", "Song ft Guest"
+                '/\s+(?:feat\.?|ft\.?|featuring)\s+.*$/iu',
+                // Station URLs glued to the metadata: "www.station.fm", "https://station.fm/live"
+                '/(?:https?:\/\/|\bwww\.)\S+/iu',
+            ],
+            '',
+            $term
+        );
+
+        // preg_replace() returns null on invalid UTF-8, keep the original then
+        $clean = trim(preg_replace('/\s{2,}/u', ' ', (string) $clean), " \t|:-");
+
+        return ($clean === '') ? $term : $clean;
+    }
+
+
+    /**
+     * Loose "same artist" check for artwork search results. Providers return their best guess even when nothing
+     * matches (a song titled "Hello" for the band Hello), which shows a wrong cover. Tolerates case, accents,
+     * punctuation, "The"/"and" and guest lists: "AC/DC" = "AC-DC", "Queen" = "Queen & David Bowie".
+     *
+     * @param  string  $searched  Artist we searched for
+     * @param  string  $found  Artist name in the provider's result
+     *
+     * @return bool
+     */
+    public static function sameArtist(string $searched, string $found): bool
+    {
+        $a = self::nameTokens($searched);
+        $b = self::nameTokens($found);
+
+        // Nothing to compare, or different scripts ("宇多田ヒカル" vs "Hikaru Utada"): trust the provider
+        if ($a === [] || $b === [] || self::isLatin($a) !== self::isLatin($b)) {
+            return true;
+        }
+
+        // Same words in any order, or one name contains the other's words (guests, "& The Band")
+        [$short, $long] = (count($a) <= count($b)) ? [$a, $b] : [$b, $a];
+        if (array_diff($short, $long) === []) {
+            return true;
+        }
+
+        // Small spelling differences: "P!nk" vs "Pink", "Motörhead" vs "Motorhead" (accents are dropped when
+        // intl is missing, similar_text() compares bytes)
+        $joinedA = implode('', $a);
+        $joinedB = implode('', $b);
+        if (self::isLatin($a)) {
+            $joinedA = preg_replace('/[^\x00-\x7F]/', '', $joinedA);
+            $joinedB = preg_replace('/[^\x00-\x7F]/', '', $joinedB);
+        }
+
+        similar_text($joinedA, $joinedB, $percent);
+
+        return $percent >= 80;
+    }
+
+
+    /**
+     * Lowercase words of a name without accents (when intl is available) and filler words
+     *
+     * @param  string  $name
+     *
+     * @return string[]
+     */
+    private static function nameTokens(string $name): array
+    {
+        if (class_exists('Normalizer')) {
+            $name = preg_replace('/\p{Mn}+/u', '', (string) \Normalizer::normalize($name, \Normalizer::FORM_D));
+        }
+
+        $name   = str_replace('&', ' and ', mb_strtolower((string) $name, 'UTF-8'));
+        $tokens = preg_split('/[^\p{L}\p{N}]+/u', $name, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+
+        return array_values(array_diff($tokens, ['the', 'and']));
+    }
+
+
+    /**
+     * @param  string[]  $tokens
+     *
+     * @return bool
+     */
+    private static function isLatin(array $tokens): bool
+    {
+        return preg_match('/\p{Latin}/u', implode('', $tokens)) === 1;
+    }
+
 }

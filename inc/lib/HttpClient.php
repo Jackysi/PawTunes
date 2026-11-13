@@ -26,6 +26,13 @@ class HttpClient
      */
     protected $logger;
 
+    /**
+     * HTTP status code of the last request, null when it failed at the transport level (timeout, DNS, TLS)
+     *
+     * @var int|null
+     */
+    protected ?int $lastStatus = null;
+
 
     /**
      * @param  string  $caBundlePath  Path to CA certificate bundle
@@ -131,6 +138,9 @@ class HttpClient
         // Finally execute CURL
         $data = curl_exec($CURL);
 
+        // Must be read before curl_close()
+        $this->lastStatus = ($data === false) ? null : curl_getinfo($CURL, CURLINFO_RESPONSE_CODE);
+
         // Parse ERROR
         if (curl_error($CURL)) {
 
@@ -151,6 +161,29 @@ class HttpClient
 
         return $data;
 
+    }
+
+
+    /**
+     * HTTP status code of the last request. get() returns the body for ANY status,
+     * so callers that must tell "no results" apart from "rate limited" check this.
+     *
+     * @return int|null
+     */
+    public function getLastStatus(): ?int
+    {
+        return $this->lastStatus;
+    }
+
+
+    /**
+     * Forget the last status, so a caller can tell whether its own code made a request at all
+     *
+     * @return void
+     */
+    public function resetLastStatus(): void
+    {
+        $this->lastStatus = null;
     }
 
 }

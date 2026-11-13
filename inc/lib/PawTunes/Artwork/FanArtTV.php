@@ -88,6 +88,14 @@ class FanArtTV extends Artwork
             )
         );
 
+        // fanart.tv answers 404 for an artist it has no art for: a real "not found", cacheable like a 2xx miss
+        // (MusicBrainz already gave a valid id, so the 404 is about the artist, not the URL)
+        if ($this->pawtunes->http->getLastStatus() === 404) {
+            $this->confirmedMiss = true;
+
+            return null;
+        }
+
         if ($api) {
             $data = json_decode($api, true);
         }
@@ -130,14 +138,13 @@ class FanArtTV extends Artwork
             )
         );
 
-        // API Response was success
-        if ($getID) {
+        // Results come best match first. Skip other artists (a search for "Hello" also finds "Hello Kitty"): with
+        // Clean Searches on, the first result with the same name wins, like the other providers' results.
+        $data = json_decode((string) $getID, true);
+        foreach ($data['artists'] ?? [] as $result) {
 
-            $data = json_decode($getID, true);
-            if ($data && ! empty($data['artists']) && count($data['artists']) > 0) {
-
-                return $data['artists'][0]['id'];
-
+            if ( ! empty($result['id']) && $this->isSameArtist($artist, (string) ($result['name'] ?? ''))) {
+                return $result['id'];
             }
 
         }

@@ -85,8 +85,30 @@ if (isset($_GET['delete']) && $_GET['delete'] === 'override-share-image') {
 
 }
 
+// Checkbox fields of views/settings.blade.php, with the value the player assumes while the key is missing.
+// Browsers do not post unchecked boxes, so each one is written explicitly: otherwise unchecking would drop the
+// key from general.php, and an option that defaults to on (clean_artwork_search) could never be turned off.
+$checkboxes = [
+    'disable_index'        => false,
+    'multi_lang'           => false,
+    'autoplay'             => false,
+    'dynamic_title'        => false,
+    'api'                  => false,
+    'history'              => false,
+    'cache_images'         => false,
+    'cache_api_requests'   => false,
+    'clean_artwork_search' => true,
+    'serve_via_web'        => false,
+    'artist_images_only'   => false,
+    'artwork_lazy_loading' => false,
+];
+
 // Check if method is post
 if ( ! empty($_POST)) {
+
+    foreach ($checkboxes as $key => $default) {
+        $_POST[$key] = ($_POST[$key] ?? '') === 'true';
+    }
 
     // Map a few fields which we will store
     $store = [
@@ -185,6 +207,11 @@ if ( ! empty($_POST)) {
 
     $_POST = $pawtunes->getConfigAll();
     unset($_POST['artwork_sources']);
+
+    // Show what the player actually does for keys that are not in general.php yet
+    foreach ($checkboxes as $key => $default) {
+        $_POST[$key] = $_POST[$key] ?? $default;
+    }
 
 }
 

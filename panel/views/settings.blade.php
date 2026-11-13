@@ -175,6 +175,22 @@
             'description' => ' Cache images on the server (crop & optimize artwork images)',
         ],
         [
+            'label'       => 'Cache API Requests',
+            'name'        => 'cache_api_requests',
+            'class'       => 'col-sm-9',
+            'value'       => 'true',
+            'type'        => 'checkbox',
+            'description' => ' Cache artwork API searches (found for 7 days, not found for 1 day), avoids repeated lookups and API rate limits',
+        ],
+        [
+            'label'       => 'Clean Searches',
+            'name'        => 'clean_artwork_search',
+            'class'       => 'col-sm-9',
+            'value'       => 'true',
+            'type'        => 'checkbox',
+            'description' => ' Remove "(Radio Edit)", "(Remastered 2011)", "feat. Guest" and similar from artwork searches, and skip results by a different artist',
+        ],
+        [
             'label'       => 'Serve via Web',
             'name'        => 'serve_via_web',
             'class'       => 'col-sm-9',

@@ -418,9 +418,11 @@ class PawTunes
 
 
     /**
+     * First data/images/default.<ext>, or null
+     *
      * @return string|null
      */
-    protected function defaultArtwork(): ?string
+    public function defaultArtwork(): ?string
     {
 
         if ($this->foundDefaultArtwork !== null) {

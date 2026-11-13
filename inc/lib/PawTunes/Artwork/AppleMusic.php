@@ -31,7 +31,10 @@ use lib\PawTunes;
 class AppleMusic extends Artwork
 {
 
-    private const SEARCH_URL = 'https://api.music.apple.com/v1/catalog/%s/search?types=songs&limit=1&term=%s';
+    /**
+     * Five results so a song by the right artist can be picked when the top hit is a same-named song by someone else
+     */
+    private const SEARCH_URL = 'https://api.music.apple.com/v1/catalog/%s/search?types=songs&limit=5&term=%s';
 
     /**
      * Apple allows up to 6 months. 30 days keeps a leaked token short-lived.
@@ -63,7 +66,8 @@ class AppleMusic extends Artwork
         $this->teamId     = $teamId;
         $this->keyId      = $keyId;
         $this->privateKey = $config['private_key'];
-        $this->storefront = $config['storefront'] ?? 'us';
+        // ?: and not ??, a blank panel field would otherwise query "/catalog//search"
+        $this->storefront = $config['storefront'] ?: 'us';
     }
 
 
@@ -96,14 +100,21 @@ class AppleMusic extends Artwork
             ]
         );
 
-        $data    = json_decode((string) $response, true);
-        $artwork = $data['results']['songs']['data'][0]['attributes']['artwork']['url'] ?? null;
-        if ($artwork === null) {
-            return null;
+        $data = json_decode((string) $response, true);
+
+        foreach ($data['results']['songs']['data'] ?? [] as $song) {
+
+            $artwork = $song['attributes']['artwork']['url'] ?? null;
+            if ($artwork === null || ! $this->isSameArtist((string) $artist, (string) ($song['attributes']['artistName'] ?? ''))) {
+                continue;
+            }
+
+            // Artwork URL is a template, e.g. https://is1-ssl.mzstatic.com/image/thumb/.../{w}x{h}bb.jpg
+            return str_replace(['{w}', '{h}'], [$this->imageWidth, $this->imageHeight], $artwork);
+
         }
 
-        // Artwork URL is a template, e.g. https://is1-ssl.mzstatic.com/image/thumb/.../{w}x{h}bb.jpg
-        return str_replace(['{w}', '{h}'], [$this->imageWidth, $this->imageHeight], $artwork);
+        return null;
     }
 
 

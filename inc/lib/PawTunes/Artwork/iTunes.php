@@ -19,9 +19,12 @@ class iTunes extends Artwork
 {
 
     /**
+     * Ten results so a song by the right artist can be picked when the top hit is someone else's song
+     * with the same name (the parameter is "limit", the old "results" was ignored and returned 50)
+     *
      * @var string
      */
-    private $url = "https://itunes.apple.com/search?term={{\$rawTrack}}&format=json&media=music&entity={{\$entity}}&results=1&start=0";
+    private $url = "https://itunes.apple.com/search?term={{\$rawTrack}}&format=json&media=music&entity={{\$entity}}&limit=10";
 
 
     /**
@@ -51,23 +54,20 @@ class iTunes extends Artwork
             )
         );
 
-        // If there is an response
-        if ($search !== false) {
+        $data = json_decode((string) $search, true);
 
-            // Read JSON String
-            $data = json_decode($search, true);
+        foreach ($data['results'] ?? [] as $result) {
 
-            // Reading JSON
-            if ( ! empty($data['resultCount']) && $data['resultCount'] >= 1) { // Check if result is not empty
-
-                // Find position of LAST slash (/)
-                $last_slash = strrpos($data['results'][0]['artworkUrl100'], '/');
-
-                // Return the modified string
-                return substr($data['results'][0]['artworkUrl100'], 0, $last_slash).
-                       "/{$this->imageWidth}x{$this->imageHeight}.".$this->pawtunes->extGet($data['results'][0]['artworkUrl100']);
-
+            // Skip covers of other artists ("Hello" by Adele when the band Hello is playing)
+            if (empty($result['artworkUrl100']) || ! $this->isSameArtist((string) $artist, (string) ($result['artistName'] ?? ''))) {
+                continue;
             }
+
+            // .../100x100bb.jpg -> .../{W}x{H}.jpg, the CDN renders any size
+            $lastSlash = strrpos($result['artworkUrl100'], '/');
+
+            return substr($result['artworkUrl100'], 0, $lastSlash).
+                   "/{$this->imageWidth}x{$this->imageHeight}.".$this->pawtunes->extGet($result['artworkUrl100']);
 
         }
 

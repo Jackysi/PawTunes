@@ -20,24 +20,30 @@ class Spotify extends Artwork
 {
 
     /**
-     * @var string
+     * Five results so one by the right artist can be picked when the top hit is someone else
      */
-    private $url = "https://api.spotify.com/v1/search?q={{\$rawArtist}}&type={{\$type}}&limit=1";
+    private const SEARCH_URL = 'https://api.spotify.com/v1/search?q=%s&type=%s&limit=5';
+
+    private const TOKEN_URL = 'https://accounts.spotify.com/api/token';
 
     /**
-     * @var mixed|null
+     * "client_id:client_secret"
+     *
+     * @var string
      */
     private $apiKey;
 
     /**
+     * "artist" (artist photos, Artist Images Mode) or "track" (album covers)
+     *
      * @var string
      */
     private $type = 'track';
 
 
     /**
-     * @param       $apiKey
-     * @param  array  $settings
+     * @param  PawTunes  $pawtunes
+     * @param  null  $override
      */
     public function __construct(PawTunes $pawtunes, $override = null)
     {
@@ -49,7 +55,7 @@ class Spotify extends Artwork
             throw new PawException('Missing API key for the Spotify API!');
         }
 
-        $this->apiKey = $this->pawtunes->config('artwork_sources')['spotify']['api_key'] ?? null;
+        $this->apiKey = $this->pawtunes->config('artwork_sources')['spotify']['api_key'];
 
         // We can use artist or track images
         $this->type = $this->pawtunes->config('artist_images_only') ? 'artist' : 'track';
@@ -60,97 +66,99 @@ class Spotify extends Artwork
      * @param  string  $artist
      * @param  string  $title
      *
-     * @return mixed
+     * @return string|null
      */
     protected function getArtworkURL($artist, $title = '')
     {
-        $barrer = $this->getOAuthToken();
-        if ( ! $this->apiKey || ! $barrer) {
-            return null;
-        }
+        $bearer = $this->getOAuthToken();
 
-        $data = json_decode(
-            $this->pawtunes->get(
-            // Generate URL
-                $this->pawtunes->template($this->url,
-                    [
-                        'rawArtist' => rawurlencode($artist),
-                        'type'      => $this->type,
-                    ], false
-                ),
-                null,
-                null,
-                false,
-                30,
-                $curl_error,
-                [
-                    CURLOPT_HTTPHEADER => [
-                        'Authorization: Bearer '.$barrer,
-                    ],
-                ]
-            ), true
+        // Field filters narrow a track search to this exact song, an artist search needs just the name
+        $query = ($this->type === 'track' && ! empty($title)) ? "track:{$title} artist:{$artist}" : (string) $artist;
+
+        $response = $this->pawtunes->get(
+            sprintf(self::SEARCH_URL, rawurlencode($query), $this->type),
+            null,
+            null,
+            false,
+            10,
+            $error,
+            [
+                CURLOPT_HTTPHEADER => [
+                    'Authorization: Bearer '.$bearer,
+                ],
+            ]
         );
 
-        // Unable to find artist
-        if ( ! empty($data['error']) && $this->debug) {
-            throw new PawException("Spotify Artwork Search for \"{$artist}\" failed! Response: ".$data['error']['message']);
-        }
-
-        // Check if tracks were found
-        if ( ! empty($data['error']) || count($data[$this->type.'s']['items']) < 1) {
+        $data = json_decode((string) $response, true);
+        if ( ! is_array($data)) {
             return null;
         }
 
-        // Album images?
-        if (empty($data[$this->type.'s']['items'][0]['album']['images'])) {
-            return null;
+        // No artist or title in the message, they are untrusted text and the logs are viewable in the panel
+        if ( ! empty($data['error'])) {
+            throw new PawException('Spotify artwork search failed: '.($data['error']['message'] ?? 'unknown error'));
         }
 
-        return $data[$this->type.'s']['items'][0]['album']['images'][0]['url'];
+        foreach ($data[$this->type.'s']['items'] ?? [] as $item) {
+
+            // Artist results carry their own photos, track results the album's cover (largest first)
+            $name   = ($this->type === 'artist') ? ($item['name'] ?? '') : ($item['artists'][0]['name'] ?? '');
+            $images = ($this->type === 'artist') ? ($item['images'] ?? []) : ($item['album']['images'] ?? []);
+
+            if (empty($images[0]['url']) || ! $this->isSameArtist((string) $artist, (string) $name)) {
+                continue;
+            }
+
+            return $images[0]['url'];
+
+        }
+
+        return null;
     }
 
 
     /**
-     * Authorize with the Spotify API
+     * Client credentials token, cached per credentials (editing them in the panel takes effect immediately)
      *
-     * @return mixed
+     * @return string
      */
-    private function getOAuthToken()
+    private function getOAuthToken(): string
     {
+        $cacheKey = 'spotify_token.'.md5($this->apiKey);
+
         // Try to use token from cache otherwise we might be blocked really fast.
-        if ($this->pawtunes->cache->get('spotify_token')) {
-            return $this->pawtunes->cache->get('spotify_token');
+        if ($token = $this->pawtunes->cache->get($cacheKey)) {
+            return $token;
         }
 
-        $headers = [
-            'Authorization: Basic '.base64_encode($this->apiKey),
-            'Content-Type: application/x-www-form-urlencoded',
-        ];
-
-        $try = $this->pawtunes->get(
-            'https://accounts.spotify.com/api/token',
+        $response = $this->pawtunes->get(
+            self::TOKEN_URL,
             ['grant_type' => 'client_credentials'],
             null,
             false,
-            20,
+            10,
             $authError,
             [
-                CURLOPT_HTTPHEADER => $headers,
+                CURLOPT_HTTPHEADER => [
+                    'Authorization: Basic '.base64_encode($this->apiKey),
+                    'Content-Type: application/x-www-form-urlencoded',
+                ],
             ]
         );
 
-        if ( ! $try) {
-            throw new PawException('Unable to get OAuth token for the Spotify API!, Details: '.$authError);
+        if ( ! $response) {
+            throw new PawException('Unable to get OAuth token for the Spotify API! Details: '.$authError);
         }
 
-        $data = json_decode($try);
-        if ( ! $data || empty($data->access_token)) {
-            throw new PawException('Unable to get OAuth token for the Spotify API!, Details: '.$data->error);
+        $data = json_decode($response, true);
+        if (empty($data['access_token'])) {
+            throw new PawException('Unable to get OAuth token for the Spotify API! Details: '.($data['error_description'] ?? $data['error'] ?? 'invalid response'));
         }
 
-        $this->pawtunes->cache->set('spotify_token', $data->access_token, $data->expires_in);
+        // Expire a minute early so a request never goes out with a token that dies in flight
+        $this->pawtunes->cache->set($cacheKey, $data['access_token'], max(60, (int) ($data['expires_in'] ?? 3600) - 60));
 
-        return $data->access_token;
+        return $data['access_token'];
     }
 
 }
