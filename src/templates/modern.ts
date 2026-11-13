@@ -10,7 +10,7 @@
  * @repository   https://github.com/Jackysi/pawtunes
  */
 import PawTunes from "../player/ts/pawtunes";
-import {CastChangeEvent} from "../player/ts/types";
+import {CastChangeEvent, TrackExtra} from "../player/ts/types";
 import AudioMotionAnalyzer from 'audiomotion-analyzer';
 
 export default class ModernTpl {
@@ -56,11 +56,19 @@ export default class ModernTpl {
             this.updateTrackInfo(this.pawtunes.onAir);
         }
 
+        // Up next / live DJ already known (the first poll may have answered before setup ran)
+        this.updateTrackExtra(this.pawtunes.trackExtra);
+
         // Visualizer canvas
         this.canvas = document.querySelector('.visualizer-canvas') as HTMLCanvasElement;
         if (this.canvas) {
             this.ctx = this.canvas.getContext('2d');
             this.resizeCanvas();
+
+            // The artwork area animates its width (see fitArtwork): the canvas resolution follows at the end
+            this.canvas.parentElement?.addEventListener('transitionend', (e) => {
+                if (e.target === this.canvas?.parentElement) this.resizeCanvas();
+            });
         }
 
         if (this.pawtunes.audio) {
@@ -106,11 +114,47 @@ export default class ModernTpl {
         this.bindPawEvents();
         this.bindButtons();
         this.switchPage('main');
+        this.fitArtwork();
 
         window.addEventListener('resize', () => {
             this.switchPage('', false);
-            this.resizeCanvas();
+            this.fitArtwork();
         });
+
+        // The web font arrives later and changes the text heights the artwork size depends on
+        if (document.fonts && document.fonts.ready) {
+            document.fonts.ready.then(() => this.fitArtwork());
+        }
+
+    }
+
+
+    /**
+     * The main page never scrolls, so when the live badge or the up next line take vertical room (or
+     * the player is embedded short) the artwork gives way instead of the controls being clipped: its
+     * width is the smaller of the CSS size (72%, max 360px) and the height left by everything else.
+     */
+    private fitArtwork() {
+
+        const page = this.pawtunes._('.page.main')[0] as HTMLElement | undefined;
+        const area = this.pawtunes._('.artwork-area')[0] as HTMLElement | undefined;
+        if (!page || !area) return;
+
+        const style = getComputedStyle(page);
+        let used = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+
+        for (const child of Array.from(page.children) as HTMLElement[]) {
+            if (child === area) continue;
+            const cs = getComputedStyle(child);
+            used += child.offsetHeight + parseFloat(cs.marginTop) + parseFloat(cs.marginBottom);
+        }
+
+        const innerWidth = page.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+        const byWidth = Math.min(innerWidth * 0.72, 360);
+        const byHeight = page.clientHeight - used;
+
+        area.style.width = `${Math.round(Math.max(140, Math.min(byWidth, byHeight)))}px`;
+        this.resizeCanvas();
 
     }
 
@@ -125,6 +169,11 @@ export default class ModernTpl {
 
         this.pawtunes.on('track.change', (track: { artist: string; title: string }) => {
             this.updateTrackInfo(track);
+        });
+
+        // Queued track and live DJ (AzuraCast, SAM): emitted only when they change
+        this.pawtunes.on('track.extra', (extra: TrackExtra) => {
+            this.updateTrackExtra(extra);
         });
 
         this.pawtunes.on('status.change', (status: string) => {
@@ -249,6 +298,45 @@ export default class ModernTpl {
 
         this.pawtunes._('.onair .artist', (el: HTMLElement) => this.setMarquee(el, track.artist));
         this.pawtunes._('.onair .title', (el: HTMLElement) => this.setMarquee(el, track.title));
+
+    }
+
+    /**
+     * Live DJ badge above the track and "Up next" line below the volume, both gated by template options
+     * (showLiveBadge, showUpNext). Upstream strings are written as text only.
+     */
+    updateTrackExtra(extra: TrackExtra) {
+
+        const live = (this.optionOn('showLiveBadge', true) && extra.live?.isLive) ? extra.live : null;
+        const next = (this.optionOn('showUpNext', true) && extra.next) ? extra.next : null;
+
+        this.pawtunes._('.onair .live-badge', (el: HTMLElement) => {
+            el.classList.toggle('hidden', !live);
+            const streamer = el.querySelector('.live-streamer');
+            if (streamer) streamer.textContent = live ? live.streamer : '';
+        });
+
+        this.pawtunes._('.player .up-next', (el: HTMLElement) => {
+            el.classList.toggle('hidden', !next);
+            const track = el.querySelector('.up-next-track');
+            if (track) track.textContent = next ? (next.artist ? `${next.artist} - ${next.title}` : next.title) : '';
+        });
+
+        // Both lines take vertical room on the main page
+        this.fitArtwork();
+
+    }
+
+    /**
+     * Template option as a boolean. The panel stores checkboxes as true/false, but an option missing
+     * from a not yet refreshed templates cache is undefined: then the manifest default applies.
+     */
+    private optionOn(name: string, fallback: boolean): boolean {
+
+        const value = this.pawtunes.settings.tpl?.[name];
+        if (value === undefined || value === null) return fallback;
+
+        return value === true || value === 'true' || value === 1 || value === '1';
 
     }
 

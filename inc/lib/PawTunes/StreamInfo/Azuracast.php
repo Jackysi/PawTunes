@@ -94,15 +94,34 @@ class Azuracast extends TrackInfo
 
         $info['artwork_override'] = $response['now_playing']['song']['art'] && $this->channel['stats']['use-cover'] ? $response['now_playing']['song']['art'] : null;
 
+        // Live DJ (templates that support it show a badge): AzuraCast sends is_live on every response
+        $info['live'] = [
+            'is_live'  => ! empty($response['live']['is_live']),
+            'streamer' => trim((string) ($response['live']['streamer_name'] ?? '')),
+        ];
+
+        // Up next, only when the channel opted in. AzuraCast sends playing_next as null while nothing is
+        // queued, and a queued item without a title is not worth announcing.
+        if ( ! empty($this->channel['stats']['up-next']) && ! empty($response['playing_next']['song']['title'])) {
+
+            $nextSong = $response['playing_next']['song'];
+            if ($this->channel['stats']['use-cover']) {
+                $nextSong['artwork'] = $nextSong['art'] ?? null; // handleTrack reads artwork/image
+            }
+
+            $info['next'] = $this->handleTrack('', $nextSong);
+
+        }
+
         // Handle history
         if ($this->channel['stats']['azura-history'] && isset($response['song_history']) && count($response['song_history']) >= 1) {
 
             $info['history'] = [];
             foreach ($response['song_history'] as $entry) {
 
-                // Little hack to use artwork from AzuraCast if preferred
+                // Little hack to use artwork from AzuraCast if preferred (handleTrack reads the artwork key)
                 if ($this->channel['stats']['use-cover']) {
-                    $entry['song']['artwork_override'] = $entry['song']['art'] ?? null;
+                    $entry['song']['artwork'] = $entry['song']['art'] ?? null;
                 }
 
                 // Parse as you would any track, but add the time it was played

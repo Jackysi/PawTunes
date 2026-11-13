@@ -62,7 +62,36 @@ class Sam extends TrackInfo
             LIMIT 0,1"
         );
 
-        return $this->handleQueryResponse($sam);
+        $info = $this->handleQueryResponse($sam);
+
+        // Up next, only when the channel opted in: the first queued song. A failing queue query must not
+        // take the current track down with it, so it is logged and skipped.
+        if ( ! empty($this->channel['stats']['up-next'])) {
+
+            try {
+
+                $queued = $this->fetchRow(
+                    "SELECT songlist.artist, songlist.title
+                    FROM {$this->table('queuelist')} AS queuelist
+                    JOIN {$this->table('songlist')} AS songlist ON queuelist.songID = songlist.ID
+                    WHERE songlist.songtype IN ('S', 'N')
+                    ORDER BY queuelist.sortID ASC
+                    LIMIT 1"
+                );
+
+                if ( ! empty($queued['artist']) || ! empty($queued['title'])) {
+                    $info['next'] = $this->handleQueryResponse($queued);
+                }
+
+            } catch (PawException $e) {
+
+                $this->pawtunes->writeLog('player_errors', "{$this->channel['name']}: up next skipped, {$e->getMessage()}");
+
+            }
+
+        }
+
+        return $info;
     }
 
 

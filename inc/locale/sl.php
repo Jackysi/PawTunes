@@ -39,4 +39,6 @@ return array (
   'error_stream' => 'NAPAKA: Izbrana kvaliteta prenosa ne obstaja!',
   'error_network' => 'NAPAKA: Povezava ni bila uspešna!',
   'error_playback' => 'NAPAKA: Predvajanje ni bilo mogoče!',
+  'up_next' => 'Sledi',
+  'live_badge' => 'V ŽIVO',
 );

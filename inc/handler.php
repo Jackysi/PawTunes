@@ -207,6 +207,7 @@ if (isset($_GET['channel']) && $_GET['channel'] === 'all') {
                     $chn['websocket']['station']         = $chn['stats']['station'];
                     $chn['websocket']['history']         = $chn['stats']['azura-history'];
                     $chn['websocket']['useRemoteCovers'] = $chn['stats']['use-cover'];
+                    $chn['websocket']['upNext']          = ! empty($chn['stats']['up-next']);
 
                 }
 
@@ -376,6 +377,27 @@ switch ($channel['stats']['method']) {
                 }
             }
 
+
+            // Up next (AzuraCast queue, SAM queue): same artwork treatment as the current track
+            if (isset($info['next'])) {
+
+                if ($pawtunes->config('artwork_lazy_loading') !== true) {
+
+                    $info['next']['artwork'] = $pawtunes->getArtwork(
+                        $info['next']['artist'],
+                        ( ! $pawtunes->config('artist_images_only')) ? $info['next']['title'] : '',
+                        $info['next']['artwork_override'] ?? ''
+                    );
+
+                } else {
+
+                    $info['next']['artwork'] = $pawtunes->lazyArtworkURL($info['next']['artist'], $info['next']['title'], $info['next']['artwork_override'] ?? '');
+
+                }
+
+                unset($info['next']['artwork_override']);
+
+            }
 
             // Delete useless var
             unset($info['artwork_override']);

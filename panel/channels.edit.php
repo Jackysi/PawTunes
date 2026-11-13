@@ -181,6 +181,7 @@ if ( ! empty($_POST)) {
                         'station'       => $_POST['azura-station'] ?? null,
                         'use-cover'     => ! empty($_POST['azura-use-cover']) && (bool) $_POST['azura-use-cover'] === true,
                         'azura-history' => ! empty($_POST['azura-history']) && (bool) $_POST['azura-history'] === true,
+                        'up-next'       => ! empty($_POST['azura-up-next']) && (bool) $_POST['azura-up-next'] === true,
                     ];
                     break;
 
@@ -256,12 +257,13 @@ if ( ! empty($_POST)) {
                 // SAM Broadcaster Method
                 case 'sam': // normalize array
                     $stats = [
-                                 'method'    => 'sam',
-                                 'host'      => $_POST['sam-host'] ?? null,
-                                 'auth-user' => $_POST['sam-user'] ?? null,
-                                 'auth-pass' => $_POST['sam-pass'] ?? null,
-                                 'db'        => $_POST['sam-db'],
-                             ] ?? null;
+                        'method'    => 'sam',
+                        'host'      => $_POST['sam-host'] ?? null,
+                        'auth-user' => $_POST['sam-user'] ?? null,
+                        'auth-pass' => $_POST['sam-pass'] ?? null,
+                        'db'        => $_POST['sam-db'] ?? null,
+                        'up-next'   => ! empty($_POST['sam-up-next']) && (bool) $_POST['sam-up-next'] === true,
+                    ];
                     break;
 
                 // Centovacast Method

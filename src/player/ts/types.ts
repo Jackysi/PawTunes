@@ -20,6 +20,16 @@ export interface OnAir {
     time: number
 }
 
+/**
+ * Optional now-playing extras some sources provide (AzuraCast, SAM): the queued track and the live DJ.
+ * Payload of the `track.extra` event and the shape of PawTunes.trackExtra; a field is null when the
+ * current source does not provide it (or nothing is queued / nobody is live).
+ */
+export interface TrackExtra {
+    next: {artist: string, title: string, artwork: string | null} | null;
+    live: {isLive: boolean, streamer: string} | null;
+}
+
 export interface Channel {
     name: string,
     logo: string | null,

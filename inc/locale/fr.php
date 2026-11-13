@@ -39,4 +39,6 @@ return array (
   'error_stream' => 'ERREUR : Le flux spécifié ou sélectionné n\'existe pas !',
   'error_network' => 'ERREUR : Une erreur réseau s\'est produite !',
   'error_playback' => 'ERREUR : Échec de la lecture, le chargement du flux a échoué !',
+  'up_next' => 'À suivre',
+  'live_badge' => 'EN DIRECT',
 );

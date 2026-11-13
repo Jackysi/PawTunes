@@ -273,6 +273,7 @@ body {
 
 
     // ─── Artwork + Visualizer ────────────────────────────────────────────
+    // The template script sets the width in px when the page runs out of height (see fitArtwork)
     .artwork-area {
         position: relative;
         display: flex;
@@ -281,6 +282,7 @@ body {
         justify-content: center;
         width: 72%;
         max-width: 360px;
+        transition: width $duration-normal $ease-out;
         aspect-ratio: 1;
     }
 
@@ -407,6 +409,110 @@ body {
         }
         100% {
             transform: translateX(-50%);
+        }
+    }
+
+
+    // ─── Live DJ badge and up next (track.extra) ─────────────────────────
+    // Both toggle .hidden; the fade-up keyframe runs each time one of them appears
+    .live-badge {
+        font-size: $font-size-xs;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        max-width: 100%;
+        margin-bottom: .6rem;
+        padding: .25rem .7rem .25rem .55rem;
+        letter-spacing: .04em;
+        color: #fff;
+        border-radius: $radius-full;
+        background: $live-color;
+        box-shadow: 0 2px 8px rgba($live-color, .3);
+        gap: .4rem;
+
+        &.hidden {
+            display: none;
+        }
+
+        &:not(.hidden) {
+            animation: fade-up $duration-normal $ease-out;
+        }
+
+        .live-dot {
+            flex-shrink: 0;
+            width: 7px;
+            height: 7px;
+            animation: live-pulse 1.4s ease-in-out infinite;
+            border-radius: 50%;
+            background: #fff;
+        }
+
+        .live-streamer {
+            font-weight: 400;
+            overflow: hidden;
+            letter-spacing: 0;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            opacity: .92;
+
+            &:empty {
+                display: none;
+            }
+
+            &::before {
+                margin-right: .4rem;
+                content: "\00B7";
+            }
+        }
+    }
+
+    // Sits under the volume row in .player: same width cap so long names ellipsize in line with it
+    .up-next {
+        font-size: $font-size-xs;
+        overflow: hidden;
+        max-width: 70%;
+        margin-top: 1rem;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        color: $text-secondary;
+
+        &.hidden {
+            display: none;
+        }
+
+        &:not(.hidden) {
+            animation: fade-up $duration-normal $ease-out;
+        }
+
+        .up-next-label {
+            font-size: .65rem;
+            font-weight: 600;
+            margin-right: .35rem;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            color: $accent-color;
+        }
+    }
+
+    @keyframes live-pulse {
+        0%, 100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+        50% {
+            transform: scale(.6);
+            opacity: .5;
+        }
+    }
+
+    @keyframes fade-up {
+        from {
+            transform: translateY(4px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
         }
     }
 
@@ -784,7 +890,7 @@ html.artwork-tint-accent .pawtunes {
         background: var(--artwork-color, #{$accent-color});
     }
 
-    .tab-item.active {
+    .tab-item.active, .up-next .up-next-label {
         color: var(--artwork-color, #{$accent-color});
     }
 

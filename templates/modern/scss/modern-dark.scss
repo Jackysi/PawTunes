@@ -176,6 +176,23 @@ $overlay-color:   rgba(255, 255, 255, .04);
         color: rgba(255, 255, 255, .5);
     }
 
+    // Live badge glows instead of filling, up next inherits the dimmed text
+    .live-badge {
+        color: lighten($live-color, 18%);
+        border: 1px solid rgba($live-color, .35);
+        background: rgba($live-color, .16);
+        box-shadow: 0 0 16px rgba($live-color, .2);
+
+        .live-dot {
+            background: lighten($live-color, 12%);
+            box-shadow: 0 0 6px rgba($live-color, .8);
+        }
+    }
+
+    .up-next {
+        color: rgba(255, 255, 255, .5);
+    }
+
 
     // ── Toast ────────────────────────────────────────────────────────────
     .player-message {

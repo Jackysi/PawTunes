@@ -234,7 +234,9 @@ export default class PawtunesWS {
             artist: null,
             title: null,
             artwork: null,
-            history: [] as any[]
+            history: [] as any[],
+            next: null as any,
+            live: null as any,
         };
 
         let song = data.now_playing.song;
@@ -243,6 +245,21 @@ export default class PawtunesWS {
         pass.artist = song.artist;
         pass.title = song.title;
         pass.artwork = (!this.pawtunes.channel.ws.useRemoteCovers || !song.art) ? this.pawtunes.pawArtworkURL(song.artist, song.title) : song.art;
+
+        // Live DJ, same keys as the polling response (see Azuracast.php)
+        if (data.live) {
+            pass.live = {is_live: !!data.live.is_live, streamer: data.live.streamer_name ?? ''};
+        }
+
+        // Up next, only when the channel opted in (playing_next is null while nothing is queued)
+        if (this.pawtunes.channel.ws.upNext && data.playing_next?.song?.title) {
+            const nextSong = data.playing_next.song;
+            pass.next = {
+                artist : nextSong.artist,
+                title  : nextSong.title,
+                artwork: (!this.pawtunes.channel.ws.useRemoteCovers || !nextSong.art) ? this.pawtunes.pawArtworkURL(nextSong.artist, nextSong.title) : nextSong.art,
+            };
+        }
 
         // History
         if (this.pawtunes.channel.ws.history && data.song_history) {

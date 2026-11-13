@@ -39,4 +39,6 @@ return array (
   'error_stream' => 'FEHLER: Angegebener/gewählter Stream existiert nicht!',
   'error_network' => 'FEHLER: Netzwerkfehler!',
   'error_playback' => 'FEHLER: Wiedergabe fehlgeschlagen, Stream lädt nicht!',
+  'up_next' => 'Als Nächstes',
+  'live_badge' => 'LIVE',
 );

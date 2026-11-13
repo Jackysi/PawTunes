@@ -798,6 +798,7 @@ class PawTunes
                         $chn['ws']['station']         = $channel['stats']['station'];
                         $chn['ws']['history']         = $channel['stats']['azura-history'];
                         $chn['ws']['useRemoteCovers'] = $channel['stats']['use-cover'];
+                        $chn['ws']['upNext']          = ! empty($channel['stats']['up-next']);
 
                     }
 

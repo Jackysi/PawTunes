@@ -68,6 +68,20 @@
             "description": "Artwork background: tint only the background gradient with the current artwork's color",
             "type": "checkbox",
             "value": "true"
+        },
+        "showUpNext": {
+            "default": true,
+            "name": "showUpNext",
+            "description": "Up next: show the queued track below the current one (AzuraCast and SAM channels with their \"Up Next\" switch on)",
+            "type": "checkbox",
+            "value": "true"
+        },
+        "showLiveBadge": {
+            "default": true,
+            "name": "showLiveBadge",
+            "description": "Live DJ badge: show a LIVE badge with the streamer name while an AzuraCast channel has a live DJ",
+            "type": "checkbox",
+            "value": "true"
         }
     }
 }

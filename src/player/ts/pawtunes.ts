@@ -8,7 +8,7 @@
  * This file is part of the PawTunes open-source project.
  * Contributions and feedback are welcome! Visit the repository or website for more details.
  */
-import {OnAir, PawMediaSource, Channel, ReconnectEvent} from "./types";
+import {OnAir, PawMediaSource, Channel, ReconnectEvent, TrackExtra} from "./types";
 import PawTunesWS from "./pawtunes-ws";
 import PawTunesCast from "./pawtunes-cast";
 import HTML5Audio from "./html5-audio";
@@ -25,6 +25,13 @@ export default class PawTunes extends HTML5Audio {
         artwork: null,
         time   : 0
     };
+
+    /**
+     * Latest "up next" and "live DJ" data of the current channel (see TrackExtra and the track.extra event)
+     *
+     * @var {object} trackExtra
+     */
+    trackExtra: TrackExtra = {next: null, live: null};
 
     /**
      * Mostly used for navigator.mediaSession
@@ -185,6 +192,8 @@ export default class PawTunes extends HTML5Audio {
         cast_unsupported    : "This stream cannot be cast, playing here instead.",
         history_added       : "Added",
         history_artist_title: "Artist/Title",
+        live_badge          : "LIVE",
+        up_next             : "Up next",
         history_hour_ago    : "hr ago",
         history_just_now    : "just now",
         history_min_ago     : "min ago",
@@ -642,6 +651,9 @@ export default class PawTunes extends HTML5Audio {
             return;
         }
 
+        // Up next / live DJ ride along with the track and change independently of it
+        this.updateTrackExtra(data);
+
         // The server URL is used as-is (it carries the artwork override); the lazy URL is only built here
         // when no artwork came along (ICY metadata, custom sockets). Computed before the comparison below,
         // so repeated polls for the same track compare equal and do not re-render anything.
@@ -710,9 +722,39 @@ export default class PawTunes extends HTML5Audio {
 
     }
 
+    /**
+     * Reads the optional "next" (queued track) and "live" (live DJ) blocks of a track info payload and
+     * emits track.extra when either changed. Polling and WebSocket payloads use the same keys, a missing
+     * block means the source does not provide it. Called with {} to clear both.
+     *
+     * @param data any - track info payload
+     */
+    protected updateTrackExtra(data: any): void {
+
+        const next = (data.next && data.next.title)
+            ? {artist: String(data.next.artist ?? ''), title: String(data.next.title), artwork: data.next.artwork ? String(data.next.artwork) : null}
+            : null;
+
+        const live = data.live
+            ? {isLive: !!data.live.is_live, streamer: String(data.live.streamer ?? '')}
+            : null;
+
+        const extra: TrackExtra = {next, live};
+        if (JSON.stringify(extra) === JSON.stringify(this.trackExtra)) {
+            return;
+        }
+
+        this.trackExtra = extra;
+        this.emit('track.extra', extra);
+
+    }
+
     public handleOnAirError(error: any): void {
 
         if (this.debug) console.warn('Track info request failed:', error);
+
+        // Whatever was queued or live is unknown now
+        this.updateTrackExtra({});
 
         // Set default on air
         this.onAir = {
@@ -1674,6 +1716,7 @@ export default class PawTunes extends HTML5Audio {
 
         this.history = [];
         this.updateHistoryDOM();
+        this.updateTrackExtra({});
         this.trackInfoInit();
 
     }

@@ -39,4 +39,6 @@ return array (
   'error_stream' => 'ERROR: The specified or selected stream does not exist!',
   'error_network' => 'ERROR: Network error occurred!',
   'error_playback' => 'ERROR: Playback failed, loading stream failed!',
+  'up_next' => 'Up next',
+  'live_badge' => 'LIVE',
 );

@@ -108,6 +108,12 @@
                         </div>
 
                         <div class="onair">
+                            <!-- Live DJ badge (AzuraCast): shown by the template on track.extra -->
+                            <div class="live-badge hidden">
+                                <span class="live-dot"></span>
+                                <span class="live-text">{{$live_badge}}</span>
+                                <span class="live-streamer"></span>
+                            </div>
                             <div class="artist">{{$artist_default}}</div>
                             <div class="title">{{$title_default}}</div>
                         </div>
@@ -145,6 +151,12 @@
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+
+                            <!-- Up next (AzuraCast / SAM queue): shown by the template on track.extra -->
+                            <div class="up-next hidden">
+                                <span class="up-next-label">{{$up_next}}</span>
+                                <span class="up-next-track"></span>
                             </div>
                         </div>
                     </div>

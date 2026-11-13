@@ -39,4 +39,6 @@ return array (
   'error_stream' => 'ERRORE: Lo stream specificato o selezionato non esiste!',
   'error_network' => 'ERRORE: Si è verificato un errore di rete!',
   'error_playback' => 'ERRORE: Riproduzione non riuscita, impossibile caricare lo stream!',
+  'up_next' => 'A seguire',
+  'live_badge' => 'IN DIRETTA',
 );
