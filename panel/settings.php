@@ -99,6 +99,26 @@ if ( ! empty($_POST['remove_app_icon'])) {
 
 }
 
+// Cache modes lib\Cache supports, with whether this server's PHP can use them
+$cacheModes = [
+    'disk'      => ['label' => 'Disk (files)', 'available' => true],
+    'apcu'      => ['label' => 'APCu', 'available' => function_exists('apcu_enabled') && apcu_enabled()],
+    'redis'     => ['label' => 'Redis', 'available' => class_exists('Redis')],
+    'memcached' => ['label' => 'Memcached', 'available' => class_exists('Memcached')],
+    'memcache'  => ['label' => 'Memcache (legacy extension)', 'available' => class_exists('Memcache')],
+];
+
+// What identifies a cache configuration: when any of it changes on save, the new one is tested first
+$cacheSignature = function (array $cache): array {
+    return [
+        lib\Cache::normalizeMode((string) ($cache['mode'] ?? '')),
+        (string) ($cache['path'] ?? ''),
+        (string) ($cache['host'] ?? ''),
+        (string) ($cache['prefix'] ?? ''),
+        $cache['extra'] ?? [],
+    ];
+};
+
 // Checkbox fields of views/settings.blade.php, with the value the player assumes while the key is missing.
 // Browsers do not post unchecked boxes, so each one is written explicitly: otherwise unchecking would drop the
 // key from general.php, and an option that defaults to on (clean_artwork_search) could never be turned off.
@@ -125,9 +145,40 @@ if ( ! empty($_POST)) {
         $_POST[$key] = ($_POST[$key] ?? '') === 'true';
     }
 
+    // Cache section. Starts from the stored array, so keys the form does not show (ext, the Redis and
+    // Memcached OPT_* options in extra) survive the save.
+    $previousCache = $pawtunes->config('cache') ?: [];
+    $cache         = array_merge($previousCache, [
+        'mode'   => lib\Cache::normalizeMode((string) ($_POST['cache_mode'] ?? '')),
+        'path'   => (trim($_POST['cache_path'] ?? '') !== '') ? trim($_POST['cache_path']) : './data/cache',
+        'host'   => trim($_POST['cache_host'] ?? ''),
+        'prefix' => trim($_POST['cache_prefix'] ?? ''),
+    ]);
+
+    // Redis password. An empty field removes it, except an ACL [user, password] pair, which only
+    // general.php can set and the field cannot show. Memcached ignores the key, so it survives mode switches.
+    $extra = is_array($cache['extra'] ?? null) ? $cache['extra'] : [];
+    if (($_POST['cache_auth'] ?? '') !== '') {
+        $extra['auth'] = $_POST['cache_auth'];
+    } elseif ( ! is_array($extra['auth'] ?? null)) {
+        unset($extra['auth']);
+    }
+    $cache['extra'] = $extra;
+
+    $cacheChanged = $cacheSignature($cache) !== $cacheSignature($previousCache);
+
+    // The form shows what was submitted again, saved or not; the cache_* fields never reach general.php
+    $_POST['cache'] = $cache;
+    unset($_POST['cache_mode'], $_POST['cache_path'], $_POST['cache_host'], $_POST['cache_auth'], $_POST['cache_prefix']);
+
+    // A new cache folder is created like the panel's requirement check creates the default one
+    if ($cacheChanged && ! is_dir($cache['path'])) {
+        @mkdir($cache['path'], 0755, true);
+    }
+
     // Map a few fields which we will store
     $store = [
-        'cache'           => $pawtunes->config('cache'),
+        'cache'           => $cache,
         'tplOptions'      => ($pawtunes->config('tplOptions') ?: []),
         'ai'              => ($pawtunes->config('ai') ?: []), // edited on the AI page, not part of this form
         'artwork_sources' => $panel->mapArtworkSourcesPost($_POST),
@@ -187,6 +238,19 @@ if ( ! empty($_POST)) {
 
         $message = $panel->alert('Invalid range for Stats Refresh Speed. The value must not be lower than <b>3</b> and higher than <b>120</b>!', 'error');
 
+    } elseif ( ! isset($cacheModes[$cache['mode']])) {
+
+        $message = $panel->alert('Unknown cache mode, please pick one from the list.', 'error');
+
+    } elseif ( ! $cacheModes[$cache['mode']]['available']) {
+
+        $message = $panel->alert("Cache mode <b>{$cacheModes[ $cache[ 'mode' ] ][ 'label' ]}</b> needs a PHP extension that is not installed on this server. Settings were not saved.", 'error');
+
+    } elseif ($cacheChanged && ($cacheError = lib\Cache::prepare($pawtunes->cacheOptions($cache))) !== null) {
+
+        // Last check on purpose: on success prepare() has already emptied the new cache
+        $message = $panel->alert('Settings were not saved, the new cache settings do not work: '.htmlspecialchars($cacheError, ENT_QUOTES, 'UTF-8'), 'error');
+
     } else {
 
         // Delete submit key
@@ -208,17 +272,11 @@ if ( ! empty($_POST)) {
             $_POST['development'] = $pawtunes->config('development');
         }
 
-        // Cache path is bit different, due to allowing different caching methods
-        if ( ! empty($_POST['cache_path'])) {
-            $store['cache']['path'] = $_POST['cache_path'];
-            $_POST['cache']['path'] = $_POST['cache_path'];
-            unset($_POST['cache_path']);
-        }
-
         $pawtunes->setConfigAll($store + $_POST);
         if ($panel->storeConfig('config/general', $pawtunes->getConfigAll())) {
 
-            $message = $panel->alert('Settings successfully updated!', 'success');
+            $message      = $panel->alert('Settings successfully updated!', 'success');
+            $cacheApplied = $cacheChanged;
 
         } else {
 
@@ -293,8 +351,39 @@ foreach ($templates as $key => $template) {
 // Fall back to the first template when the configured one no longer exists, same as the player does
 $selectedTemplate = isset($templates[$_POST['template'] ?? '']) ? $_POST['template'] : array_key_first($templates);
 
-// Cache path is bit different, due to allowing different caching methods
-$_POST['cache_path'] = $_POST['cache']['path'] ?? null;
+// Cache section fields, from the "cache" array (stored, or as submitted). Forms does not escape values.
+$cacheForm             = $_POST['cache'] ?? [];
+$cacheAuth             = $cacheForm['extra']['auth'] ?? '';
+$_POST['cache_mode']   = lib\Cache::normalizeMode((string) ($cacheForm['mode'] ?? ''));
+$_POST['cache_path']   = htmlspecialchars((string) ($cacheForm['path'] ?? ''), ENT_QUOTES, 'UTF-8');
+$_POST['cache_host']   = htmlspecialchars((string) ($cacheForm['host'] ?? ''), ENT_QUOTES, 'UTF-8');
+$_POST['cache_auth']   = is_string($cacheAuth) ? htmlspecialchars($cacheAuth, ENT_QUOTES, 'UTF-8') : '';
+$_POST['cache_prefix'] = htmlspecialchars((string) ($cacheForm['prefix'] ?? ''), ENT_QUOTES, 'UTF-8');
+
+// Status line: what this request's cache is doing. After a cache change was saved, that is still the old
+// configuration, so the status reports the new one instead (prepare() just proved it works).
+$cacheDebug  = $pawtunes->cache->getDebugInfo();
+$cacheLabel  = function (?string $mode) use ($cacheModes): string {
+    return $cacheModes[$mode]['label'] ?? (string) $mode;
+};
+$cacheStatus = ['ok' => true, 'text' => 'Working: '.$cacheLabel($cacheDebug['active_mode'])];
+
+if ( ! empty($cacheApplied)) {
+    $cacheStatus['text'] = $cacheLabel($_POST['cache_mode']).' tested and emptied, the player uses it from now on.';
+} elseif ( ! $cacheDebug['startup']) {
+    $cacheStatus = ['ok' => false, 'text' => 'No cache is working: '.($cacheDebug['last_error'] ?? 'unknown error')];
+} elseif ($cacheDebug['fallback_active']) {
+    $cacheStatus = [
+        'ok'   => false,
+        'text' => $cacheLabel($cacheDebug['requested_mode']).' is unavailable, using the '.$cacheLabel($cacheDebug['active_mode']).' fallback: '.$cacheDebug['last_error'],
+    ];
+}
+
+// Mode select, a missing extension is named in the label (saving such a mode is refused above)
+$cacheModeOptions = [];
+foreach ($cacheModes as $mode => $info) {
+    $cacheModeOptions[$mode] = $info['label'].($info['available'] ? '' : ' (extension not installed)');
+}
 
 $panel->view(
     'settings',
@@ -306,5 +395,7 @@ $panel->view(
         'templates'        => $templates,
         'selectedTemplate' => $selectedTemplate,
         'channels'         => $channelsList,
+        'cacheModeOptions' => $cacheModeOptions,
+        'cacheStatus'      => $cacheStatus,
     ]
 );

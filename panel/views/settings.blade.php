@@ -35,16 +35,6 @@
             'hint'        => 'Site name shown in social media link previews (Open Graph og:site_name).',
         ],
         [
-            'label'       => 'Cache Path',
-            'name'        => 'cache_path',
-            'class'       => 'col-sm-5',
-            'value'       => './data/cache',
-            'placeholder' => './data/cache',
-            'reset'       => true,
-            'description' => 'Empty uses the default',
-            'hint'        => 'Folder for the API cache and downloaded artwork, relative to the PawTunes folder. Must be writable.',
-        ],
-        [
             'label'       => 'Google Analytics',
             'name'        => 'google_analytics',
             'placeholder' => 'G-XXXXXXXXXX',
@@ -114,6 +104,53 @@
             'min'         => 0,
             'placeholder' => '50',
             'reset'       => true,
+        ],
+    ];
+
+    // Cache (general.php "cache" array). The script below shows only the rows the chosen mode uses (see cacheRows).
+    $cacheSettings = [
+        'cache_status',
+        [
+            'label'   => 'Cache Mode',
+            'name'    => 'cache_mode',
+            'class'   => 'col-sm-4',
+            'type'    => 'select',
+            'options' => $cacheModeOptions,
+            'hint'    => 'Where the player keeps track info, artwork lookups and the templates list. Disk works everywhere. APCu, Redis and Memcached keep it in memory, which helps busy players. When the chosen backend fails, PawTunes uses the disk cache until it is back.',
+        ],
+        [
+            'label'       => 'Cache Path',
+            'name'        => 'cache_path',
+            'class'       => 'col-sm-5',
+            'placeholder' => './data/cache',
+            'reset'       => true,
+            'description' => 'Empty uses the default',
+            'hint'        => 'Folder for the disk cache and downloaded artwork, relative to the PawTunes folder. Also the fallback for the other modes, so it must be writable in every mode.',
+        ],
+        [
+            'label'       => 'Server',
+            'name'        => 'cache_host',
+            'class'       => 'col-sm-4',
+            'placeholder' => '127.0.0.1:6379',
+            'description' => 'host:port or socket path',
+            'hint'        => 'Without a port Redis uses 6379 and Memcached 11211. A unix socket path such as /var/run/redis/redis.sock works too.',
+        ],
+        [
+            'label'        => 'Redis Password',
+            'name'         => 'cache_auth',
+            'class'        => 'col-sm-4',
+            'type'         => 'password',
+            'autocomplete' => 'new-password',
+            'description'  => 'Optional',
+            'hint'         => 'For Redis servers with requirepass. An ACL user with a password is set in inc/config/general.php instead (cache > extra > auth as [user, password]).',
+        ],
+        [
+            'label'       => 'Key Prefix',
+            'name'        => 'cache_prefix',
+            'class'       => 'col-sm-4',
+            'placeholder' => $pawtunes->defaultCachePrefix(),
+            'description' => 'Empty uses the default',
+            'hint'        => 'Starts every cache key, so several PawTunes installs can share one server. The default is derived from this install\'s folder.',
         ],
     ];
 
@@ -352,6 +389,30 @@
                                 </select>
                             </div>
                             <div class="help-block">{!! Forms::hint( 'Used when the listener\'s language is not available, or for everyone when Multi-language is off.' ) !!}</div>
+                        </div>
+                        @continue
+                    @endif
+
+                    {!! $form->field( $input ) !!}
+                @endforeach
+            </div>
+        </div>
+        <div class="panel">
+            <div class="heading">
+                <i class="icon fa fa-database"></i> Cache
+            </div>
+            <div class="content form-content">
+                <p class="text-muted">Changed cache settings are tested before they are saved, and the new cache starts empty.</p>
+                @foreach ( $cacheSettings as $input )
+
+                    @if ( $input === 'cache_status' )
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">Status</label>
+                            <div class="col-sm-10">
+                                <p class="form-control-static {{ $cacheStatus[ 'ok' ] ? 'text-success' : 'text-warning' }}">
+                                    <i class="icon fa {{ $cacheStatus[ 'ok' ] ? 'fa-circle-check' : 'fa-triangle-exclamation' }}"></i> {{ $cacheStatus[ 'text' ] }}
+                                </p>
+                            </div>
                         </div>
                         @continue
                     @endif
@@ -611,6 +672,40 @@
             $('.table.artwork-apis').rowSorter({
                 handler: '.sort-handle',
             });
+
+            // Cache section: show only the rows the chosen mode uses. Hidden rows still post their values,
+            // so switching modes back and forth keeps them.
+            let cacheRows = {
+                cache_host: ['redis', 'memcache', 'memcached'],
+                cache_auth: ['redis'],
+                cache_prefix: ['apcu', 'redis', 'memcache', 'memcached'],
+            };
+            let cacheHosts = {redis: '127.0.0.1:6379', memcache: '127.0.0.1:11211', memcached: '127.0.0.1:11211'};
+            let cacheMode = $('#cache_mode');
+            let cacheHost = $('#cache_host');
+            let showCacheRows = function() {
+
+                let mode = cacheMode.val();
+                $.each(cacheRows, function(id, modes) {
+                    $('#' + id).closest('.form-group').toggle(modes.indexOf(mode) !== -1);
+                });
+
+                cacheHost.attr('placeholder', cacheHosts[mode] || cacheHosts.memcache);
+
+            };
+
+            cacheMode.on('change', function() {
+
+                // Another backend's default host becomes this one's, a custom host is left alone
+                let mode = cacheMode.val();
+                if (cacheHosts[mode] && Object.values(cacheHosts).indexOf(cacheHost.val()) !== -1) {
+                    cacheHost.val(cacheHosts[mode]);
+                }
+
+                showCacheRows();
+
+            });
+            showCacheRows();
 
             // Delete existing logo
             $('.delete-override').on('click', function() {

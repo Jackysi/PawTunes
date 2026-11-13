@@ -13,686 +13,474 @@
 
 namespace lib;
 
-use lib\Cache\ApcCache;
-use lib\Cache\BackendInterface;
-use lib\Cache\DiskCache;
-use lib\Cache\MemcacheCache;
-use lib\Cache\MemcachedCache;
-use lib\Cache\RedisCache;
-use Throwable;
+use lib\Cache\ApcuStore;
+use lib\Cache\DiskStore;
+use lib\Cache\MemcacheStore;
+use lib\Cache\MemcachedStore;
+use lib\Cache\RedisStore;
+use lib\Cache\Store;
+use lib\Cache\StoreException;
 
-class Cache
+/**
+ * The cache used by the player and the panel.
+ *
+ * Responsibilities kept here, once, instead of in every backend (lib\Cache\Store):
+ * - values are serialized, so arrays, numbers and booleans round-trip on every backend;
+ * - a backend that fails (at startup or mid-request) is replaced by the disk store for the rest of the
+ *   request, and skipped for OFFLINE_SECONDS so a dead server costs one timeout, not one per request;
+ * - failures are logged and reported to the panel through getDebugInfo().
+ *
+ * get() returns false on a miss, so storing false itself is indistinguishable from a miss.
+ * Objects are not allowed in cached values (they are never unserialized as objects).
+ */
+final class Cache
 {
 
     /**
-     * @var array
+     * Seconds a failed backend is skipped in favour of the disk store
      */
-    protected array $options;
+    private const OFFLINE_SECONDS = 30;
+
+    /**
+     * Disk key that records a recent backend failure (see OFFLINE_SECONDS)
+     */
+    private const OFFLINE_KEY = 'cache.backend.offline';
+
+    /**
+     * Default port per backend, when the configured host has none
+     */
+    private const DEFAULT_PORTS = ['redis' => 6379, 'memcache' => 11211, 'memcached' => 11211];
+
+    /**
+     * Key written and read back by prepare()
+     */
+    private const PROBE_KEY = 'cache.probe';
+
+    /**
+     * @var \lib\Cache\Store|null  Active store, null when not even the disk store works
+     */
+    private ?Store $store = null;
+
+    /**
+     * @var \lib\Cache\DiskStore|null  Fallback store, created on first need
+     */
+    private ?DiskStore $disk = null;
 
     /**
      * @var string
      */
-    protected string $requestedMode = 'disk';
+    private string $requestedMode;
+
+    /**
+     * @var string
+     */
+    private string $path;
+
+    /**
+     * @var string
+     */
+    private string $extension;
+
+    /**
+     * @var string
+     */
+    private string $host;
+
+    /**
+     * @var array
+     */
+    private array $extra;
+
+    /**
+     * @var string  Prefix of every key, so installs sharing a Redis/Memcached/APCu do not collide
+     */
+    private string $namespace;
+
+    /**
+     * @var callable|null
+     */
+    private $logger;
 
     /**
      * @var string|null
      */
-    protected ?string $lastError = null;
+    private ?string $lastError = null;
 
     /**
-     * @var array
+     * @var string[]
      */
-    protected array $debugEvents = [];
-
-    /**
-     * @var \lib\Cache\BackendInterface|null
-     */
-    protected ?BackendInterface $backend = null;
-
-    /**
-     * @var bool
-     */
-    protected bool $startup = false;
-
-    /**
-     * Key metadata: key => ['expires' => unix timestamp, 0 = never]. In disk mode this is the only
-     * expiry information there is. The other backends expire keys on their own and the store only
-     * serves deleteAll(), flush() and clean().
-     *
-     * @var array
-     */
-    private array $store = [];
-
-    /**
-     * Entries changed during this request: key => entry, or null when the key was removed. The store
-     * is written back only when this is not empty (at the end of the request), and the changes are
-     * merged into the latest stored copy so concurrent requests do not wipe each other's entries.
-     *
-     * @var array
-     */
-    private array $storeChanges = [];
+    private array $events = [];
 
 
     /**
-     * @param  array  $options
+     * @param  array  $options  mode (disk|apcu|redis|memcache|memcached), path, ext, host ("host:port" or a socket path),
+     *                          extra (backend options), prefix, logger (callable(string $message))
      */
     public function __construct(array $options = [])
     {
-        $this->options       = $this->normalizeOptions($options);
-        $this->requestedMode = $this->options['mode'];
-        $this->startup = $this->bootBackend($this->options['mode']);
+        $this->requestedMode = $this->normalizeMode((string) ($options['mode'] ?? ''));
+        $this->path          = ((string) ($options['path'] ?? '') !== '') ? (string) $options['path'] : getcwd().DIRECTORY_SEPARATOR.'cache';
+        $this->extension     = ((string) ($options['ext'] ?? '') !== '') ? (string) $options['ext'] : '.cache';
+        $this->host          = (string) ($options['host'] ?? '');
+        $this->extra         = is_array($options['extra'] ?? null) ? $options['extra'] : [];
+        $this->namespace     = str_replace(' ', '_', (string) ($options['prefix'] ?? ''));
+        $this->logger        = is_callable($options['logger'] ?? null) ? $options['logger'] : null;
 
-        if ($this->startup) {
-            $this->loadStore();
-        }
+        $this->store = $this->boot();
     }
 
 
-    protected function normalizeOptions(array $options): array
+    /**
+     * @param  string  $key
+     *
+     * @return mixed  The stored value, false on a miss
+     */
+    public function get(string $key)
     {
-        $defaults = [
-            'path'    => realpath(getcwd()).DIRECTORY_SEPARATOR.'cache',
-            'host'    => '127.0.0.1:11211',
-            'ext'     => '.cache',
-            'encrypt' => false,
-            'mode'    => 'disk',
-            'extra'   => [],
-            'prefix'  => '',
-            'logger'  => null,
-        ];
+        $payload = $this->run(function (Store $store) use ($key) {
+            return $store->get($key);
+        }, null);
 
-        $options = $options + $defaults;
-
-        if (empty($options['path'])) {
-            $options['path'] = $defaults['path'];
+        if ($payload === null) {
+            return false;
         }
 
-        if (empty($options['mode'])) {
-            $options['mode'] = 'disk';
-        }
+        // A payload that is not valid serialized data (another app's key under the same name) is a miss
+        $value = @unserialize($payload, ['allowed_classes' => false]);
 
-        if ( ! is_array($options['extra'])) {
-            $options['extra'] = [];
-        }
-
-        return $options;
+        return ($value === false && $payload !== serialize(false)) ? false : $value;
     }
 
 
-    protected function bootBackend(string $mode): bool
+    /**
+     * @param  string  $key
+     * @param  mixed  $value
+     * @param  int  $ttl  Seconds, 0 = no expiry
+     *
+     * @return bool
+     */
+    public function set(string $key, $value, int $ttl = 600): bool
     {
-        $backend = $this->makeBackend($mode);
-        if ($backend->isAvailable()) {
-            $this->backend         = $backend;
-            $this->options['mode'] = $backend->mode();
+        return $this->run(function (Store $store) use ($key, $value, $ttl): bool {
+            $store->set($key, serialize($value), max(0, $ttl));
 
             return true;
-        }
-
-        $this->recordFailure($backend->mode(), 'startup', $backend->failureReason() ?? "Cache backend \"{$mode}\" is unavailable.");
-
-        if ($mode !== 'disk') {
-            return $this->bootBackend('disk');
-        }
-
-        return false;
-    }
-
-
-    protected function makeBackend(string $mode): BackendInterface
-    {
-        switch ($mode) {
-            case 'apc':
-            case 'apcu':
-                return new ApcCache($mode);
-
-            case 'redis':
-                return new RedisCache($this->options);
-
-            case 'memcache':
-                return new MemcacheCache($this->options);
-
-            case 'memcached':
-                return new MemcachedCache($this->options);
-
-            case 'disk':
-            default:
-                return new DiskCache($this->options);
-        }
-    }
-
-
-    protected function activateDiskFallback(): bool
-    {
-        if ($this->options['mode'] === 'disk') {
-            return false;
-        }
-
-        $backend = new DiskCache($this->options);
-        if ( ! $backend->isAvailable()) {
-            $this->recordFailure('disk', 'fallback', $backend->failureReason() ?? 'Disk cache fallback is unavailable.');
-
-            return false;
-        }
-
-        $this->backend         = $backend;
-        $this->options['mode'] = 'disk';
-        $this->loadStore();
-
-        return true;
-    }
-
-
-    protected function recordFailure(string $mode, string $operation, string $reason): void
-    {
-        $message = "[{$mode}] {$operation}: {$reason}";
-
-        $this->lastError     = $message;
-        $this->debugEvents[] = [
-            'mode'      => $mode,
-            'operation' => $operation,
-            'reason'    => $reason,
-            'date'      => date('Y-m-d H:i:s'),
-        ];
-
-        $this->writeWarningLog($message);
-    }
-
-
-    protected function writeWarningLog(string $message): void
-    {
-        if ( ! is_callable($this->options['logger'])) {
-            return;
-        }
-
-        if ((error_reporting() & (E_WARNING | E_USER_WARNING)) === 0) {
-            return;
-        }
-
-        call_user_func($this->options['logger'], "WARNING: Cache {$message}");
+        }, false);
     }
 
 
     /**
-     * Load the store from the active backend. Pending changes are dropped: they belonged to the
-     * backend that was active before (this runs at boot and when the disk fallback kicks in).
-     */
-    protected function loadStore(): void
-    {
-        $this->store        = [];
-        $this->storeChanges = [];
-
-        $store = $this->backendGet($this->parseKey('cache_store'));
-        if (is_array($store)) {
-            $this->store = $this->normalizeStore($store);
-        }
-    }
-
-
-    /**
-     * Keep only the expiry of each entry. Older releases also stored a "hits" counter that nothing
-     * read; it disappears from the stored copy on the next write.
+     * Store only when the key does not exist yet, atomically. Used for locks: true means "you own it".
      *
-     * @param  array  $store
+     * @param  string  $key
+     * @param  mixed  $value
+     * @param  int  $ttl  Seconds, 0 = no expiry
+     *
+     * @return bool  False when the key already exists (or no cache works at all)
+     */
+    public function add(string $key, $value, int $ttl): bool
+    {
+        return $this->run(function (Store $store) use ($key, $value, $ttl): bool {
+            return $store->add($key, serialize($value), max(0, $ttl));
+        }, false);
+    }
+
+
+    /**
+     * @param  string  $key
+     *
+     * @return bool
+     */
+    public function delete(string $key): bool
+    {
+        return $this->run(function (Store $store) use ($key): bool {
+            $store->delete($key);
+
+            return true;
+        }, false);
+    }
+
+
+    /**
+     * Remove every cached entry of this install.
+     *
+     * @return bool
+     */
+    public function clear(): bool
+    {
+        return $this->run(function (Store $store): bool {
+            $store->clear();
+
+            return true;
+        }, false);
+    }
+
+
+    /**
+     * Get a cache configuration ready before switching to it (panel settings save): a write/read round trip
+     * proves the backend works, then this install's keys there are emptied, so entries left from an earlier
+     * use of that backend are not served (the templates list never expires).
+     *
+     * The cache in use is not touched: nothing is logged and no backend is marked offline, so a wrong host
+     * typed in the panel cannot send the live player to the disk fallback. A recorded failure of the previous
+     * backend is removed, so the new one is tried right away instead of after OFFLINE_SECONDS.
+     *
+     * @param  array  $options  Same as the constructor (the prefix must be the one the player will use)
+     *
+     * @return string|null  Null when the backend is ready, otherwise why it cannot be used
+     */
+    public static function prepare(array $options): ?string
+    {
+        // Booting in disk mode reads no offline marker and connects to nothing
+        $cache = new self(['mode' => 'disk', 'logger' => null] + $options);
+        $mode  = self::normalizeMode((string) ($options['mode'] ?? ''));
+
+        try {
+
+            $store = ($mode === 'disk') ? $cache->disk : $cache->connect($mode);
+            if ($store === null) {
+                return $cache->lastError;
+            }
+
+            $store->set(self::PROBE_KEY, '1', 60);
+            if ($store->get(self::PROBE_KEY) !== '1') {
+                throw new StoreException('A test value could not be read back.');
+            }
+
+            $store->clear();
+
+        } catch (StoreException $e) {
+            return "[{$mode}] {$e->getMessage()}";
+        }
+
+        // Disk mode: clear() above already removed the marker with the other entries
+        if ($mode !== 'disk' && $cache->disk !== null) {
+            try {
+                $cache->disk->delete(self::OFFLINE_KEY);
+            } catch (StoreException $e) {
+                // The marker expires on its own within OFFLINE_SECONDS
+            }
+        }
+
+        return null;
+    }
+
+
+    /**
+     * State for the panel's requirement check.
      *
      * @return array
      */
-    protected function normalizeStore(array $store): array
+    public function getDebugInfo(): array
     {
-        $normalized = [];
-        foreach ($store as $key => $meta) {
-            $normalized[$key] = ['expires' => (int) ($meta['expires'] ?? 0)];
-        }
+        $activeMode = ($this->store !== null) ? $this->store->name() : null;
 
-        return $normalized;
+        return [
+            'requested_mode'  => $this->requestedMode,
+            'active_mode'     => $activeMode,
+            'fallback_active' => $activeMode !== null && $activeMode !== $this->requestedMode,
+            'startup'         => $this->store !== null,
+            'path'            => $this->path,
+            'host'            => $this->host,
+            'last_error'      => $this->lastError,
+            'events'          => $this->events,
+        ];
     }
 
 
     /**
-     * Persist the pending changes. They are merged into the latest stored copy (another request may
-     * have added or removed keys since this one booted), expired entries are purged while we are
-     * writing anyway, and the result is written once.
+     * Pick the store for this request: the configured backend, or the disk store when the backend is
+     * unavailable or failed within the last OFFLINE_SECONDS.
      *
-     * @return bool
+     * @return \lib\Cache\Store|null
      */
-    protected function writeStore(): bool
+    private function boot(): ?Store
     {
-        if (count($this->storeChanges) < 1) {
-            return true;
+        if ($this->requestedMode === 'disk') {
+            return $this->disk();
         }
 
-        // When the latest copy cannot be read, fall back to this request's own view of it
-        $latest = $this->backendGet($this->parseKey('cache_store'), false);
-        $store  = is_array($latest) ? $this->normalizeStore($latest) : $this->store;
+        $recentFailure = $this->recentFailure();
+        if ($recentFailure !== null) {
 
-        foreach ($this->storeChanges as $key => $entry) {
-            if ($entry === null) {
-                unset($store[$key]);
-            } else {
-                $store[$key] = $entry;
-            }
+            // Not logged again: the failure itself was logged when it happened
+            $this->lastError = "[{$this->requestedMode}] skipped for up to ".self::OFFLINE_SECONDS." s after a failure: {$recentFailure}";
+
+            return $this->disk();
+
         }
-
-        $now = time();
-        foreach ($store as $key => $entry) {
-            if ($entry['expires'] !== 0 && $entry['expires'] <= $now) {
-                unset($store[$key]);
-            }
-        }
-
-        $this->store        = $store;
-        $this->storeChanges = [];
-
-        return $this->backendSet($this->parseKey('cache_store'), $store, 0, false);
-    }
-
-
-    protected function isFresh(string $key): bool
-    {
-        if ( ! isset($this->store[$key])) {
-            return false;
-        }
-
-        return $this->store[$key]['expires'] === 0 || time() < $this->store[$key]['expires'];
-    }
-
-
-    protected function remember(string $key, int $ttl): void
-    {
-        $entry = ['expires' => ($ttl === 0) ? 0 : time() + $ttl];
-
-        $this->store[$key]        = $entry;
-        $this->storeChanges[$key] = $entry;
-    }
-
-
-    /**
-     * Drop a key from the store. Keys this request never saw (lock keys, for instance) are not tracked,
-     * so forgetting them changes nothing and does not cause a write.
-     *
-     * @param  string  $key
-     *
-     * @return bool  Whether the store changed
-     */
-    protected function forget(string $key): bool
-    {
-        if ( ! isset($this->store[$key])) {
-            return false;
-        }
-
-        unset($this->store[$key]);
-        $this->storeChanges[$key] = null;
-
-        return true;
-    }
-
-
-    /**
-     * @param  string  $key
-     * @param  bool  $fallback
-     *
-     * @return mixed|false
-     */
-    protected function backendGet(string $key, bool $fallback = true)
-    {
-        $mode = $this->backend->mode();
 
         try {
-            return $this->backend->get($key);
-        } catch (Throwable $e) {
-            $this->recordFailure($mode, 'get', $this->backend->failureReason() ?? $e->getMessage());
+            return $this->connect($this->requestedMode);
+        } catch (StoreException $e) {
+            $this->recordFailure($this->requestedMode, 'startup', $e->getMessage(), true);
 
-            if ($fallback && $this->activateDiskFallback()) {
-                return $this->backend->get($key);
-            }
+            return $this->disk();
         }
-
-        return false;
     }
 
 
     /**
-     * @param  string  $key
-     * @param  mixed  $data
-     * @param  int  $ttl
-     * @param  bool  $fallback
+     * @param  string  $mode
      *
-     * @return bool
+     * @return \lib\Cache\Store
+     * @throws StoreException
      */
-    protected function backendSet(string $key, $data, int $ttl, bool $fallback = true): bool
+    private function connect(string $mode): Store
     {
-        $mode = $this->backend->mode();
+        switch ($mode) {
+            case 'apcu':
+                return new ApcuStore($this->namespace);
+
+            case 'redis':
+                [$host, $port] = $this->hostAndPort(self::DEFAULT_PORTS['redis']);
+
+                return new RedisStore($host, $port, $this->namespace, $this->extra);
+
+            case 'memcache':
+                [$host, $port] = $this->hostAndPort(self::DEFAULT_PORTS['memcache']);
+
+                return new MemcacheStore($host, $port, $this->namespace);
+
+            case 'memcached':
+                [$host, $port] = $this->hostAndPort(self::DEFAULT_PORTS['memcached']);
+
+                return new MemcachedStore($host, $port, $this->namespace, $this->extra);
+
+            default:
+                throw new StoreException("Unknown cache mode \"{$mode}\".");
+        }
+    }
+
+
+    /**
+     * The disk store, created once. Null when the cache directory is unusable.
+     *
+     * @return \lib\Cache\DiskStore|null
+     */
+    private function disk(): ?DiskStore
+    {
+        if ($this->disk === null) {
+            try {
+                $this->disk = new DiskStore($this->path, $this->extension);
+            } catch (StoreException $e) {
+                $this->recordFailure('disk', 'startup', $e->getMessage(), false);
+            }
+        }
+
+        return $this->disk;
+    }
+
+
+    /**
+     * Run one operation on the active store. When a backend other than disk fails, the disk store takes
+     * over for the rest of this request and the operation is retried on it. A failing disk store keeps
+     * serving: one unwritable file must not switch the cache off for the whole request.
+     *
+     * @param  callable  $operation  function (Store $store)
+     * @param  mixed  $default  Result when no store works
+     *
+     * @return mixed
+     */
+    private function run(callable $operation, $default)
+    {
+        if ($this->store === null) {
+            return $default;
+        }
 
         try {
-            $stored = $this->backend->set($key, $data, $ttl);
-            if ( ! $stored) {
-                $this->recordFailure($mode, 'set', $this->backend->failureReason() ?? "Cache backend \"{$mode}\" returned false.");
+            return $operation($this->store);
+        } catch (StoreException $e) {
+
+            $failed = $this->store->name();
+            $this->recordFailure($failed, 'runtime', $e->getMessage(), $failed !== 'disk');
+
+            if ($failed === 'disk') {
+                return $default;
             }
 
-            if ($stored || ! $fallback || $this->options['mode'] === 'disk') {
-                return $stored;
-            }
-        } catch (Throwable $e) {
-            $this->recordFailure($mode, 'set', $this->backend->failureReason() ?? $e->getMessage());
+            $this->store = $this->disk();
 
-            if ( ! $fallback) {
-                return false;
-            }
+            return $this->run($operation, $default);
+
         }
-
-        if ($this->activateDiskFallback()) {
-            return $this->backend->set($key, $data, $ttl);
-        }
-
-        return false;
     }
 
 
     /**
-     * Atomic "store only when missing". A false return without an exception means the key exists,
-     * which is the normal outcome for a lock and not a backend failure.
-     *
-     * @param  string  $key
-     * @param  mixed  $data
-     * @param  int  $ttl
-     *
-     * @return bool
+     * @param  string  $mode
+     * @param  string  $stage  startup or runtime
+     * @param  string  $reason
+     * @param  bool  $markOffline  Skip this backend for OFFLINE_SECONDS on the next requests
      */
-    protected function backendAdd(string $key, $data, int $ttl): bool
+    private function recordFailure(string $mode, string $stage, string $reason, bool $markOffline): void
     {
-        $mode = $this->backend->mode();
+        $message          = "[{$mode}] {$stage}: {$reason}";
+        $this->lastError  = $message;
+        $this->events[]   = date('Y-m-d H:i:s').' '.$message;
 
-        try {
-            return $this->backend->add($key, $data, $ttl);
-        } catch (Throwable $e) {
-            $this->recordFailure($mode, 'add', $this->backend->failureReason() ?? $e->getMessage());
+        if ($this->logger !== null && (error_reporting() & (E_WARNING | E_USER_WARNING)) !== 0) {
+            call_user_func($this->logger, "WARNING: Cache {$message}");
+        }
 
-            if ($this->activateDiskFallback()) {
-                return $this->backend->add($key, $data, $ttl);
+        $disk = $markOffline ? $this->disk() : null;
+        if ($disk !== null) {
+            try {
+                $disk->set(self::OFFLINE_KEY, $message, self::OFFLINE_SECONDS);
+            } catch (StoreException $e) {
+                // Nothing to add: the cache directory problem is reported when the disk store is used
             }
         }
-
-        return false;
-    }
-
-
-    protected function backendDelete(string $key, bool $fallback = true): bool
-    {
-        $mode = $this->backend->mode();
-
-        try {
-            return $this->backend->delete($key);
-        } catch (Throwable $e) {
-            $this->recordFailure($mode, 'delete', $this->backend->failureReason() ?? $e->getMessage());
-
-            if ($fallback && $this->activateDiskFallback()) {
-                return $this->backend->delete($key);
-            }
-        }
-
-        return false;
     }
 
 
     /**
-     * Get existing record from cache. Missing records return false.
-     *
-     * @param  string  $key
-     *
-     * @return mixed|false
+     * @return string|null  The failure recorded within OFFLINE_SECONDS, if any
      */
-    public function get($key)
+    private function recentFailure(): ?string
     {
-        if ( ! $this->startup) {
-            return false;
-        }
+        $disk = $this->disk();
 
-        $wasDisk = $this->options['mode'] === 'disk';
-        if ($wasDisk && $key !== 'cache_store' && ! $this->isFresh($key)) {
-            return false;
-        }
-
-        $data = $this->backendGet($this->parseKey($key));
-
-        if ( ! $wasDisk && $this->options['mode'] === 'disk' && $key !== 'cache_store' && ! $this->isFresh($key)) {
-            return false;
-        }
-
-        return $data;
+        return ($disk !== null) ? $disk->get(self::OFFLINE_KEY) : null;
     }
 
 
     /**
-     * Set cache by key, data and expiration time.
+     * Older configs may name "apc", the PHP 5 extension that APCu replaced. Public so the panel reads
+     * a configured mode the same way the cache does.
      *
-     * @param  string  $key
-     * @param  mixed  $data
-     * @param  int  $ttl  0 means unlimited
-     *
-     * @return bool
-     */
-    public function set($key, $data, $ttl = 600): bool
-    {
-        if ( ! $this->startup) {
-            return false;
-        }
-
-        $stored = $this->backendSet($this->parseKey($key), $data, (int) $ttl);
-        if ($key === 'cache_store') {
-            return $stored;
-        }
-
-        if ($stored) {
-            $this->remember($key, (int) $ttl);
-        }
-
-        return $stored;
-    }
-
-
-    /**
-     * Store a value only when the key does not exist yet, atomically on every backend, so that exactly
-     * one concurrent caller gets true. Meant for short-lived locks: pass a TTL above zero that outlives
-     * the work being guarded, and delete() the key when done. Lock keys are not tracked in the store
-     * (the backend TTL expires them), so taking and releasing one never rewrites the store.
-     *
-     * @param  string  $key
-     * @param  mixed  $data
-     * @param  int  $ttl  Seconds, must be above zero
-     *
-     * @return bool  true when this call created the key
-     */
-    public function add($key, $data, int $ttl): bool
-    {
-        if ( ! $this->startup) {
-            return false;
-        }
-
-        return $this->backendAdd($this->parseKey($key), $data, $ttl);
-    }
-
-
-    /**
-     * Read a key's raw backend value, bypassing the disk-mode store-freshness gate that get() applies.
-     * Meant for keys created with add() (locks), which are not tracked in the store, so get() would miss
-     * them in disk mode. Returns false when the key is absent.
-     *
-     * @param  string  $key
-     *
-     * @return mixed  false when missing
-     */
-    public function peek($key)
-    {
-        if ( ! $this->startup) {
-            return false;
-        }
-
-        return $this->backendGet($this->parseKey($key));
-    }
-
-
-    /**
-     * Delete key from cache.
-     *
-     * @param  string  $key
-     *
-     * @return bool
-     */
-    public function delete($key): bool
-    {
-        if ( ! $this->startup) {
-            return false;
-        }
-
-        $deleted = $this->backendDelete($this->parseKey($key));
-        if ($deleted && $key !== 'cache_store') {
-            $this->forget($key);
-        }
-
-        return $deleted;
-    }
-
-
-    /**
-     * Convert keys to values supported by all caching modes.
-     *
-     * @param  string  $key
+     * @param  string  $mode
      *
      * @return string
      */
-    protected function parseKey($key): string
+    public static function normalizeMode(string $mode): string
     {
-        return str_replace(' ', '_', $this->options['prefix'].$key);
+        $mode    = strtolower(trim($mode));
+        $aliases = ['' => 'disk', 'apc' => 'apcu'];
+
+        return $aliases[$mode] ?? $mode;
     }
 
 
     /**
-     * Delete all keys matching a regex.
+     * @param  int  $defaultPort
      *
-     * @param  string  $regex
-     *
-     * @return array|bool
+     * @return array{0:string,1:int}  [host, port]; port 0 for a unix socket path
      */
-    public function deleteAll($regex = '.*')
+    private function hostAndPort(int $defaultPort): array
     {
-        if ( ! $this->startup || count($this->store) < 1) {
-            return false;
+        $host = ($this->host !== '') ? $this->host : '127.0.0.1';
+
+        if (strpos($host, '/') !== false) {
+            return [preg_replace('~^unix://~', '', $host), 0];
         }
 
-        $deleted = [];
-        foreach (array_keys($this->store) as $key) {
-            if ($key === 'cache_store') {
-                continue;
-            }
-
-            if (preg_match('/'.$regex.'/i', $key)) {
-                $deleted[] = $key;
-                $this->delete($key);
-            }
+        // "[::1]:6379" or "10.0.0.5:6379". A bare IPv6 address ("::1") has several colons and keeps the default port.
+        if (preg_match('/^\[(.+)]:(\d+)$/', $host, $matches) || preg_match('/^([^:]+):(\d+)$/', $host, $matches)) {
+            return [$matches[1], (int) $matches[2]];
         }
 
-        return $deleted;
-    }
-
-
-    /**
-     * Access the underlying caching object directly.
-     *
-     * @return mixed|false
-     */
-    public function direct()
-    {
-        if ( ! $this->startup) {
-            return false;
-        }
-
-        if ($this->options['mode'] === 'disk') {
-            return $this;
-        }
-
-        return $this->backend->direct();
-    }
-
-
-    public function getLastError(): ?string
-    {
-        return $this->lastError;
-    }
-
-
-    public function getDebugInfo(): array
-    {
-        return [
-            'requested_mode'  => $this->requestedMode,
-            'active_mode'     => $this->options['mode'],
-            'fallback_active' => $this->startup && $this->requestedMode !== $this->options['mode'],
-            'startup'         => $this->startup,
-            'path'            => $this->options['path'],
-            'host'            => $this->options['host'],
-            'last_error'      => $this->lastError,
-            'events'          => $this->debugEvents,
-        ];
-    }
-
-
-    /**
-     * Clean up expired or missing cache entries from the metadata store.
-     *
-     * @return array
-     */
-    public function clean(): array
-    {
-        $cleaned = [];
-        if ( ! $this->startup || count($this->store) < 1) {
-            return $cleaned;
-        }
-
-        foreach (array_keys($this->store) as $key) {
-            if ( ! $this->get($key)) {
-                $this->forget($key);
-                $cleaned[] = $key;
-
-                if ($this->options['mode'] === 'disk') {
-                    $this->backendDelete($this->parseKey($key), false);
-                }
-            }
-        }
-
-        return $cleaned;
-    }
-
-
-    /**
-     * Flush all cache keys tracked by this cache instance.
-     *
-     * @return array|bool
-     */
-    public function flush()
-    {
-        if ( ! $this->startup) {
-            return false;
-        }
-
-        $deleted = [];
-        foreach (array_keys($this->store) as $key) {
-            $deleted[] = $key;
-            $this->backendDelete($this->parseKey($key));
-        }
-
-        // The store itself is gone, so there is nothing left to write back at the end of the request
-        $this->store        = [];
-        $this->storeChanges = [];
-        $this->backendDelete($this->parseKey('cache_store'), false);
-
-        return $deleted;
-    }
-
-
-    public function __destruct()
-    {
-        if ($this->startup && count($this->storeChanges) > 0) {
-            $this->writeStore();
-        }
+        return [trim($host, '[]'), $defaultPort];
     }
 
 }

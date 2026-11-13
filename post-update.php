@@ -50,8 +50,13 @@ foreach ( $deleteFiles as $file ) {
 // *** CLEAN CACHE & OLD USELESS FILES
 $this->sendSSE( '<div>Cleaning cache and temporary files...</div>' );
 
-// Use cache delete first
-$this->pawtunes->cache->deleteAll();
+// Use cache delete first. This file ships with the new release but runs inside the updater of the old one,
+// whose Cache class is already loaded: releases before 1.1.2 only have deleteAll().
+if ( method_exists( $this->pawtunes->cache, 'clear' ) ) {
+    $this->pawtunes->cache->clear();
+} else {
+    $this->pawtunes->cache->deleteAll();
+}
 
 // Cache directory
 $cachePath = realpath( $this->path . '/' . $this->pawtunes->config( 'cache' )[ 'path' ] );

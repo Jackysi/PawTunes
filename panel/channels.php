@@ -151,7 +151,7 @@ if ($isPost && isset($_POST['delete'])) {
 } elseif ($isPost && ($_POST['cache'] ?? '') === 'flush') {
 
     // Use cache delete first
-    $pawtunes->cache->deleteAll();
+    $pawtunes->cache->clear();
 
     // Cache directory
     $cachePath = realpath($pawtunes->config('cache')['path']);

@@ -455,9 +455,8 @@ switch ($channel['stats']['method']) {
         } finally {
 
             // Only delete the lock while it is still ours: a holder that outlived the TTL must not remove
-            // the lock a later refresher has just created. peek() reads the raw value (the lock is created
-            // with add() and is not tracked in the disk store, so get() would miss it in disk mode).
-            if ($locked && $pawtunes->cache->peek($lockKey) === $lockToken) {
+            // the lock a later refresher has just created
+            if ($locked && $pawtunes->cache->get($lockKey) === $lockToken) {
                 $pawtunes->cache->delete($lockKey);
             }
 

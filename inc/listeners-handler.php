@@ -137,7 +137,7 @@ try {
 } finally {
 
     // Only delete the lock while it is still ours (see handler.php for the reasoning)
-    if ($pawtunes->cache->peek($lockKey) === $lockToken) {
+    if ($pawtunes->cache->get($lockKey) === $lockToken) {
         $pawtunes->cache->delete($lockKey);
     }
 

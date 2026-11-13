@@ -112,12 +112,11 @@ return array(
         ),
     'cache'                =>
         array(
-            'path'    => './data/cache',    // Location where to cache items
-            'host'    => '127.0.0.1:11211', // Memcached/Redis host (memcached default)
+            'path'    => './data/cache',    // Disk cache directory (also used as the fallback when another mode fails)
+            'host'    => '127.0.0.1:11211', // Redis/Memcached "host:port" or a unix socket path (port defaults: redis 6379, memcached 11211)
             'ext'     => '.cache',          // Disk cache file extension
-            'encrypt' => false,             // Disk cache basic file encryption
-            'mode'    => 'disk',            // Modes: disk, apc, apcu, redis, memcache, memcached
-            'extra'   => [],                // Additional options (only redis, memcached and memcache supports at the moment)
-            'prefix'  => '',                // Key prefix (all modes)
+            'mode'    => 'disk',            // Modes: disk, apcu, redis, memcache, memcached ("apc" is read as apcu)
+            'extra'   => [],                // Redis: 'auth' => 'password' plus Redis::OPT_* => value; memcached: Memcached::OPT_* => value
+            'prefix'  => '',                // Key prefix, empty = derived from the install path (keeps installs on a shared server apart)
         ),
 );

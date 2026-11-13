@@ -102,8 +102,7 @@ class PawTunes
             $this->channels = require($channelsFile);
         }
 
-        $cacheOptions           = $this->settings['cache'] ?? [];
-        $cacheOptions['prefix'] = $cacheOptions['prefix'] ?? $this->prefix;
+        $cacheOptions           = $this->cacheOptions($this->settings['cache'] ?? []);
         $cacheOptions['logger'] = function (string $message): void {
             $this->writeLog('player_errors', $message);
         };
@@ -118,6 +117,35 @@ class PawTunes
             }
         );
 
+    }
+
+
+    /**
+     * Options for lib\Cache from a "cache" config array. Also used by the panel to test a configuration
+     * before saving it, so both address the same keys.
+     *
+     * @param  array  $cache  The "cache" config array
+     *
+     * @return array
+     */
+    public function cacheOptions(array $cache): array
+    {
+        // Without a configured prefix, keys are namespaced by the install path: two installs sharing one
+        // Redis, Memcached or APCu would otherwise read each other's track info and templates
+        if ((string) ($cache['prefix'] ?? '') === '') {
+            $cache['prefix'] = $this->defaultCachePrefix();
+        }
+
+        return $cache;
+    }
+
+
+    /**
+     * @return string  The key prefix used while the config sets none
+     */
+    public function defaultCachePrefix(): string
+    {
+        return 'pawtunes.'.substr(md5($this->currentDir), 0, 8).'.';
     }
 
 
