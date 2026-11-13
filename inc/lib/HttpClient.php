@@ -149,7 +149,7 @@ class HttpClient
 
             // Log via callback if provided
             if ($log && $this->logger) {
-                ($this->logger)("CURL Request \"{$url}\" failed! LOG: ".curl_error($CURL));
+                ($this->logger)("CURL Request \"".self::redactURL($url)."\" failed! LOG: ".curl_error($CURL));
             }
 
         }
@@ -184,6 +184,22 @@ class HttpClient
     public function resetLastStatus(): void
     {
         $this->lastStatus = null;
+    }
+
+
+    /**
+     * URL safe for the log: some stream servers take credentials in the URL (Shoutcast's admin.cgi?pass=,
+     * http://user:pass@host), and logs are files that end up in bug reports and backups.
+     *
+     * @param  string  $url
+     *
+     * @return string
+     */
+    public static function redactURL(string $url): string
+    {
+        $url = preg_replace('~^([a-z][a-z0-9+.-]*://)[^/@\s]+@~i', '$1***@', $url);
+
+        return preg_replace('~([?&](?:pass|password|passwd|pwd|auth|key|api_key|apikey|token|access_token|secret|sig)=)[^&#]*~i', '$1***', $url);
     }
 
 }

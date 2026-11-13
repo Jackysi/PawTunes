@@ -210,6 +210,13 @@ class PawTunes
             return false;
         }
 
+        // Logged text often comes from the outside (track names, upstream responses, request
+        // parameters). Strip the control characters, then fold CR/LF into a newline plus an indent:
+        // a multi-line value (a stack trace) stays readable, but a continuation line always starts
+        // with spaces, so it can never begin with a "[date]" stamp and forge a new log entry.
+        $text = preg_replace('/[\x00-\x09\x0B\x0C\x0E-\x1F\x7F]+/', '', (string) $text);
+        $text = preg_replace('/[\r\n]+/', "\n    ", $text);
+
         ## Check if path is writable
         if (is_writable($path)) {
             return file_put_contents($path.$file.".log", "[".date("j.n.Y-G:i")."] {$text}\n", FILE_APPEND);
