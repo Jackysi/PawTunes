@@ -102,7 +102,7 @@ class Updates extends Base
 
         } catch (Exception $e) {
 
-            $this->sendSSE('<div class="text-red"><b>ERROR</b>: '.$e->getMessage().'</div>');
+            $this->sendSSE('<div class="text-red"><b>ERROR</b>: '.$this->escape($e->getMessage()).'</div>');
             $this->sendSSE('<div class="text-red">UPDATE FAILED!</div>');
             $this->closeSSE();
 
@@ -158,7 +158,7 @@ class Updates extends Base
         if ( ! empty($curl_error)) {
 
             $this->pawtunes::deleteFile($this->path.'/data/updates/lock');
-            $this->sendSSE('<div class="text-red">Downloading the latest update failed! '.$curl_error.'.</div>');
+            $this->sendSSE('<div class="text-red">Downloading the latest update failed! '.$this->escape($curl_error).'.</div>');
             $this->closeSSE();
 
         }
@@ -257,7 +257,7 @@ class Updates extends Base
             $this->pawtunes::deleteFile($this->path.'/data/updates/lock');
         }
 
-        $this->sendSSE('<b><span class="text-danger">FATAL ERROR: '.$e->getMessage().'</span></b>');
+        $this->sendSSE('<b><span class="text-danger">FATAL ERROR: '.$this->escape($e->getMessage()).'</span></b>');
         $this->closeSSE();
     }
 

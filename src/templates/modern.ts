@@ -93,7 +93,10 @@ export default class ModernTpl {
                 el.addEventListener('click', () => {
                     const {artist, title} = this.pawtunes.onAir;
                     if (artist && title) {
-                        window.open(this.pawtunes.settings.tpl.songSearch.replace('{query}', encodeURI(artist + ' - ' + title)));
+                        // encodeURIComponent: "&" or "#" in a name must not end the query. A replacer function,
+                        // so "$&" in a title is not read as a replacement pattern.
+                        const query = encodeURIComponent(artist + ' - ' + title);
+                        window.open(this.pawtunes.settings.tpl.songSearch.replace('{query}', () => query));
                     }
                 });
             });
@@ -205,7 +208,16 @@ export default class ModernTpl {
         // Show logotype instead of channel name
         if (this.pawtunes.settings.tpl?.useChannelLogos && channel.logo) {
             this.pawtunes._('.current-channel', (el: HTMLElement) => {
-                el.innerHTML = `<img alt="Logo" height="68" src="./${channel.logo}">`;
+
+                // Built with DOM APIs so the logo path never becomes markup
+                const img = document.createElement('img');
+                img.alt = 'Logo';
+                img.height = 68;
+                img.src = `./${channel.logo}`;
+
+                el.textContent = '';
+                el.appendChild(img);
+
             });
             return;
         }

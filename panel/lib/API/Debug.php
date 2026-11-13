@@ -105,7 +105,7 @@ class Debug extends Base
                     continue;
                 }
 
-                $this->sendSSE("<br>Connecting to {$url} ({$name})...");
+                $this->sendSSE('<br>Connecting to '.$this->escape($url).' ('.$this->escape($name).')...');
 
                 // Determine scheme
                 $url_parts = parse_url($url);
@@ -143,19 +143,19 @@ class Debug extends Base
 
                 } else {
 
-                    $curl_error = str_replace("'", '&apos;', $curl_error);
-                    $this->sendSSE('<b><span class="text-danger">'.(( ! empty($curl_error)) ? $curl_error : 'Connection failed!').'</span></b>');
+                    $this->sendSSE('<b><span class="text-danger">'.(( ! empty($curl_error)) ? $this->escape($curl_error) : 'Connection failed!').'</span></b>');
 
                 }
 
                 if ($this->pawtunes->config('debugging') === 'enabled') {
 
-                    $this->sendSSE('<br><b>CURL VERBOSE LOG</b> ( '.$url.' )<br>'.str_repeat('*', 125));
+                    $this->sendSSE('<br><b>CURL VERBOSE LOG</b> ( '.$this->escape($url).' )<br>'.str_repeat('*', 125));
 
                     rewind($verbose); ## Rewind
                     while ( ! feof($verbose)) { ## Read
 
-                        $msg = str_replace(["\n", "\r", "'"], ['', '', "\\'"], fgets($verbose, 2048));
+                        // The verbose log echoes response headers, which the remote server controls
+                        $msg = $this->escape(rtrim((string) fgets($verbose, 2048), "\r\n"));
                         $this->sendSSE($msg);
 
                     }
@@ -176,7 +176,7 @@ class Debug extends Base
 
     public function handleError($e)
     {
-        $this->sendSSE('<b><span class="text-danger">FATAL ERROR: '.$e->getMessage().'</span></b>');
+        $this->sendSSE('<b><span class="text-danger">FATAL ERROR: '.$this->escape($e->getMessage()).'</span></b>');
         $this->closeSSE();
     }
 

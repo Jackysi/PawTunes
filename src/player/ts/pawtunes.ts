@@ -399,10 +399,11 @@ export default class PawTunes extends HTML5Audio {
             return;
         }
 
-        // Every other method
+        // Every other method. A plain fetch keeps HTTP caching (Cache-Control, ETag) effective:
+        // no cache busters and no "no-store", the server decides how long a poll result is fresh.
         let pawTunesAPI = () => {
 
-            fetch(`${this.settings.api}?channel=${this.channel.name}`)
+            fetch(`${this.settings.api}?channel=${encodeURIComponent(this.channel.name)}`)
                 .then(response => {
 
                     if (!response.ok) {
@@ -438,39 +439,34 @@ export default class PawTunes extends HTML5Audio {
      */
     public handleOnAirResponse(data: any): void {
 
-        if (!data.artist || !data.title) {
+        if (!data || !data.artist || !data.title) {
             this.hideLoading();
             console.error('Invalid data or no data received from the server.');
             return;
         }
 
+        // The server URL is used as-is (it carries the artwork override); the lazy URL is only built here
+        // when no artwork came along (ICY metadata, custom sockets). Computed before the comparison below,
+        // so repeated polls for the same track compare equal and do not re-render anything.
+        const artwork: string | null = data.artwork
+            || (this.settings.trackInfo.lazyLoadArtworks ? this.pawArtworkURL(data.artist, data.title) : null);
+
         // Nothing has changed since the last call /check
-        if (data.artist === this.onAir.artist && data.title === this.onAir.title && data.artwork === this.onAir.artwork) {
+        if (data.artist === this.onAir.artist && data.title === this.onAir.title && artwork === this.onAir.artwork) {
             return;
         }
 
-        // Modify the artwork URL if Lazy Load is enabled
-        if (this.settings.trackInfo.lazyLoadArtworks) {
-            data.artwork = this.pawArtworkURL(data.artist, data.title);
-        }
-
-        // Set ON AIR
+        // Set ON AIR (coerced to strings: the JSON may carry anything)
         this.onAir = {
-            artist : data.artist,
-            title  : data.title,
-            artwork: data.artwork ?? null,
+            artist : String(data.artist),
+            title  : String(data.title),
+            artwork: artwork,
             time   : new Date().getTime()
         };
 
-        this.writeHTML(
-            '.onair .artist',
-            `<span class="pointer css-hint" data-title="${this.onAir.artist}">${this.shorten(this.onAir.artist, this.settings.trackInfo.artistMaxLen)}</span>`
-        );
-
-        this.writeHTML(
-            '.onair .title',
-            `<span class="pointer css-hint" data-title="${this.onAir.title}">${this.shorten(this.onAir.title, this.settings.trackInfo.titleMaxLen)}</span>`
-        );
+        // Track metadata comes from the stream and is untrusted: it is rendered as text, never as HTML
+        this.writeHint('.onair .artist', this.onAir.artist, this.settings.trackInfo.artistMaxLen);
+        this.writeHint('.onair .title', this.onAir.title, this.settings.trackInfo.titleMaxLen);
 
         // If enabled, we will also update the window title on each song change
         if (this.settings.dynamicTitle) {
@@ -635,9 +631,11 @@ export default class PawTunes extends HTML5Audio {
      */
     public pawArtworkURL(artist: string, title: string): string {
 
+        // Encoded, so names like "AC/DC" or "Rock & Roll" survive the query string (and a missing
+        // value from a web socket payload becomes an empty parameter instead of "undefined")
         return this.settings.trackInfo.lazyLoadURL
-            .replace('{ARTIST}', artist)
-            .replace('{TITLE}', title);
+            .replace('{ARTIST}', encodeURIComponent(artist ?? ''))
+            .replace('{TITLE}', encodeURIComponent(title ?? ''));
 
     }
 
@@ -685,8 +683,11 @@ export default class PawTunes extends HTML5Audio {
      */
     translate(key: string, string?: string, replacement?: string): string {
 
-        if (!string || !replacement) return this.language[key] ?? "";
-        return this.language[key].replace(`{${string}}`, replacement);
+        const text = this.language[key] ?? "";
+        if (!string || !replacement) return text;
+
+        // A function replacement keeps "$&" and friends in channel or track names literal
+        return text.replace(`{${string}}`, () => replacement);
 
     }
 
@@ -946,9 +947,10 @@ export default class PawTunes extends HTML5Audio {
 
         for (let channel of this.channels) {
 
+            // Built with DOM APIs: a channel name from a hand-edited config must not become markup
             let li = document.createElement('li');
             li.classList.add('channel');
-            li.innerHTML = `<a href="#" data-channel="${channel.name}">${channel.name}</a>`;
+            li.appendChild(this.dataLink('channel', channel.name));
             li.addEventListener('click', async (event) => {
 
                 event.preventDefault();
@@ -997,7 +999,7 @@ export default class PawTunes extends HTML5Audio {
 
             let li = document.createElement('li');
             li.classList.add('stream');
-            li.innerHTML = `<a data-stream="${stream}" href="#">${stream}</a>`;
+            li.appendChild(this.dataLink('stream', stream));
             li.addEventListener('click', async (event) => {
 
                 event.preventDefault();
@@ -1159,19 +1161,7 @@ export default class PawTunes extends HTML5Audio {
 
                 this.writeText('.history-track', `${history.artist} - ${history.title}`, item);
                 this.writeText('.history-time-ago', this.ago(history.time), item);
-
-                let artwork = (!history.artwork) ? this.settings.trackInfo.default.artwork : history.artwork;
-                this.writeHTML('.history-artwork', '<div class="artwork-preloader"></div>', item);
-
-                let img = new Image();
-                img.src = artwork;
-                img.onload = () => this.writeHTML('.history-artwork', `<img src="${artwork}" alt="image" class="history-artwork-image">`, item);
-
-                // On ERROR, we will revert to default
-                img.onerror = () => {
-                    if (img.src === this.settings.trackInfo.default.artwork) return;
-                    this.writeHTML('.history-artwork', `<img src="${this.settings.trackInfo.default.artwork}" alt="image" class="history-artwork-image">`, item);
-                }
+                this.writeHistoryArtwork(item, history.artwork);
 
                 historyContainer.append(item);
 
@@ -1188,6 +1178,48 @@ export default class PawTunes extends HTML5Audio {
         }
 
         this.emit('history.change', {history: this.history});
+
+    }
+
+    /**
+     * Shows a preloader in the history row, replaced by the artwork once it has loaded.
+     * The URL comes from upstream metadata, so it is only ever assigned to the image, never written as HTML.
+     *
+     * @param item history row element
+     * @param url artwork URL from the track info, null for the default artwork
+     */
+    protected writeHistoryArtwork(item: HTMLElement, url: string | null): void {
+
+        const cell = this.getElm('.history-artwork', item, false);
+        if (!cell) return;
+
+        const preloader = document.createElement('div');
+        preloader.className = 'artwork-preloader';
+        cell.textContent = '';
+        cell.appendChild(preloader);
+
+        const fallback = this.settings.trackInfo.default.artwork;
+        const artwork = url || fallback;
+        if (!artwork) return;
+
+        const img = new Image();
+        img.className = 'history-artwork-image';
+        img.alt = 'image';
+
+        img.onload = () => {
+            cell.textContent = '';
+            cell.appendChild(img);
+        };
+
+        // A broken artwork falls back to the default once; a broken default keeps the preloader
+        let triedFallback = false;
+        img.onerror = () => {
+            if (triedFallback || !fallback || artwork === fallback) return;
+            triedFallback = true;
+            img.src = fallback;
+        };
+
+        img.src = artwork;
 
     }
 
@@ -1333,10 +1365,10 @@ export default class PawTunes extends HTML5Audio {
         // Skip if max length defined zero
         if (text === "" || length === 0) return text;
 
-        // Do the magic
+        // Do the magic (a real ellipsis character, the result is written as text, never parsed as HTML)
         let $length = length || 10;
         if (text.length > $length) {
-            text = text.substring(0, $length) + '&hellip;';
+            text = text.substring(0, $length) + '…';
         }
 
         return text;
@@ -1451,7 +1483,9 @@ export default class PawTunes extends HTML5Audio {
     }
 
     /**
-     * Write HTML is a simple method that checks if an element exists before attempting to write
+     * Write HTML is a simple method that checks if an element exists before attempting to write.
+     * Static markup only: anything from the stream, the track info API or a web socket goes through
+     * writeText() or writeHint() instead, because innerHTML would execute it.
      *
      * @param element
      * @param content
@@ -1477,6 +1511,46 @@ export default class PawTunes extends HTML5Audio {
         this._(element, (el: HTMLElement) => {
             el.textContent = content;
         }, dom, false);
+
+    }
+
+    /**
+     * Write shortened text with the full text as a hover hint.
+     * Track metadata comes from the stream server, so it is set as text and attribute values, never parsed as HTML.
+     *
+     * @param element
+     * @param text
+     * @param maxLength
+     */
+    protected writeHint(element: string, text: string, maxLength: number) {
+
+        this._(element, (el: HTMLElement) => {
+
+            const span = document.createElement('span');
+            span.className = 'pointer css-hint';
+            span.dataset.title = text;
+            span.textContent = this.shorten(text, maxLength);
+
+            el.replaceChildren(span);
+
+        }, document, false);
+
+    }
+
+    /**
+     * Link for the channel and stream lists, e.g. <a href="#" data-channel="Name">Name</a>
+     *
+     * @param type
+     * @param value
+     */
+    protected dataLink(type: 'channel' | 'stream', value: string): HTMLAnchorElement {
+
+        const link = document.createElement('a');
+        link.href = '#';
+        link.dataset[type] = value;
+        link.textContent = value;
+
+        return link;
 
     }
 
@@ -1544,7 +1618,14 @@ export default class PawTunes extends HTML5Audio {
 
         this.fatal = true;
         this._('#no-js-hide', (el: HTMLElement) => {
-            el.innerHTML = `<span style="color:red; font-weight: 500; font-size: 16px;">ERROR: ${message}</span>`;
+
+            const span = document.createElement('span');
+            span.style.cssText = 'color: red; font-weight: 500; font-size: 16px;';
+            span.textContent = `ERROR: ${message}`;
+
+            el.textContent = '';
+            el.appendChild(span);
+
         })
 
     }

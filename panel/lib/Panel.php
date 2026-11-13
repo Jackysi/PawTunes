@@ -184,7 +184,7 @@ class Panel
 
             $err = error_get_last();
             if ( ! empty($err['message'])) {
-                $text .= '<pre>'.$err['message'].'</pre>';
+                $text .= '<pre>'.htmlspecialchars($err['message'], ENT_QUOTES, 'UTF-8').'</pre>';
             }
 
         }

@@ -310,10 +310,13 @@
             let pawtunes = new PawTunes( ".pawtunes", /* @formatter:off*/{{$json_settings}}/*@formatter:on*/ );
             pawtunes.on('ready', () => document.querySelector('.preloader').style.display = 'none' );
 
-            // Listen for channel changes to update playlist links
+            // Listen for channel changes to update playlist links.
+            // Only the channel parameter changes (URL-encoded, names may contain "&"), the player key stays as in the markup.
             pawtunes.on('channel.change', ( channel ) => {
                 pawtunes._('.playlists a', (el) => {
-                    el.href = `?playlist&player=${el.title}&channel=${channel.name}`
+                    const url = new URL(el.href);
+                    url.searchParams.set('channel', channel.name);
+                    el.href = url.toString();
                 })
             });
 
@@ -322,14 +325,14 @@
                 pawtunes._('.share-area .facebook-share', (el) => {
                     el.addEventListener( 'click', (e) => {
                         e.preventDefault();
-                        window.open( `https://www.facebook.com/sharer/sharer.php?u=${pawtunes.url}`, 'fb_share', 'width=800, height=400' )
+                        window.open( `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent( pawtunes.url )}`, 'fb_share', 'width=800, height=400' )
                     } )
                 })
                 pawtunes._('.share-area .x-share', (el) => {
                     el.addEventListener( 'click', (e) => {
                         e.preventDefault();
                         let track = pawtunes.onAir.artist + ' - ' + pawtunes.onAir.title;
-                        window.open( `https://x.com/share?url=${pawtunes.url}&text=${encodeURIComponent( pawtunes.translate( 'twitter_share', 'TRACK', track ) )}`, 'x_share', 'width=800, height=800' );
+                        window.open( `https://x.com/share?url=${encodeURIComponent( pawtunes.url )}&text=${encodeURIComponent( pawtunes.translate( 'twitter_share', 'TRACK', track ) )}`, 'x_share', 'width=800, height=800' );
                     } )
                 })
             }

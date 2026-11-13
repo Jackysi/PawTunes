@@ -47,12 +47,13 @@ class CheckRequirements extends Base
 
         }
 
-        // Created folders messages
+        // Created folders messages. Messages are rendered as markdown/HTML by the panel, so
+        // anything taken from the configuration or from error messages is escaped first.
         if (count($created) >= 1) {
             $spelling   = ((count($created) > 1) ? 'were' : 'was');
             $response[] = [
                 'type'    => 'info',
-                'message' => "Folder(s) \"".implode('", "', $created)."\" {$spelling} missing and {$spelling} created automatically.",
+                'message' => "Folder(s) \"".$this->escape(implode('", "', $created))."\" {$spelling} missing and {$spelling} created automatically.",
             ];
         }
 
@@ -92,20 +93,21 @@ class CheckRequirements extends Base
         }
 
         // Cache
+        $cachePath = $this->escape($this->pawtunes->config('cache')['path']);
         if ( ! is_writable($this->pawtunes->config('cache')['path'])) {
-            $response[] = ['type' => 'warning', 'message' => 'Directory **'.$this->pawtunes->config('cache')['path'].'** is not writable! This will cause extreme slow performance! You can fix this issue by setting **chmod** of folder **'.$this->pawtunes->config('cache')['path'].'** to **755**.'];
+            $response[] = ['type' => 'warning', 'message' => 'Directory **'.$cachePath.'** is not writable! This will cause extreme slow performance! You can fix this issue by setting **chmod** of folder **'.$cachePath.'** to **755**.'];
         }
 
         $cacheDebug = $this->pawtunes->cache->getDebugInfo();
         if ($cacheDebug['fallback_active']) {
             $response[] = [
                 'type'    => 'warning',
-                'message' => 'Configured cache backend **'.$cacheDebug['requested_mode'].'** failed, PawTunes is using **'.$cacheDebug['active_mode'].'** fallback. Reason: '.$cacheDebug['last_error'],
+                'message' => 'Configured cache backend **'.$this->escape($cacheDebug['requested_mode']).'** failed, PawTunes is using **'.$this->escape($cacheDebug['active_mode']).'** fallback. Reason: '.$this->escape($cacheDebug['last_error']),
             ];
         } elseif ( ! $cacheDebug['startup']) {
             $response[] = [
                 'type'    => 'warning',
-                'message' => 'Cache could not start. Reason: '.($cacheDebug['last_error'] ?? 'Unknown error'),
+                'message' => 'Cache could not start. Reason: '.$this->escape($cacheDebug['last_error'] ?? 'Unknown error'),
             ];
         }
 

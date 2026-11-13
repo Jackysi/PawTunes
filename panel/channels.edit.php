@@ -127,13 +127,14 @@ if ( ! empty($_POST)) {
                 $codec           = $_POST['codec_'.$i][$f];
                 $streams[$codec] = $_POST[$name][$f];
 
+                $shownURL = htmlspecialchars($_POST[$name][$f], ENT_QUOTES, 'UTF-8');
                 if ( ! filter_var($_POST[$name][$f], FILTER_VALIDATE_URL)) { // Validate if the stream URL is actually an URL or not
 
-                    $error = $panel->alert('Stream URL <b>"'.$_POST[$name][$f].'"</b> is not valid url! Please read section <b>"How to configure streams?"</b> below.', 'error');
+                    $error = $panel->alert('Stream URL <b>"'.$shownURL.'"</b> is not valid url! Please read section <b>"How to configure streams?"</b> below.', 'error');
 
                 } elseif (in_array($pawtunes->extGet($_POST[$name][$f]), $streamUrlExt)) { // Check if stream URL is a playlist
 
-                    $error = $panel->alert('Stream URL <b>"'.$_POST[$name][$f].'"</b> is a playlist file, not an actual stream! Please read section <b>"How to configure streams?"</b> below.', 'error');
+                    $error = $panel->alert('Stream URL <b>"'.$shownURL.'"</b> is a playlist file, not an actual stream! Please read section <b>"How to configure streams?"</b> below.', 'error');
 
                 }
 

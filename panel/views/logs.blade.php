@@ -71,14 +71,14 @@
                 $( '.panel-log' ).removeClass( 'hidden' );
                 $( '.log-content' ).hide();
 
-                // Parse log contents
+                // The log holds raw upstream data (track names, URLs), so it is rendered as text, never as HTML
                 if ( data !== '' ) {
 
-                    $( '.commands-pre pre' ).html( data );
+                    $( '.commands-pre pre' ).text( data );
 
                 } else {
 
-                    $( '.commands-pre pre' ).html( "Your log is empty, that's a good thing!" );
+                    $( '.commands-pre pre' ).text( "Your log is empty, that's a good thing!" );
 
                 }
 
@@ -86,7 +86,7 @@
 
             } ).catch( function( xhr, status ) {
 
-                $( '.log-content' ).html( '{!! $panel->alert( 'Connection to the update server has failed! See the details below: <pre id="ajax-error"></pre>', 'error' ) !!}}' );
+                $( '.log-content' ).html( '{!! $panel->alert( 'Loading the log file has failed! See the details below: <pre id="ajax-error"></pre>', 'error' ) !!}' );
 
                 let logText;
                 switch ( status ) {
@@ -101,7 +101,7 @@
 
                 }
 
-                $( 'pre#ajax-error' ).html( logText );
+                $( 'pre#ajax-error' ).text( logText );
 
             } );
 

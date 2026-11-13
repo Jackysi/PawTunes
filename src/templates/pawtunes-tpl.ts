@@ -138,7 +138,11 @@ export default class PawTunesTpl {
                     if (this.pawtunes.onAir.artist && this.pawtunes.onAir.title) {
 
                         e.preventDefault();
-                        window.open(this.pawtunes.settings.tpl.songSearch.replace('{query}', encodeURI(this.pawtunes.onAir.artist + ' - ' + this.pawtunes.onAir.title)));
+
+                        // encodeURIComponent: "&" or "#" in a name must not end the query. A replacer function,
+                        // so "$&" in a title is not read as a replacement pattern.
+                        const query = encodeURIComponent(this.pawtunes.onAir.artist + ' - ' + this.pawtunes.onAir.title);
+                        window.open(this.pawtunes.settings.tpl.songSearch.replace('{query}', () => query));
 
                     }
                 })

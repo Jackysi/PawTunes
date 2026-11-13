@@ -37,6 +37,20 @@ abstract class Base
 
 
     /**
+     * Escape text for the SSE/HTML output. The panel appends SSE data as HTML, so anything that
+     * comes from outside (upstream responses, file names, error messages) must go through here.
+     *
+     * @param  mixed  $text
+     *
+     * @return string
+     */
+    protected function escape($text): string
+    {
+        return htmlspecialchars((string) $text, ENT_QUOTES, 'UTF-8');
+    }
+
+
+    /**
      * @param      $content
      * @param  null  $name
      *

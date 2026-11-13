@@ -131,7 +131,7 @@ class Artwork extends Base
                 if ( ! in_array($this->pawtunes->extGet($file), $this->allowed, true)) {
 
                     $this->sendSSE(
-                        '<span class="text-red">Unable to import file <b>"'.str_replace("'", '', basename($file)).'"</b> because it is not an image file!</span>'
+                        '<span class="text-red">Unable to import file <b>"'.$this->escape(basename($file)).'"</b> because it is not an image file!</span>'
                     );
 
                 } else {
@@ -146,13 +146,13 @@ class Artwork extends Base
                         $size = "{$this->pawtunes->config( 'images_size' )}x{$this->pawtunes->config( 'images_size' )}";
                         ImageResize::handle($new_file, $size, 'crop');
                         $this->sendSSE(
-                            '<span class="text-green">'.str_replace("'", '', basename($file)).' successfully imported.</span>'
+                            '<span class="text-green">'.$this->escape(basename($file)).' successfully imported.</span>'
                         );
 
                     } else {
 
                         $this->sendSSE(
-                            '<span class="text-red">Unable to import file <b>"'.str_replace("'", '', basename($file)).'"</b> - UNKNOWN ERROR!</span>'
+                            '<span class="text-red">Unable to import file <b>"'.$this->escape(basename($file)).'"</b> - UNKNOWN ERROR!</span>'
                         );
 
                     }
@@ -167,7 +167,7 @@ class Artwork extends Base
         } else {
 
             $last_error = error_get_last();
-            $this->sendSSE('<span class="text-red">FTP Connection failed!<br>Details: '.$last_error['message'].'</span>');
+            $this->sendSSE('<span class="text-red">FTP Connection failed!<br>Details: '.$this->escape($last_error['message'] ?? 'unknown error').'</span>');
 
         }
 
@@ -214,7 +214,7 @@ class Artwork extends Base
             if ( ! in_array($this->pawtunes->extGet($file), $this->allowed, true)) {
 
                 $this->sendSSE(
-                    '<span class="text-red">Unable to import file <b>"'.str_replace("'", '', basename($file)).'"</b> because it is not an image file!</span>'
+                    '<span class="text-red">Unable to import file <b>"'.$this->escape(basename($file)).'"</b> because it is not an image file!</span>'
                 );
 
             } else {
@@ -226,20 +226,20 @@ class Artwork extends Base
                 if (is_file($new_file)) {
 
                     $this->sendSSE(
-                        '<span class="text-green">'.str_replace("'", '', basename($this->pawtunes->extDel($file))).' already exists, skipping...</span>');
+                        '<span class="text-green">'.$this->escape(basename($this->pawtunes->extDel($file))).' already exists, skipping...</span>');
 
                 } elseif (copy("{$directory}/{$file}", $new_file)) {
 
                     $size = "{$this->pawtunes->config( 'images_size' )}x{$this->pawtunes->config( 'images_size' )}";
                     ImageResize::handle($new_file, $size, 'crop');
                     $this->sendSSE(
-                        '<span class="text-green">'.str_replace("'", '', basename($this->pawtunes->extDel($file))).' successfully imported.</span>'
+                        '<span class="text-green">'.$this->escape(basename($this->pawtunes->extDel($file))).' successfully imported.</span>'
                     );
 
                 } else {
 
                     $this->sendSSE(
-                        '<span class="text-red">Unable to import file <b>"'.str_replace("'", '', basename($file)).'"</b> - UNKNOWN ERROR!</span>'
+                        '<span class="text-red">Unable to import file <b>"'.$this->escape(basename($file)).'"</b> - UNKNOWN ERROR!</span>'
                     );
 
                 }
@@ -258,7 +258,7 @@ class Artwork extends Base
         // If error is thrown from importArtwork function
         if ($e->getTrace()[0]['function'] === 'importArtwork' || $e->getTrace()[1]['function'] === 'importArtwork') {
 
-            $this->sendSSE('<b><span class="text-danger">FATAL ERROR: '.$e->getMessage().'</span></b>');
+            $this->sendSSE('<b><span class="text-danger">FATAL ERROR: '.$this->escape($e->getMessage()).'</span></b>');
             $this->closeSSE();
 
         }

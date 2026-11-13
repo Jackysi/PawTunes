@@ -791,7 +791,9 @@
 
                         if (response.error) {
 
-                            $('#check-artwork-image').html('<div class="alert alert-danger">Failed to get Artwork image, reason: ' + response.error + '</div>');
+                            // Error text may echo upstream data, so it is inserted as text
+                            $('#check-artwork-image').html('<div class="alert alert-danger">Failed to get Artwork image, reason: <span class="reason"></span></div>')
+                                .find('.reason').text(response.error);
 
                         }
 
@@ -809,7 +811,8 @@
 
                         }
 
-                        $('#check-artwork-image').html('<div class="alert alert-danger">Failed to get Artwork image, reason: <pre>' + msg + '</pre></div>');
+                        $('#check-artwork-image').html('<div class="alert alert-danger">Failed to get Artwork image, reason: <pre></pre></div>')
+                            .find('pre').text(msg);
 
                     });
 

@@ -171,14 +171,13 @@ switch ($channel['stats']['method']) {
 
                 $info['artwork'] = $pawtunes->getArtwork(
                     $info['artist'],
-                    ( ! $pawtunes->config('artist_images_only')) ? $info['title'] : null,
+                    ( ! $pawtunes->config('artist_images_only')) ? $info['title'] : '',
                     $info['artwork_override'] ?? ''
                 );
 
             } else {
 
-                $override        = ( ! empty($info['artwork_override'])) ? '&override='.base64_encode($info['artwork_override']) : '';
-                $info['artwork'] = "./index.php?artwork&artist={$info[ 'artist' ]}&title={$info[ 'title' ]}{$override}";
+                $info['artwork'] = $pawtunes->lazyArtworkURL($info['artist'], $info['title'], $info['artwork_override'] ?? '');
 
             }
 
@@ -190,14 +189,13 @@ switch ($channel['stats']['method']) {
 
                         $info['history'][$key]['artwork'] = $pawtunes->getArtwork(
                             $info['history'][$key]['artist'],
-                            ( ! $pawtunes->config('artist_images_only')) ? $info['history'][$key]['title'] : null,
+                            ( ! $pawtunes->config('artist_images_only')) ? $info['history'][$key]['title'] : '',
                             $info['history'][$key]['artwork_override'] ?? ''
                         );
 
                     } else { // Fast
 
-                        $override                         = ( ! empty($track['artwork_override'])) ? '&override='.base64_encode($track['artwork_override']) : '';
-                        $info['history'][$key]['artwork'] = "./index.php?artwork&artist={$track[ 'artist' ]}&title={$track[ 'title' ]}{$override}";
+                        $info['history'][$key]['artwork'] = $pawtunes->lazyArtworkURL($track['artist'], $track['title'], $track['artwork_override'] ?? '');
 
                     }
 

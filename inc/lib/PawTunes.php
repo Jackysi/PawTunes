@@ -394,6 +394,30 @@ class PawTunes
 
 
     /**
+     * URL of the lazy artwork endpoint, e.g. "./index.php?artwork&artist=AC%2FDC&title=Back%20in%20Black".
+     * Values are encoded so names like "AC/DC" or "Rock & Roll" (and quotes) survive the query string.
+     *
+     * @param  string|null  $artist
+     * @param  string|null  $title
+     * @param  string|null  $override  Remote artwork URL from the stats provider (sent base64 encoded)
+     *
+     * @return string
+     */
+    public function lazyArtworkURL($artist, $title, $override = ''): string
+    {
+        // Untyped on purpose: provider history items may carry null or numeric values
+        $url = './index.php?artwork&artist='.rawurlencode((string) $artist).'&title='.rawurlencode((string) $title);
+
+        // Base64 contains "+" and "/", unencoded the "+" arrives as a space and the strict decode drops the override
+        if ( ! empty($override)) {
+            $url .= '&override='.rawurlencode(base64_encode((string) $override));
+        }
+
+        return $url;
+    }
+
+
+    /**
      * @return string|null
      */
     protected function defaultArtwork(): ?string

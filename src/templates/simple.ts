@@ -68,7 +68,7 @@ export default class PawTunesTpl {
         this.pawtunes._('.share-area .facebook-share', (el: HTMLElement) => {
             el.addEventListener('click', (e) => {
                 e.preventDefault();
-                window.open(`https://www.facebook.com/sharer/sharer.php?u=${this.pawtunes.url}`, 'fb_share', 'width=800, height=400')
+                window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(this.pawtunes.url)}`, 'fb_share', 'width=800, height=400')
             })
         })
 
@@ -77,7 +77,7 @@ export default class PawTunesTpl {
             el.addEventListener('click', (e) => {
                 e.preventDefault();
                 let track = this.pawtunes.onAir.artist + ' - ' + this.pawtunes.onAir.title;
-                window.open(`https://x.com/share?url=${this.pawtunes.url}&text=${encodeURIComponent(this.pawtunes.translate('twitter_share', 'TRACK', track))}`, 'x_share', 'width=800, height=800');
+                window.open(`https://x.com/share?url=${encodeURIComponent(this.pawtunes.url)}&text=${encodeURIComponent(this.pawtunes.translate('twitter_share', 'TRACK', track))}`, 'x_share', 'width=800, height=800');
             })
         })
 
@@ -156,17 +156,24 @@ export default class PawTunesTpl {
 
     marquee(el: HTMLElement) {
 
-        // Clone the content to create a seamless loop
-        const content = el.innerHTML;
-        el.innerHTML = `<div class="marquee-content">${content}</div><div class="marquee-content">${content}</div>`;
+        // Duplicate the text into two blocks for a seamless loop. Track names are untrusted,
+        // so the blocks are built with textContent instead of an HTML string.
+        const text = el.textContent ?? '';
+        const marqueeContents: HTMLElement[] = [];
+
+        el.textContent = '';
+        for (let i = 0; i < 2; i++) {
+            const block = document.createElement('div');
+            block.className = 'marquee-content';
+            block.textContent = text;
+            el.appendChild(block);
+            marqueeContents.push(block);
+        }
 
         // Apply necessary styles
         el.style.display = 'flex';
         el.style.overflow = 'hidden';
         el.style.position = 'relative'; // Ensure the container is positioned relative
-
-        // Get the content blocks
-        const marqueeContents = el.querySelectorAll('.marquee-content') as NodeListOf<HTMLElement>;
 
         // Wait for the browser to render the elements
         requestAnimationFrame(() => {
