@@ -36,8 +36,7 @@ class Artwork extends Base
         $text = strip_tags($_GET['text']);
         $skip = isset($_GET['ignore_cache']) && (bool) $_GET['ignore_cache'] === true;
 
-        // No fallback: the lookup tests the sources. Generated Artwork would answer with a player-relative URL
-        // (broken from /panel/), and the AI Artwork queue must not start from a panel tool.
+        // No fallback: the lookup tests the sources, and the AI Artwork queue must not start from a panel tool
         $art = $this->pawtunes->getArtwork($text, '', '', $skip, false);
         if ( ! $art) {
             http_response_code(404);

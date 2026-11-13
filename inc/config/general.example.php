@@ -76,7 +76,6 @@ return array(
     'cache_images'         => true,
     'cache_api_requests'   => true,
     'clean_artwork_search' => true,
-    'generated_artwork'    => false,
     'serve_via_web'        => false,
     'artist_images_only'   => true,
     'artwork_lazy_loading' => true,
@@ -97,7 +96,8 @@ return array(
                     'base_url'       => '',          // e.g. http://localhost:11434/v1 for a local Ollama
                     'clean_metadata' => true,
                 ),
-            // AI Artwork (panel > AI): abstract art for artists no source has artwork for. Off by default, paid per image.
+            // AI Artwork (panel > AI): a picture found by web search, or drawn art, for artists no source has artwork for.
+            // Off by default, paid per attempt.
             'images' =>
                 array(
                     'enabled'     => false,
@@ -105,8 +105,9 @@ return array(
                     'api_key'     => '',
                     'model'       => '',       // blank = provider default
                     'base_url'    => '',
-                    'daily_limit' => 20,       // hard cap per day, kept in data/ai-artwork/.ledger.json
-                    'verify'      => true,     // vision check through AI Assistant before an image is used
+                    'daily_limit' => 20,       // artists per day (one search and one image each), data/ai-artwork/.ledger.json
+                    'search'      => true,     // web search for a real picture first (AI Assistant on Anthropic Claude)
+                    'verify'      => false,    // vision check of drawn images through AI Assistant (one more paid request)
                 ),
         ),
     'cache'                =>

@@ -104,6 +104,11 @@ final class TrackCleaner
         if ( ! (new DailyBudget(self::LEDGER))->take(self::DAILY_LIMIT)) {
             $pawtunes->cache->set($key, self::FAILED, self::RETRY_AFTER);
 
+            // Once a day, not once per title: a stream whose title never repeats would hit this on every new title
+            if ($pawtunes->cache->add('ai.track.limit.'.date('Y-m-d'), 1, 86400)) {
+                Log::error($pawtunes, 'AI Assistant', 'daily limit of '.self::DAILY_LIMIT.' stream titles reached (or '.self::LEDGER.' is not writable), unreadable titles show the default artist and title until tomorrow');
+            }
+
             return null;
         }
 
@@ -114,11 +119,16 @@ final class TrackCleaner
 
             $pawtunes->cache->set($key, ($track !== null) ? self::TRACK_PREFIX.json_encode($track) : self::NOT_MUSIC, self::CACHE_TTL);
 
+            // Once per title (the answer is cached), so a station ID or jingle shows up a single time
+            if ($track === null) {
+                Log::debug($pawtunes, 'AI Assistant', 'stream title "'.mb_substr($text, 0, 200).'" is not a song, keeping the default artist and title');
+            }
+
             return $track;
 
         } catch (Throwable $e) {
 
-            $pawtunes->writeLog('player_errors', 'AI Assistant could not read a stream title: '.$e->getMessage());
+            Log::error($pawtunes, 'AI Assistant', 'could not read the stream title "'.mb_substr($text, 0, 200).'": '.$e->getMessage(), $e);
             $pawtunes->cache->set($key, self::FAILED, self::RETRY_AFTER);
 
             return null;

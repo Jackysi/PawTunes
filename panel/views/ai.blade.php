@@ -116,18 +116,22 @@
             </div>
             <div class="content form-content">
                 <p class="text-muted mb-1">
-                    Abstract artwork for artists no artwork source knows. Every real source is checked first, so a real cover always wins.
+                    Artwork for artists no artwork source knows: a real picture found by a web search, otherwise abstract artwork
+                    drawn from what the music evokes ("Fractured Truth": shattered glass). Every real source is checked first, so a real cover always wins.
                 </p>
                 {{-- The safeguards matter but are reference material, so they fold away --}}
                 <details class="more-info mb-4">
                     <summary>How it stays safe and cheap</summary>
                     <ul>
-                        <li>Only artists your own stream played get artwork, a URL alone can never start a generation (WebSocket channels are not covered).</li>
-                        <li>The artist and title never reach the image model, the prompt is built from fixed words, so no fake covers, text or people.</li>
+                        <li>Only artists your own stream played get artwork, a URL alone can never start an attempt. That is why WebSocket channels get none: PawTunes never sees what they play.</li>
+                        <li>AI Assistant reads the names cut to {{ lib\AI\Assistant::ARTIST_MAX_LENGTH }} (artist) and {{ lib\AI\Assistant::TITLE_MAX_LENGTH }} (title) characters, the image model never sees them, so no fake covers and no room for prompt injection.</li>
                         <li>At most one attempt per artist per day, and a hard daily limit kept outside the cache (Flush Cache cannot reset it).</li>
                         <li>Images live in <code>data/ai-artwork</code>, which Flush Cache and updates never touch, so nothing is paid for twice.</li>
                     </ul>
                 </details>
+
+                {{-- Safeguard 1 (ArtworkGenerator::markPlayed) needs the server to see the track, WebSocket channels bypass it --}}
+                {!! $panel->alert('<b>Not for WebSocket channels.</b> AzuraCast channels with a <code>wss://</code> URL (and custom WebSocket channels) send track info straight from the stream server to the browser, so PawTunes cannot confirm what was played. Trusting the names the browser asks for would let anyone start paid attempts, so these channels keep the default artwork. Use the AzuraCast REST URL (<code>https://.../api/nowplaying/&lt;station&gt;</code>) for AI Artwork.', 'info') !!}
 
                 <div class="form-group">
                     <label class="col-sm-2 control-label" for="images-enabled">Enable</label>
@@ -194,7 +198,23 @@
                             <input type="number" name="images[daily_limit]" id="images-limit" class="form-control" min="0" max="500" value="{{ $ai['images']['daily_limit'] }}">
                         </div>
                     </div>
-                    <div class="help-block">{!! Forms::hint('Test images count too. The counter is kept outside the cache, so Flush Cache cannot reset it.') !!}Today <b>{{ $usage['count'] }}</b> &middot; all time <b>{{ $usage['total'] }}</b></div>
+                    <div class="help-block">{!! Forms::hint('Artists per day, each one at most one web search and one image. Test images count too. The counter is kept outside the cache, so Flush Cache cannot reset it.') !!}Today <b>{{ $usage['count'] }}</b> &middot; all time <b>{{ $usage['total'] }}</b></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-sm-2 control-label" for="images-search">Search the Web</label>
+                    <div class="col-sm-9">
+                        <div class="checkbox">
+                            <label for="images-search" tabindex="0">
+                                <input type="checkbox" name="images[search]" id="images-search" value="true"{{ $ai['images']['search'] ? ' checked' : '' }}>
+                                <span class="icon fa fa-check"></span>
+                                <span class="description">Look for a real picture before drawing one{!! Forms::hint('AI Assistant searches Bandcamp, SoundCloud, Spotify, Deezer, Apple Music, Last.fm and Wikipedia for the artist, PawTunes takes the picture from that page. About one cent per search plus AI Assistant tokens.') !!}</span>
+                            </label>
+                        </div>
+                        @if (!$ai['text']['enabled'] || $ai['text']['provider'] !== 'anthropic')
+                            <div class="help-block text-danger">Needs AI Assistant on Anthropic Claude, until then every artwork is drawn.</div>
+                        @endif
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -204,7 +224,7 @@
                             <label for="images-verify" tabindex="0">
                                 <input type="checkbox" name="images[verify]" id="images-verify" value="true"{{ $ai['images']['verify'] ? ' checked' : '' }}>
                                 <span class="icon fa fa-check"></span>
-                                <span class="description">Discard images with text, people or a cover layout{!! Forms::hint('AI Assistant inspects every image, plus a contrast-enhanced copy to catch hidden text.') !!}</span>
+                                <span class="description">Discard drawn images with text, people or a cover layout{!! Forms::hint('AI Assistant inspects every drawn image, plus a contrast-enhanced copy to catch hidden text. One more paid request per image, so it is off by default. Found pictures are never checked: they are real covers and photos.') !!}</span>
                             </label>
                         </div>
                         @if (!$ai['text']['enabled'])

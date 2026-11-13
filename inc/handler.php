@@ -341,7 +341,7 @@ switch ($channel['stats']['method']) {
             $info  += $class->getInfo();
 
             // AI Artwork may only draw artists this station really played, never names from a URL
-            ArtworkGenerator::markPlayed($pawtunes, (string) ($info['artist'] ?? ''));
+            ArtworkGenerator::markPlayed($pawtunes, (string) ($info['artist'] ?? ''), (string) ($info['title'] ?? ''));
 
             // Artwork in lazy mode?
             if ($pawtunes->config('artwork_lazy_loading') !== true) {

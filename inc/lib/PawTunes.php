@@ -368,8 +368,8 @@ class PawTunes
      * @param  string  $title
      * @param  string  $override
      * @param  bool  $skipCache
-     * @param  bool  $fallback  False skips the art PawTunes makes itself (Generated Artwork URL, AI Artwork and its
-     *                          queueing): for tools that ask "does a source know this artist", like the panel lookup
+     * @param  bool  $fallback  False skips the art PawTunes makes itself (stored AI Artwork and its queueing): for
+     *                          tools that ask "does a source know this artist", like the panel lookup
      *
      * @return string|null
      */
@@ -447,10 +447,6 @@ class PawTunes
 
             ArtworkGenerator::queue($this, (string) $artist);
 
-        }
-
-        if ($this->config('generated_artwork')) {
-            return GeneratedArtwork::url($name);
         }
 
         return null;

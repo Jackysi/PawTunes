@@ -130,6 +130,10 @@ class CheckRequirements extends Base
                 $response[] = ['type' => 'info', 'message' => 'AI Artwork images are used **unchecked**: "Check Images" needs AI Assistant, which is disabled (panel > AI).'];
             }
 
+            if (($ai['images']['search'] ?? true) && (empty($ai['text']['enabled']) || ($ai['text']['provider'] ?? '') !== 'anthropic')) {
+                $response[] = ['type' => 'info', 'message' => 'AI Artwork does **not search the web**: "Search the Web" needs AI Assistant on Anthropic Claude (panel > AI). Every artwork is drawn instead.'];
+            }
+
         }
 
         // Logs folder

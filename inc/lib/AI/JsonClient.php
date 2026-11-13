@@ -48,6 +48,7 @@ final class JsonClient
         $http = $this->pawtunes->http;
         $http->resetLastStatus();
 
+        $started  = microtime(true);
         $response = $this->pawtunes->get(
             $url,
             null,
@@ -62,22 +63,54 @@ final class JsonClient
             ]
         );
 
+        $status = (int) $http->getLastStatus();
+
         if ($response === false) {
+            $this->debugFailure($url, $body, $status, $started, (string) $error);
             throw new PawException("AI request failed: {$error}");
         }
 
-        $status = (int) $http->getLastStatus();
-        $data   = json_decode($response, true);
+        $data = json_decode($response, true);
 
         if ($status < 200 || $status >= 300) {
+            $this->debugFailure($url, $body, $status, $started, $response);
             throw new PawException("AI request failed (HTTP {$status}): ".self::errorMessage($data, $response));
         }
 
         if ( ! is_array($data)) {
+            $this->debugFailure($url, $body, $status, $started, $response);
             throw new PawException('AI answer was not valid JSON');
         }
 
         return $data;
+    }
+
+
+    /**
+     * Debug log of a failed request: the exception only carries the provider's message, this adds where it went,
+     * which model, how long it took (a timeout shows as the full timeout) and the start of the raw answer.
+     * The URL is safe to log, API keys travel in headers.
+     *
+     * @param  string  $url
+     * @param  array  $body
+     * @param  int  $status  0 when no answer came back
+     * @param  float  $started  microtime(true) before the request
+     * @param  string  $answer  Raw answer, or the transport error
+     *
+     * @return void
+     */
+    private function debugFailure(string $url, array $body, int $status, float $started, string $answer): void
+    {
+        if ( ! Log::verbose($this->pawtunes)) {
+            return;
+        }
+
+        // Gemini and fal carry the model in the URL, OpenAI and Anthropic in the body
+        $model   = isset($body['model']) ? ", model {$body['model']}" : '';
+        $seconds = number_format(microtime(true) - $started, 1);
+        $answer  = mb_substr(trim(preg_replace('/\s+/', ' ', $answer) ?? ''), 0, 500);
+
+        Log::debug($this->pawtunes, 'AI request', "POST {$url}{$model}, HTTP {$status} after {$seconds} s: {$answer}");
     }
 
 

@@ -21,6 +21,7 @@
 
 use lib\AI\ArtworkGenerator;
 use lib\AI\Assistant;
+use lib\AI\Log;
 use lib\AI\Providers;
 
 if ( ! isset($panel)) {
@@ -48,7 +49,8 @@ $ai['images'] = ($ai['images'] ?? []) + [
         'model'       => '',
         'base_url'    => '',
         'daily_limit' => ArtworkGenerator::DEFAULT_DAILY_LIMIT,
-        'verify'      => true,
+        'search'      => true,
+        'verify'      => false,
     ];
 
 /**
@@ -163,6 +165,7 @@ try {
         case 'test-images':
 
             $ai['images']                = $mergePosted($ai['images'], $_POST['images'] ?? [], Providers::IMAGE);
+            $ai['images']['search']      = ($_POST['images']['search'] ?? '') === 'true';
             $ai['images']['verify']      = ($_POST['images']['verify'] ?? '') === 'true';
             $ai['images']['daily_limit'] = max(0, min(500, (int) ($_POST['images']['daily_limit'] ?? ArtworkGenerator::DEFAULT_DAILY_LIMIT)));
 
@@ -298,6 +301,10 @@ try {
     }
 
 } catch (Throwable $e) {
+
+    // Also into the log: the alert is gone with the next page load
+    $feature = in_array($action, ['save-images', 'test-images', 'delete-ai-image', 'delete-ai-artwork'], true) ? 'AI Artwork' : 'AI Assistant';
+    Log::error($pawtunes, $feature, "panel action \"{$action}\" failed: {$e->getMessage()}", $e);
 
     // Provider error texts are foreign content, escape them before they go into the alert HTML
     $message = $panel->alert('<b>AI request failed:</b> '.htmlspecialchars($e->getMessage()), 'error');

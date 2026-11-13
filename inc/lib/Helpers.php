@@ -164,6 +164,27 @@ final class Helpers
 
 
     /**
+     * An http(s) URL whose host resolves to a public IPv4 address. Guards every URL that comes from the outside
+     * (stream "override" artwork, pages an AI web search found) before the server fetches it: requests to the
+     * server's own network (127.0.0.1, 192.168.x.x, cloud metadata) are refused.
+     *
+     * @param  string  $url
+     *
+     * @return bool
+     */
+    public static function isPublicURL(string $url): bool
+    {
+        if ( ! filter_var($url, FILTER_VALIDATE_URL) || ! in_array(parse_url($url, PHP_URL_SCHEME), ['http', 'https'], true)) {
+            return false;
+        }
+
+        $host = (string) parse_url($url, PHP_URL_HOST);
+
+        return $host !== '' && filter_var(gethostbyname($host), FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false;
+    }
+
+
+    /**
      * Parse URL to scheme://host:port format
      *
      * @param $url
