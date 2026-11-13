@@ -463,7 +463,8 @@ function shouldUpdate(serverVersion, localVersion, segments = 3) {
                         </div>`
                     );
 
-                    const sse = new EventSource('index.php?page=api&action=update-postscript');
+                    // EventSource can only GET, so the CSRF token travels in the query string (checked in panel/api.php)
+                    const sse = new EventSource('index.php?page=api&action=update-postscript&_token=' + encodeURIComponent(csrfToken));
                     sse.addEventListener('update', (event) => {
 
                         if (event.data === 'close') {
@@ -495,7 +496,7 @@ function shouldUpdate(serverVersion, localVersion, segments = 3) {
                         if (!confirm('Are you sure you wish to delete the file?')) return false;
 
                         $alert.find('.content').text('Attempting to delete errors.log file...');
-                        $.getJSON('./index.php?page=api&action=delete-log').done(function (result) {
+                        $.post('./index.php?page=api&action=delete-log', {_token: csrfToken}, null, 'json').done(function (result) {
                             if (result.success) {
                                 $alert.remove();
                             } else {

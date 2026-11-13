@@ -23,6 +23,13 @@ class Artwork extends Base
      */
     private array $allowed = ['jpg', 'jpeg', 'png', 'webp', 'svg'];
 
+    /**
+     * The import view (tools.blade.php) listens for "artwork" events, unnamed events would never reach it
+     *
+     * @var string
+     */
+    protected string $sseName = 'artwork';
+
 
     public function artworkLookup()
     {
@@ -84,7 +91,8 @@ class Artwork extends Base
 
     public function deleteArtwork()
     {
-        $this->sendJSON(['success' => $this->panel->deleteArtwork($_GET['name'])]);
+        // POST only (enforced in panel/api.php), so the CSRF gate in panel/index.php has checked the token
+        $this->sendJSON(['success' => $this->panel->deleteArtwork((string) ($_POST['name'] ?? ''))]);
     }
 
 
@@ -138,26 +146,22 @@ class Artwork extends Base
 
                 } else {
 
-                    // New file name & path
-                    $new_file     = "data/images/".$this->pawtunes->parseTrack(basename($file));
-                    $new_img_data = file_get_contents("{$path}/{$file}");
-
-                    // Attempt copy
-                    if (strlen($new_img_data) > 10 && file_put_contents($new_file, $new_img_data)) {
-
-                        $size = "{$this->pawtunes->config( 'images_size' )}x{$this->pawtunes->config( 'images_size' )}";
-                        ImageResize::handle($new_file, $size, 'crop');
-                        $this->sendSSE(
-                            '<span class="text-green">'.$this->escape(basename($file)).' successfully imported.</span>'
+                    // Download into a temporary file first: the content is validated before it reaches data/images/
+                    $tmpFile  = tempnam(sys_get_temp_dir(), 'pawtunes-import');
+                    $imported = null;
+                    if ($tmpFile !== false && @copy("{$path}/{$file}", $tmpFile)) {
+                        $imported = $this->panel->importImage(
+                            $tmpFile,
+                            basename($file),
+                            $this->pawtunes->parseTrack($this->pawtunes->extDel(basename($file)))
                         );
-
-                    } else {
-
-                        $this->sendSSE(
-                            '<span class="text-red">Unable to import file <b>"'.$this->escape(basename($file)).'"</b> - UNKNOWN ERROR!</span>'
-                        );
-
                     }
+
+                    if ($tmpFile !== false) {
+                        $this->pawtunes::deleteFile($tmpFile);
+                    }
+
+                    $this->reportImport($file, $imported);
 
                 }
 
@@ -221,30 +225,16 @@ class Artwork extends Base
 
             } else {
 
-                // New file name & path
-                $new_file = "{$lock_local}/data/images/".$this->pawtunes->parseTrack(basename($file));
+                // Same validation as a panel upload; existing files are kept (local imports never overwrite)
+                $imported = $this->panel->importImage(
+                    "{$directory}/{$file}",
+                    basename($file),
+                    $this->pawtunes->parseTrack($this->pawtunes->extDel(basename($file))),
+                    "{$lock_local}/data/images/",
+                    false
+                );
 
-                // Attempt copy
-                if (is_file($new_file)) {
-
-                    $this->sendSSE(
-                        '<span class="text-green">'.$this->escape(basename($this->pawtunes->extDel($file))).' already exists, skipping...</span>');
-
-                } elseif (copy("{$directory}/{$file}", $new_file)) {
-
-                    $size = "{$this->pawtunes->config( 'images_size' )}x{$this->pawtunes->config( 'images_size' )}";
-                    ImageResize::handle($new_file, $size, 'crop');
-                    $this->sendSSE(
-                        '<span class="text-green">'.$this->escape(basename($this->pawtunes->extDel($file))).' successfully imported.</span>'
-                    );
-
-                } else {
-
-                    $this->sendSSE(
-                        '<span class="text-red">Unable to import file <b>"'.$this->escape(basename($file)).'"</b> - UNKNOWN ERROR!</span>'
-                    );
-
-                }
+                $this->reportImport($file, $imported);
 
             }
 
@@ -252,6 +242,40 @@ class Artwork extends Base
 
         $this->sendSSE('All non-existing image files were imported!');
         $this->closeSSE();
+    }
+
+
+    /**
+     * Crop a successfully imported image and report the outcome of one import to the SSE stream
+     *
+     * @param  string  $file  Source file name
+     * @param  array|null  $imported  Panel::importImage() result, null when the source could not be read
+     *
+     * @return void
+     */
+    private function reportImport(string $file, ?array $imported): void
+    {
+        $name = $this->escape(basename($file));
+
+        if ($imported === null) {
+
+            $this->sendSSE('<span class="text-red">Unable to import file <b>"'.$name.'"</b> - the file could not be read!</span>');
+
+        } elseif ($imported['error'] !== null) {
+
+            $this->sendSSE('<span class="text-red">Unable to import file <b>"'.$name.'"</b> - '.$this->escape($imported['error']).'.</span>');
+
+        } elseif ($imported['skipped']) {
+
+            $this->sendSSE('<span class="text-green">'.$this->escape($imported['filename']).' already exists, skipping...</span>');
+
+        } else {
+
+            $size = "{$this->pawtunes->config( 'images_size' )}x{$this->pawtunes->config( 'images_size' )}";
+            ImageResize::handle($imported['path'], $size, 'crop');
+            $this->sendSSE('<span class="text-green">'.$name.' successfully imported.</span>');
+
+        }
     }
 
 

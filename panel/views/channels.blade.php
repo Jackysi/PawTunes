@@ -63,7 +63,7 @@
                                             <td>{{ucwords( $method )}}</td>
                                             <td class="text-right row-btns">
                                                 <a class="btn btn-default btn-small css-hint" data-title="Edit" href="index.php?page=channels&action=edit&channel={{$key}}"><i class="icon fa fa-edit"></i></a>
-                                                <a class="btn btn-danger btn-small css-hint" data-title="Delete" data-confirm href="index.php?page=channels&delete&id={{$key}}"><i class="icon fa fa-times"></i></a>
+                                                <button type="submit" form="channel-actions" name="delete" value="{{$key}}" class="btn btn-danger btn-small css-hint" data-title="Delete" data-confirm><i class="icon fa fa-times"></i></button>
                                             </td>
                                         </tr>
 
@@ -76,14 +76,14 @@
             <div class="dropdown pull-right mobile-nofloat">
                 <button type="button" class="btn btn-warning dropdown-toggle"> Change Sorting <i class="icon fa fa-angle-down icon-right"></i></button>
                 <ul class="dropdown-menu" role="menu">
-                    <li><a href="index.php?page=channels&sort=asc"><i class="icon fa fa-chevron-up"></i> Sort Ascending</a></li>
-                    <li><a href="index.php?page=channels&sort=desc"><i class="icon fa fa-chevron-down"></i> Sort Descending</a></li>
+                    <li><a href="#" data-sort="asc"><i class="icon fa fa-chevron-up"></i> Sort Ascending</a></li>
+                    <li><a href="#" data-sort="desc"><i class="icon fa fa-chevron-down"></i> Sort Descending</a></li>
                     <li><a href="index.php?page=channels&sort=custom"><i class="icon fa fa-fire"></i> Custom</a></li>
                 </ul>
             </div>
-            <a data-confirm href="index.php?page=channels&cache=flush" class="btn btn-danger pull-right mobile-nofloat" style="margin-right: 8px;">
+            <button type="submit" form="channel-actions" name="cache" value="flush" data-confirm class="btn btn-danger pull-right mobile-nofloat" style="margin-right: 8px;">
                 <i class="icon fa fa-trash"></i> Flush Cache
-            </a>
+            </button>
             @if ( isset( $mode ) && $mode === 'custom' )
                 <a class="btn btn-success mt-2" onclick="$(this).closest('form').submit(); return false;" href="index.php?page=channels"><i class="icon fa fa-floppy-disk"></i> Save Changes</a>
                 <a class="btn btn-danger mt-2" href="index.php?page=channels"><i class="icon fa fa-times"></i> Cancel</a>
@@ -97,5 +97,23 @@
     @else
         <a class="btn btn-success mobile-mt" href="index.php?page=channels&action=add"><i class="icon fa fa-plus"></i> Add Channel</a>
     @endif
+
+    {{-- Delete, sort and cache flush change state, so they POST (CSRF-checked) through this form. It sits outside
+         the drag & drop form because forms cannot be nested; the buttons above target it with form="channel-actions". --}}
+    <form method="POST" action="index.php?page=channels" id="channel-actions">
+        {!! $panel->csrfField() !!}
+        <input type="hidden" name="sort" value="">
+    </form>
+    <script type="text/javascript">
+        window.addEventListener( 'load', function() {
+            // Sort menu entries stay links for the dropdown styling, they submit the POST form instead of navigating
+            $( '[data-sort]' ).on( 'click', function() {
+                let form = $( '#channel-actions' );
+                form.find( 'input[name="sort"]' ).val( $( this ).attr( 'data-sort' ) );
+                form.trigger( 'submit' );
+                return false;
+            } );
+        } );
+    </script>
 @endsection
 @include('template')

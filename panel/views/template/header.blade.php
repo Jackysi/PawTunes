@@ -101,6 +101,9 @@
             } );
 
             var version = "{{$version}}";
+
+            // CSRF token for AJAX POSTs and EventSource URLs (panel/index.php checks it on every authenticated POST)
+            var csrfToken = "{{ $panel->isAuthorized() ? $panel->csrfToken() : '' }}";
         </script>
     </head>
     <body>
@@ -114,7 +117,11 @@
                         </div>
                         <h1>PawTunes</h1>
                     </div>
-                    <a href="?logout" class="btn btn-danger logout-btn"><i class="icon fa fa-sign-out"></i> Logout</a>
+                    <button type="submit" form="logout-form" class="btn btn-danger logout-btn"><i class="icon fa fa-sign-out"></i> Logout</button>
                 </div>
             </section>
+            {{-- Logout is a POST (CSRF-checked), so a third-party page can not log the admin out with a plain link --}}
+            <form method="POST" action="index.php?logout" id="logout-form">
+                {!! $panel->csrfField() !!}
+            </form>
 @endif

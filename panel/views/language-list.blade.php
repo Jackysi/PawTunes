@@ -35,8 +35,8 @@
                                         <i class="icon fa fa-edit"></i>
                                     </a>
                                     @if ( $translation !== 'en.php' )
-                                        <a class="btn btn-danger btn-small css-hint" data-title="Delete" data-confirm href="index.php?page=language&delete={{$language}}">
-                                            <i class="icon fa fa-times"></i></a>
+                                        <button type="submit" form="language-actions" name="delete_language" value="{{$language}}" class="btn btn-danger btn-small css-hint" data-title="Delete" data-confirm>
+                                            <i class="icon fa fa-times"></i></button>
                                     @endif
                                 </td>
                             </tr>
@@ -49,5 +49,10 @@
     <a href="index.php?page=language&add" class="btn btn-success">
         <i class="icon fa fa-plus-circle"></i> Add Language
     </a>
+
+    {{-- Deleting a translation changes state, so the Delete buttons POST (CSRF-checked) through this form --}}
+    <form method="POST" action="index.php?page=language" id="language-actions">
+        {!! $panel->csrfField() !!}
+    </form>
 @endsection
 @include('template')

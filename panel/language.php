@@ -29,17 +29,22 @@ $languages = include 'panel/inc/language-list.php';
 // Read language directory for all files
 $list = $pawtunes->browse('inc/locale/');
 
-// File delete handler
-if (isset($_GET['delete'])) {
+// File delete handler, POST only (CSRF-checked in panel/index.php)
+if (isset($_POST['delete_language'])) {
 
-    $deleteFile = preg_replace('![^a-z0-9]!i', '', $_GET['delete']); ## Replace all but characters and numbers
-    if (is_file("inc/locale/{$deleteFile}.php") && unlink("inc/locale/{$deleteFile}.php") === true) {
+    $deleteFile = preg_replace('![^a-z0-9]!i', '', $_POST['delete_language']); ## Replace all but characters and numbers
+    if ("{$deleteFile}.php" === $pawtunes->config('default_lang')) {
 
-        $panel->flash($panel->alert('Successfully deleted the <b>'.($languages[$_GET['delete']]['name'] ?? 'Unknown').'</b> translation!', 'success'), 'index.php?page=language');
+        // The player requires the default language file, without it every page load is a fatal error
+        $panel->flash($panel->alert('The default language can not be deleted, choose another default language in Settings first.', 'error'), 'index.php?page=language');
+
+    } elseif (is_file("inc/locale/{$deleteFile}.php") && unlink("inc/locale/{$deleteFile}.php") === true) {
+
+        $panel->flash($panel->alert('Successfully deleted the <b>'.($languages[$deleteFile]['name'] ?? 'Unknown').'</b> translation!', 'success'), 'index.php?page=language');
 
     } else {
 
-        $panel->flash($panel->alert('Failed to delete specified language file, you may not have sufficient permissions!', 'error'));
+        $panel->flash($panel->alert('Failed to delete specified language file, you may not have sufficient permissions!', 'error'), 'index.php?page=language');
 
     }
 

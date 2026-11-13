@@ -30,23 +30,31 @@ if (isset($_GET['action']) && ($_GET['action'] === 'add' || $_GET['action'] === 
     exit;
 }
 
+// Every action below changes the stored channels or the cache, so each one is POST only (CSRF-checked in
+// panel/index.php) and ends with a redirect, so a page refresh never re-submits it. The one GET exception is
+// ?sort=custom without posted ids: it only opens the drag & drop mode.
+$isPost = $_SERVER['REQUEST_METHOD'] === 'POST';
+$sort   = $isPost ? ($_POST['sort'] ?? $_GET['sort'] ?? '') : (($_GET['sort'] ?? '') === 'custom' ? 'custom' : '');
+
 // Delete channel, by key
-if (isset($_GET['delete'])) {
+if ($isPost && isset($_POST['delete'])) {
+
+    $deleteId = $_POST['delete'];
 
     // Check if the channel with specified ID exists
-    if ( ! is_array($channels[$_GET['id']])) {
+    if ( ! isset($channels[$deleteId]) || ! is_array($channels[$deleteId])) {
 
         $message = $panel->alert('Sorry but selected channel does not exist, so it was not removed.', 'error');
 
     } else {
 
         // Attempt to delete Logo of channel
-        if (isset($channels[$_GET['id']]['logo']) && is_file($channels[$_GET['id']]['logo'])) {
-            $pawtunes::deleteFile($channels[$_GET['id']]['logo']);
+        if (isset($channels[$deleteId]['logo']) && is_file($channels[$deleteId]['logo'])) {
+            $pawtunes::deleteFile($channels[$deleteId]['logo']);
         }
 
         // Delete channel
-        unset($channels[$_GET['id']]);
+        unset($channels[$deleteId]);
 
         // Delete channel and save changes
         if ( ! $panel->storeConfig('config/channels', $channels)) { // Attempt to save
@@ -61,10 +69,12 @@ if (isset($_GET['delete'])) {
 
     }
 
-} elseif ( ! empty($_GET['sort'])) { // Sort actions (asc, desc and custom)
+    $panel->flash($message, 'index.php?page=channels');
+
+} elseif ($sort !== '') { // Sort actions (asc, desc and custom)
 
     // Switch sorting mode
-    switch ($_GET['sort']) {
+    switch ($sort) {
 
         case 'asc':
             $mode = SORT_ASC;
@@ -86,7 +96,7 @@ if (isset($_GET['delete'])) {
         $save = false;
 
         // When we are sorting ASC or DESC
-        if (($_GET['sort'] === 'desc' || $_GET['sort'] === 'asc') && $mode !== 'custom') {
+        if (($sort === 'desc' || $sort === 'asc') && $mode !== 'custom') {
 
             foreach ($channels as $key => $row): $ss_by[$key] = $row['name']; endforeach; ## Find common key
             array_multisort($ss_by, $mode, $channels);
@@ -95,7 +105,7 @@ if (isset($_GET['delete'])) {
         }
 
         // When sorting using DRAG & DROP
-        if ( ! empty($_POST['ids']) && $mode === 'custom') {
+        if ($isPost && ! empty($_POST['ids']) && $mode === 'custom') {
 
             // Loop through old list of channels and create new one based on sorting picks
             $new_list = [];
@@ -132,11 +142,13 @@ if (isset($_GET['delete'])) {
                 $message = $panel->alert('New channels sorting has been successfully stored!', 'success');
 
             }
+
+            $panel->flash($message, 'index.php?page=channels');
         }
 
     }
 
-} elseif (isset($_GET['cache']) && $_GET['cache'] === 'flush') {
+} elseif ($isPost && ($_POST['cache'] ?? '') === 'flush') {
 
     // Use cache delete first
     $pawtunes->cache->deleteAll();
@@ -157,6 +169,8 @@ if (isset($_GET['delete'])) {
         $message = $panel->alert("Unable to clean cache because specified cache path does not exist or it can not be resolved.", "error");
 
     }
+
+    $panel->flash($message, 'index.php?page=channels');
 
 }
 

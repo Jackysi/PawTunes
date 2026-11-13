@@ -32,7 +32,7 @@
                 if ( !confirm( 'Are you sure you wish to delete the file?' ) ) return false;
                 $( this ).text( 'Deleting...' );
                 let t = $( this );
-                $.getJSON( './index.php?page=api&action=delete-log' ).done( function( r ) {
+                $.post( './index.php?page=api&action=delete-log', { _token: csrfToken }, null, 'json' ).done( function( r ) {
 
                     t.remove();
                     if ( !r.success ) alert( "Unable to delete log file, please remove file manually!" );

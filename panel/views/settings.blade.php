@@ -372,9 +372,9 @@
         <div class="panel template-panel">
             <div class="heading">
                 <i class="icon fa fa-palette"></i> Template
-                <a href="index.php?page=settings&reset=templates" class="btn btn-default btn-sm ms-auto css-hint" data-title="Re-scan the templates folder">
+                <button type="submit" form="reset-templates" class="btn btn-default btn-sm ms-auto css-hint" data-title="Re-scan the templates folder">
                     <i class="icon fa fa-rotate"></i> Flush Cache
-                </a>
+                </button>
             </div>
             <div class="content form-content">
                 <p class="template-picker-intro">
@@ -536,6 +536,12 @@
         <input type="hidden" name="remove_app_icon" value="1">
     </form>
 
+    {{-- Templates cache reset: its own POST form (CSRF-checked), the Flush Cache button in the Template heading targets it --}}
+    <form method="POST" action="index.php?page=settings" id="reset-templates">
+        {!! $panel->csrfField() !!}
+        <input type="hidden" name="reset_templates" value="1">
+    </form>
+
     <!-- Template Options Modals (one per template, outside the main form since forms can't be nested) -->
     @foreach ( $templates as $index => $data )
         @if ( !empty( $data[ 'extra' ] ) )
@@ -582,7 +588,8 @@
             $('.delete-override').on('click', function() {
 
                 let elm = $(this);
-                $.get('index.php?page=settings&delete=override-share-image', function() {
+                // POST with the CSRF token: a GET that deletes files could be triggered by any page the admin visits
+                $.post('index.php?page=settings', {delete_share_image: 1, _token: '{{$panel->csrfToken()}}'}, function() {
                     $(elm).closest('.logo-container').remove();
                 });
 

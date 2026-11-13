@@ -184,7 +184,23 @@ class Panel
     {
         $token = $_POST['_token'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
 
-        return hash_equals($this->csrfToken(), $token);
+        return is_string($token) && hash_equals($this->csrfToken(), $token);
+
+    }
+
+
+    /**
+     * Verify the CSRF token sent as a "_token" query parameter. Only for the streaming (SSE) API actions:
+     * EventSource can only issue GET requests, so they can not carry the token in a POST body or a header.
+     *
+     * @return bool
+     * @throws \Random\RandomException
+     */
+    public function verifyCsrfQueryToken(): bool
+    {
+        $token = $_GET['_token'] ?? '';
+
+        return is_string($token) && hash_equals($this->csrfToken(), $token);
 
     }
 
@@ -353,32 +369,6 @@ class Panel
     public function destroyAuth(): void
     {
         $this->globals['auth'] = null;
-
-    }
-
-
-    /**
-     * @return void
-     */
-    public function flashMessages(): void
-    {
-        if (isset($_SESSION[$this->prefix]['flash'])) {
-
-            if ( ! is_array($_SESSION[$this->prefix]['flash'])) {
-
-                unset($_SESSION[$this->prefix]['flash']);
-                return;
-
-            }
-
-            foreach ($_SESSION[$this->prefix]['flash'] as $message) {
-                echo $message;
-            }
-
-            // Empty
-            unset($_SESSION[$this->prefix]['flash']);
-
-        }
 
     }
 
@@ -675,6 +665,58 @@ class Panel
         $result['path']      = $path.$target;
         $result['extension'] = $image['extension'];
         $result['mimetype']  = $image['mimetype'];
+
+        return $result;
+
+    }
+
+
+    /**
+     * Store an image that did not arrive as an HTTP upload (artwork import from a local folder or FTP) with the
+     * same checks upload() applies: the content must be an accepted image (raster types by their decoded type,
+     * SVG through isSafeSVG()), the stored extension is the detected one, and the name must not contain a
+     * script extension. Without these checks an import folder could place x.php or a scripted SVG into
+     * data/images/, which is served from the panel's origin.
+     *
+     * @param  string  $source  Readable local file (a temporary copy for remote sources)
+     * @param  string  $sourceName  Original file name, only its extension is used (SVG detection)
+     * @param  string  $name  Target name without extension, e.g. parseTrack() of the artist
+     * @param  string  $path  Target directory, must exist
+     * @param  bool  $overwrite  false = keep an existing file and report it as skipped
+     * @param  string[]  $allowed  Extensions this caller accepts
+     *
+     * @return array{filename: string, path: string, skipped: bool, error: string|null}
+     */
+    public function importImage(string $source, string $sourceName, string $name, string $path = 'data/images/', bool $overwrite = true, array $allowed = ['jpg', 'jpeg', 'png', 'webp', 'svg']): array
+    {
+        $result = ['filename' => '', 'path' => '', 'skipped' => false, 'error' => null];
+
+        $image = $this->detectImage($source, $sourceName, $allowed);
+        if ($image === null) {
+            $result['error'] = 'not an accepted image (allowed: '.strtoupper(implode(', ', $allowed)).')';
+
+            return $result;
+        }
+
+        $target = strtolower($name.'.'.$image['extension']);
+        if ($name === '' || preg_match(self::SCRIPT_EXTENSION_PATTERN, $target)) {
+            $result['error'] = 'the file name is empty or contains a script extension such as ".php"';
+
+            return $result;
+        }
+
+        $result['filename'] = $target;
+        $result['path']     = $path.$target;
+
+        if ( ! $overwrite && is_file($result['path'])) {
+            $result['skipped'] = true;
+
+            return $result;
+        }
+
+        if ( ! copy($source, $result['path'])) {
+            $result['error'] = 'unable to write the file into '.$path;
+        }
 
         return $result;
 

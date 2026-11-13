@@ -36,10 +36,14 @@ $templates    = $pawtunes->getTemplates();
 $form         = new Forms;
 
 
-// Attempt to delete logo from existing channel
-if ( ! empty($_GET['logo']) && $_GET['logo'] === 'delete' && isset($channels[$_GET['channel']]['logo'])) {
+// Attempt to delete logo from existing channel. POST only (CSRF-checked in panel/index.php), and it must run
+// before the save handler below, which treats any POST as a channel save.
+if ( ! empty($_POST['logo_delete'])) {
 
-    $pawtunes::deleteFile($channels[$_GET['channel']]['logo']);
+    if (isset($_GET['channel'], $channels[$_GET['channel']]['logo'])) {
+        $pawtunes::deleteFile($channels[$_GET['channel']]['logo']);
+    }
+
     die("Deleted logo");
 
 }

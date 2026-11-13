@@ -23,8 +23,9 @@ if ( ! isset($panel)) {
     exit;
 }
 
-// Delete templates cache (manual re-scan of the templates folder, e.g. after adding a new template)
-if (isset($_GET['reset']) && $_GET['reset'] === 'templates') {
+// Delete templates cache (manual re-scan of the templates folder, e.g. after adding a new template).
+// Its own small POST form (CSRF-checked like every panel POST), it must run before the settings save below.
+if ( ! empty($_POST['reset_templates'])) {
 
     $pawtunes->cache->delete('templates');
     $panel->flash($panel->alert('Templates cache flushed successfully!', 'success'), 'index.php?page=settings');
@@ -32,7 +33,7 @@ if (isset($_GET['reset']) && $_GET['reset'] === 'templates') {
 }
 
 // Template settings (saved instantly via AJAX from the per-template options modal)
-if (isset($_GET['advanced-options'])) {
+if (isset($_GET['advanced-options']) && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
     header('Content-Type: application/json');
 
@@ -76,12 +77,17 @@ if (isset($_GET['advanced-options'])) {
 
 }
 
-if (isset($_GET['delete']) && $_GET['delete'] === 'override-share-image') {
+// Share image removal, POSTed by the view's AJAX call. It exits here: the settings save below treats any POST
+// as a full form submission and would wipe every field the AJAX call did not send.
+if ( ! empty($_POST['delete_share_image'])) {
 
     $pawtunes::deleteFile($pawtunes->config('override_share_image'));
 
     $pawtunes->setConfig('override_share_image', '');
-    $panel->storeConfig('config/general', $pawtunes->getConfigAll());
+    $stored = $panel->storeConfig('config/general', $pawtunes->getConfigAll());
+
+    header('Content-Type: application/json');
+    die(json_encode(['success' => $stored]));
 
 }
 

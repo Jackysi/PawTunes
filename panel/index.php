@@ -31,6 +31,24 @@ ini_set('error_reporting', ($pawtunes->config('debugging') !== 'enabled') ? E_AL
 ini_set("log_errors", $pawtunes->config('debugging') !== 'disabled');
 ini_set("error_log", getcwd()."/data/logs/panel_errors.log");
 
+// The panel must never render inside a frame on another site (clickjacking). The home page iframes the player
+// preview from this same origin, which SAMEORIGIN / 'self' still allow. The public player and the widget do not
+// pass through here, so they stay embeddable.
+header('X-Frame-Options: SAMEORIGIN');
+header("Content-Security-Policy: frame-ancestors 'self'");
+
+// Session cookie: HttpOnly keeps it away from scripts, SameSite=Lax keeps it off cross-site POSTs (a second line
+// of defense next to the CSRF token), Secure when the panel is served over HTTPS (directly or behind a proxy).
+$isHttps = ( ! empty($_SERVER['HTTPS']) && strtolower((string) $_SERVER['HTTPS']) !== 'off')
+    || (string) ($_SERVER['SERVER_PORT'] ?? '') === '443'
+    || strtolower((string) ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '')) === 'https';
+
+session_set_cookie_params([
+    'httponly' => true,
+    'samesite' => 'Lax',
+    'secure'   => $isHttps,
+]);
+
 // Output buffer & PHP SESSION
 ob_start();
 session_start();
@@ -55,15 +73,6 @@ if (empty($pawtunes->config('admin_password'))) {
 
 }
 
-// Logout user
-if (isset($_GET['logout'])) {
-
-    $panel->destroyAuth();
-    header("Location: index.php?page=login");
-    exit;
-
-}
-
 // Create header and attempt login
 if ( ! $panel->isAuthorized()) {
 
@@ -78,7 +87,7 @@ if ( ! $panel->isAuthorized()) {
 }
 
 
-// CSRF protection — verify token on all authenticated POST requests
+// CSRF protection: verify the token on all authenticated POST requests
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ! $panel->verifyCsrfToken()) {
     http_response_code(403);
 
@@ -96,6 +105,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ! $panel->verifyCsrfToken()) {
     $panel->flash($panel->alert('Invalid or expired security token. Please try again.', 'error'));
     header('Location: ' . $_SERVER['REQUEST_URI']);
     exit;
+}
+
+// Logout user. POST only, so it runs after the CSRF gate: a plain link on another site can not log the admin out.
+if (isset($_GET['logout']) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    $panel->destroyAuth();
+    header("Location: index.php?page=login");
+    exit;
+
 }
 
 // Safety feature, replaces anything but numbers or letters

@@ -402,7 +402,7 @@
                                 $(this).removeData('confirmed-action');
 
                                 let artist_name = $(this).closest('tr').find('.artist-name').text(), elm = $(this);
-                                $.get('index.php?page=api&action=delete-artwork&name=' + artist_name, function() {
+                                $.post('index.php?page=api&action=delete-artwork', {name: artist_name, _token: csrfToken}, function() {
                                     $(elm).closest('tr').remove();
                                 });
 
@@ -639,7 +639,8 @@
 
                 output.show().html('<b>Starting Artwork Import, hand tight this may take a while...</b><br>');
 
-                source = new EventSource('index.php?page=api&action=import-artwork&path=' + encodeURIComponent($('[name="import_path"]').val()));
+                // EventSource can only GET, so the CSRF token travels in the query string (checked in panel/api.php)
+                source = new EventSource('index.php?page=api&action=import-artwork&path=' + encodeURIComponent($('[name="import_path"]').val()) + '&_token=' + encodeURIComponent(csrfToken));
                 source.addEventListener('artwork', function(event) {
 
                     if (event.data === 'close') {
@@ -732,7 +733,7 @@
                             let path = $(this).closest('tr').find('.scheme-path').text();
                             let elm = $(this);
 
-                            $.get('./index.php?page=api&action=delete-theme&path=' + encodeURI(path)).then(function(response) {
+                            $.post('./index.php?page=api&action=delete-theme', {path: path, _token: csrfToken}, null, 'json').then(function(response) {
                                 if (response && response.success) {
 
                                     $(elm).closest('tr').remove();

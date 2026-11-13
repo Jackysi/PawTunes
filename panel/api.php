@@ -49,9 +49,6 @@ try {
         'delete-artwork'    => 'API\Artwork::deleteArtwork',
         'delete-log'        => 'API\Debug::deleteLog',
         'get-log'           => 'API\Debug::readLog',
-        'get-settings'      => 'API\Settings::getSettings',
-        'update-settings'   => 'API\Settings::updateSettings',
-        'get-api-status'    => 'API\Api::getApiStatus',
         'check-warnings'    => 'API\CheckRequirements::__invoke',
         'debug'             => 'API\Debug::__invoke',
         'update'            => 'API\Updates::__invoke',
@@ -60,9 +57,25 @@ try {
         'update-postscript' => 'API\Updates::manualPostUpdate',
     ];
 
+    // Actions that change state. Plain deletes must be POSTed, so panel/index.php has already verified their
+    // CSRF token. EventSource can only GET, so the streaming actions carry the token as a _token query parameter.
+    $postOnly     = ['delete-artwork', 'delete-log', 'delete-theme'];
+    $tokenInQuery = ['import-artwork', 'update', 'update-postscript'];
+
     // Get the action from $_GET
     $action = $_GET['action'] ?? null;
     if ($action && isset($routes[$action])) {
+
+        if (in_array($action, $postOnly, true) && $_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            header('Allow: POST');
+            die('405 - Method Not Allowed');
+        }
+
+        if (in_array($action, $tokenInQuery, true) && ! $panel->verifyCsrfQueryToken()) {
+            http_response_code(403);
+            die('Invalid or expired security token. Please reload the page and try again.');
+        }
 
         // Extract class and method from the route
         [$className, $methodName] = explode('::', $routes[$action]);

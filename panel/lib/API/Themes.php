@@ -56,7 +56,8 @@ class Themes extends Base
 
     public function deleteTheme()
     {
-        $name = $_GET['path'];
+        // POST only (enforced in panel/api.php), so the CSRF gate in panel/index.php has checked the token
+        $name = (string) ($_POST['path'] ?? '');
         if ($name) {
             $schemes = $this->readThemes();
 
@@ -69,7 +70,7 @@ class Themes extends Base
             }
 
             if ($valid) {
-                $this->sendJSON(['success' => $this->pawtunes::deleteFile($_GET['path'])]);
+                $this->sendJSON(['success' => $this->pawtunes::deleteFile($name)]);
             }
 
             $this->sendJSON(['success' => false]);

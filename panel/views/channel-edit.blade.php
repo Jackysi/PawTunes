@@ -386,8 +386,8 @@
 
                 let $this = $(this);
 
-                // Send a request to delete the logo.
-                $.get('index.php?page=channels&action=edit&channel={{$_GET['channel']}}&logo=delete', function () {
+                // Deleting a file changes state, so it is a POST with the CSRF token (checked in panel/index.php)
+                $.post('index.php?page=channels&action=edit&channel={{(int) ($_GET['channel'] ?? 0)}}', {logo_delete: 1, _token: '{{$panel->csrfToken()}}'}, function () {
 
                     // Remove the logo container from the DOM.
                     $this.closest('.logo-container').remove();

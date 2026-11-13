@@ -89,7 +89,8 @@
              */
             function startUpdate(version) {
 
-                sse = new EventSource('index.php?page=api&action=update&version=' + version);
+                // EventSource can only GET, so the CSRF token travels in the query string (checked in panel/api.php)
+                sse = new EventSource('index.php?page=api&action=update&version=' + encodeURIComponent(version) + '&_token=' + encodeURIComponent(csrfToken));
                 sse.addEventListener('update', (event) => {
 
                     if (event.data === 'close') {
