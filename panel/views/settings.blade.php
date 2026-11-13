@@ -149,12 +149,12 @@
         // Little hacky
         'stats_refresh',
         [
-            'label'       => 'Player API',
+            'label'       => 'Public API',
             'name'        => 'api',
             'class'       => 'col-sm-9',
             'value'       => 'true',
             'type'        => 'checkbox',
-            'description' => ' Enable support for external JSONP API requests (<a target="_blank" href="https://doc.prahec.com/pawtunes#live-information-external-api"><i class="icon fa fa-question-circle"></i> Documentation</a>)',
+            'description' => ' Enables JSONP, CORS on track info and the now playing widget (<a target="_blank" href="https://doc.prahec.com/pawtunes#live-information-external-api"><i class="icon fa fa-question-circle"></i> Documentation</a>)',
         ],
         [
             'label'       => 'Artist/Title regex',

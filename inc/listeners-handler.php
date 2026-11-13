@@ -109,6 +109,11 @@ if ( ! $pawtunes->cache->add($lockKey, $lockToken, LISTENERS_LOCK_TTL)) {
         outputListeners($cached, 200, 1);
     }
 
+    // A broken cache refuses every lock; report an error so the client backs off instead of polling forever
+    if ($pawtunes->cache->getDebugInfo()['startup'] === false) {
+        outputListeners(['status' => 'error', 'refresh' => 10], 200, 0);
+    }
+
     outputListeners(['status' => 'pending', 'refresh' => 2], 200, 0);
 
 }

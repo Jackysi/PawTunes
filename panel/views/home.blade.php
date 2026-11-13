@@ -132,6 +132,52 @@
             </div>
         </div>
     </div>
+    <div class="panel">
+        <div class="heading">
+            <i class="icon fa fa-music"></i>
+            Now Playing Widget
+        </div>
+        <div class="content">
+            <p>
+                A small card with the current artwork, artist, title and channel name that updates itself. Embed it on your website with an iframe,
+                or add the URL as a browser source in OBS (use the transparent theme there).
+            </p>
+            @if( ! $apiEnabled )
+                {!! $panel->alert( 'The widget is part of the public API, which is disabled. Enable <b>Public API</b> in <a href="index.php?page=settings">Settings</a> to use it.', 'info' ) !!}
+            @endif
+            <fieldset id="widget-options"{{ $apiEnabled ? '' : ' disabled' }}>
+                <div class="form-group">
+                    <label class="col-sm-12" for="widget-channel">Channel</label>
+                    <div class="col-sm-4 pe-0">
+                        <select class="form-control" id="widget-channel"{{ $apiEnabled ? '' : ' disabled' }}>
+                            @foreach( $channelNames as $name )
+                                <option value="{{$name}}">{{$name}}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-12" for="widget-theme">Theme</label>
+                    <div class="col-sm-4 pe-0">
+                        <select class="form-control" id="widget-theme"{{ $apiEnabled ? '' : ' disabled' }}>
+                            <option value="light">Light</option>
+                            <option value="dark">Dark</option>
+                            <option value="transparent">Transparent (OBS, overlays)</option>
+                        </select>
+                    </div>
+                </div>
+                @if( $apiEnabled )
+                    <iframe id="widget-preview" src="" width="360" height="84" style="margin: 8px 0 16px; border: 0; border-radius: 8px; background: #8a8f98;"></iframe>
+                @endif
+                <div class="row">
+                    <div class="col-sm-8">
+                        <a href="#" class="btn btn-success btn-sm pull-right" data-copy="#widget"><i class="icon fa fa-clipboard"></i> COPY</a>
+                        <b>Code:</b><br><textarea class="form-control" id="widget"></textarea>
+                    </div>
+                </div>
+            </fieldset>
+        </div>
+    </div>
     <script type="text/javascript">
 
         // Player URL
@@ -187,7 +233,7 @@
                 temp_popup.val( temp_popup.val().replace( /window\.open\('([^']*)'/, 'window.open(\'' + url + params + '\'' ) );
 
                 // Width & Height
-                $( 'iframe' ).width( width ).height( height );
+                $( '#iframe-preview' ).width( width ).height( height );
                 temp_embed.val( temp_embed.val().replace( /width="[0-9]+"/, 'width="' + width + '"' ).replace( /height="[0-9]+"/, 'height="' + height + '"' ) );
                 temp_popup.val( temp_popup.val().replace( /width=([0-9]+)/, 'width=' + width + '' ).replace( /height=([0-9]+)/, 'height=' + height + '' ) );
 
@@ -238,7 +284,7 @@
                                 break;
 
                             default:
-                                if ( elm.val() === undefined || elm.val() === '0' ) {
+                                if ( elm.val() === undefined || elm.val() === '' ) {
                                     break;
                                 }
 
@@ -268,6 +314,25 @@
             @endif
 
             genHome( true );
+
+            /**
+             * Now playing widget: embed code and preview follow the channel/theme selects and the HTTPS toggle
+             */
+            function genWidget() {
+
+                let query = '?widget&channel=' + encodeURIComponent( $( '#widget-channel' ).val() || '' ) + '&theme=' + $( '#widget-theme' ).val();
+
+                // Built as text: the channel name is URL-encoded and the textarea value is never parsed as HTML
+                $( '#widget' ).val( '<iframe src="' + url + query + '" width="360" height="84" style="border: 0;" title="Now playing"></iframe>' );
+                $( '#widget-preview' ).attr( 'src', './../index.php' + query );
+
+            }
+
+            $( '#widget-channel, #widget-theme, [name="https"]' ).on( 'change', function() {
+                setTimeout( genWidget, 600 ); // after the preview options above updated the HTTPS scheme of url
+            } );
+
+            genWidget();
 
         };
 

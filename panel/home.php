@@ -29,7 +29,8 @@ if ( ! isset($panel)) {
 $templates = $pawtunes->getTemplates();
 
 // Now create options array
-$templatesList = [0 => 'None'];
+// "None" is the empty value: a numeric key would collide with a channel or template named "0"
+$templatesList = ['' => 'None'];
 foreach ($templates as $key => $var) : $templatesList[$key] = $var['name']; endforeach;
 
 // Get all available channels
@@ -39,9 +40,13 @@ if (is_file('inc/config/channels.php')) {
 }
 
 // Now create options array
-$def_channel = [0 => 'None'];
+$def_channel  = ['' => 'None'];
+$channelNames = [];
 if (is_array($channels)) {
     foreach ($channels as $c): $def_channel[$c['name']] = $c['name']; endforeach;
+
+    // The widget needs a real channel, so it gets the plain list without the "None" entry
+    $channelNames = array_map('strval', array_column($channels, 'name'));
 }
 
 // Create list of available languages
@@ -71,8 +76,10 @@ $panel->view(
     [
         'templatesList' => $templatesList,
         'def_channel'   => $def_channel,
+        'channelNames'  => $channelNames,
         'languages'     => $languages,
         'w'             => $w ?? null,
         'h'             => $h ?? null,
+        'apiEnabled'    => $pawtunes->config('api') === true, // the now playing widget is part of the public API
     ]
 );

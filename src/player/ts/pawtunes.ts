@@ -656,6 +656,8 @@ export default class PawTunes extends HTML5Audio {
     public handleOnAirResponse(data: any): void {
 
         if (!data || !data.artist || !data.title) {
+            // An error-shaped response must not leave a stale LIVE badge or queued track on screen
+            this.updateTrackExtra({});
             this.hideLoading();
             console.error('Invalid data or no data received from the server.');
             return;

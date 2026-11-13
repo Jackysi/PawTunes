@@ -71,7 +71,7 @@ class Icecast extends TrackInfo implements ListenersInterface
             throw new PawException("Unable to parse the Icecast listener list!");
         }
 
-        preg_match_all('#<listener>(.*?)</listener>#is', $xml, $matches);
+        preg_match_all('#<listener\b[^>]*>(.*?)</listener>#is', $xml, $matches);
 
         $rows = [];
         foreach ($matches[1] as $listener) {

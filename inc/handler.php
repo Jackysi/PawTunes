@@ -166,6 +166,11 @@ $channels = $pawtunes->getChannels();
 // Start few functions and init objects
 header("Content-Type: application/json; charset=utf-8");
 
+// Public API: let any origin read track info and the channel list (sent before any exit, 304s included)
+if ($pawtunes->config('api') === true) {
+    header('Access-Control-Allow-Origin: *');
+}
+
 // Important so full images are downloaded!
 ignore_user_abort(true);
 

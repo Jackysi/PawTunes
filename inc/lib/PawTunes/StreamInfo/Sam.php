@@ -152,7 +152,7 @@ class Sam extends TrackInfo
         $this->channel['stats']['port']   = null;
 
         // maybe sock?
-        if (empty($p_url['host']) && is_file($this->channel['stats']['host'])) {
+        if (empty($p_url['host']) && file_exists($this->channel['stats']['host'])) {
 
             $this->channel['stats']['socket'] = $this->channel['stats']['host'];
             $this->channel['stats']['host']   = '127.0.0.1';

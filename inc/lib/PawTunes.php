@@ -46,6 +46,12 @@ class PawTunes
      * @var array
      */
     protected array $settings;
+
+    /**
+     * Template saved in the config, before any ?template= override. Privacy gates use it so a
+     * request cannot reopen a feature by naming a template the admin is no longer using.
+     */
+    protected string $configuredTemplate = '';
     /**
      * @var string
      */
@@ -88,6 +94,7 @@ class PawTunes
         $this->currentDir = __DIR__;
         $this->prefix     = substr(base64_encode($this->currentDir), 0, 8).'_';
         $this->settings   = require($settingsFile);
+        $this->configuredTemplate = (string) ($this->settings['template'] ?? '');
 
         // May not exist.
         if (is_file($channelsFile)) {
@@ -955,7 +962,12 @@ class PawTunes
      */
     public function listenersEnabled(): bool
     {
-        $options = $this->getAdvancedTemplateOptions($this->config('template'));
+        // Only the template the admin actually configured counts, never a ?template= override
+        if ($this->config('template') !== $this->configuredTemplate) {
+            return false;
+        }
+
+        $options = $this->getAdvancedTemplateOptions($this->configuredTemplate);
 
         return filter_var($options['showListeners'] ?? false, FILTER_VALIDATE_BOOLEAN);
     }

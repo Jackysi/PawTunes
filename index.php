@@ -45,6 +45,12 @@ try {
 
     }
 
+    ## Now playing widget (public API, checks the "api" setting itself); before ?channel, which it also takes
+    if (isset($_GET['widget'])) {
+        require 'inc/widget-handler.php';
+        exit;
+    }
+
     ## Handle playlists etc...
     if (isset($_GET['channel'], $_GET['playlist'])) {
         require 'inc/playlist-handler.php';
