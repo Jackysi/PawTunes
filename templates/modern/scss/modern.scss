@@ -47,6 +47,7 @@ body {
         transition: opacity $duration-normal $ease-out, visibility $duration-normal $ease-out;
         transform: translateX(-50%);
         white-space: nowrap;
+        pointer-events: none; // it floats over the tab bar: taps must reach the tabs underneath
         opacity: 1;
         color: $bg-color;
         border-radius: $radius-full;
@@ -676,6 +677,7 @@ body {
     // PAGES: HISTORY & CHANNELS
     // ═════════════════════════════════════════════════════════════════════════
     .page.history,
+    .page.listeners,
     .page.settings-page {
         padding: 0 1.25rem 2rem;
     }
@@ -771,6 +773,98 @@ body {
 
         &.hidden {
             display: none;
+        }
+    }
+
+
+    // ─── Listeners page ──────────────────────────────────────────────────
+    // Rows are built by the template script from the listeners endpoint (masked IP, device, time)
+    .listeners-total {
+        font-size: $font-size-xs;
+        font-weight: 600;
+        line-height: 1;
+        padding: .3rem .6rem;
+        color: $accent-color;
+        border-radius: $radius-full;
+        background: rgba($accent-color, .12);
+        font-variant-numeric: tabular-nums;
+
+        &.hidden {
+            display: none;
+        }
+    }
+
+    .listeners-state {
+        font-size: $font-size-sm;
+        padding: 3rem 0;
+        text-align: center;
+        color: $text-secondary;
+
+        &.hidden {
+            display: none;
+        }
+    }
+
+    .listeners-spinner {
+        width: 28px;
+        height: 28px;
+        margin: 0 auto 1rem;
+        animation: spin .8s linear infinite;
+        border: 3px solid $border-color;
+        border-top-color: $accent-color;
+        border-radius: 50%;
+    }
+
+    .listeners-list {
+        display: flex;
+        flex-direction: column;
+        gap: .4rem;
+
+        &.hidden {
+            display: none;
+        }
+
+        // Only the first render of a channel fades in: refreshes swap the rows in place
+        &.animate .listener {
+            animation: fade-up $duration-normal $ease-out;
+        }
+
+        .listener {
+            display: grid;
+            padding: .65rem 1rem;
+            border: 1px solid $border-color;
+            border-radius: $radius-md;
+            background: $surface-color;
+            grid-template-columns: minmax(0, 1fr) auto;
+            grid-template-rows: auto auto;
+            column-gap: .75rem;
+        }
+
+        .listener-device {
+            font-size: $font-size-sm;
+            font-weight: 500;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            color: $text-color;
+        }
+
+        .listener-ip {
+            font-size: $font-size-xs;
+            margin-top: .1rem;
+            color: $text-secondary;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .listener-time {
+            font-size: $font-size-xs;
+            font-weight: 500;
+            align-self: center;
+            white-space: nowrap;
+            color: $accent-color;
+            grid-column: 2;
+            grid-row: 1 / 3;
+            font-variant-numeric: tabular-nums;
         }
     }
 
@@ -894,8 +988,16 @@ html.artwork-tint-accent .pawtunes {
         color: var(--artwork-color, #{$accent-color});
     }
 
-    .history-item .history-artwork .artwork-preloader::after {
+    .history-item .history-artwork .artwork-preloader::after, .listeners-spinner {
         border-top-color: var(--artwork-color, #{$accent-color});
+    }
+
+    .listeners-total, .listener-time {
+        color: var(--artwork-color, #{$accent-color});
+    }
+
+    .listeners-total {
+        background: var(--artwork-color-soft, #{rgba($accent-color, .12)});
     }
 
     .channel-list li.active a, .streams-list li.active a {

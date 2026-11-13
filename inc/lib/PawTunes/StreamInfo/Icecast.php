@@ -14,9 +14,97 @@
 namespace lib\PawTunes\StreamInfo;
 
 use lib\PawException;
+use lib\PawTunes\Listeners;
 
-class Icecast extends TrackInfo
+class Icecast extends TrackInfo implements ListenersInterface
 {
+
+    /**
+     * The admin credentials and the mount the track info already uses are all the listener list needs
+     *
+     * @return bool
+     */
+    public function supportsListeners(): bool
+    {
+        return ! empty($this->channel['stats']['url'])
+            && ! empty($this->channel['stats']['auth-user'])
+            && ! empty($this->channel['stats']['auth-pass'])
+            && ! empty($this->channel['stats']['mount']);
+    }
+
+
+    /**
+     * GET /admin/listclients?mount=<mount> (HTTP basic auth): one <listener> per connection with
+     * IP, UserAgent and Connected (seconds). Listeners on the fallback mount are not included.
+     *
+     * The flat XML is read with regular expressions on purpose: older Icecast versions write user agents
+     * into it unescaped, and one listener with a broken agent must not take the page down for everyone.
+     *
+     * @return array
+     * @throws \lib\PawException
+     */
+    public function getListeners(): array
+    {
+        $this->requireURLSet()
+             ->requireCURLExt()
+             ->requireAuth();
+
+        if (empty($this->channel['stats']['mount'])) {
+            throw new PawException("Icecast mount point is not set, the listener list needs one!");
+        }
+
+        $xml = $this->pawtunes->get(
+            "{$this->channel['stats']['url']}/admin/listclients?mount=".rawurlencode($this->channel['stats']['mount']),
+            null,
+            "{$this->channel['stats']['auth-user']}:{$this->channel['stats']['auth-pass']}"
+        );
+
+        if ( ! $xml) {
+            throw new PawException("Connection to the Icecast server failed!");
+        }
+
+        if (preg_match("/You need to authenticate/i", $xml)) {
+            throw new PawException("Authentication to the Icecast server failed!");
+        }
+
+        if (stripos($xml, '<icestats') === false || ! preg_match('#<source\b#i', $xml)) {
+            throw new PawException("Unable to parse the Icecast listener list!");
+        }
+
+        preg_match_all('#<listener>(.*?)</listener>#is', $xml, $matches);
+
+        $rows = [];
+        foreach ($matches[1] as $listener) {
+
+            $rows[] = Listeners::entry(
+                $this->elementText($listener, 'IP'),
+                Listeners::deviceLabel($this->elementText($listener, 'UserAgent')),
+                (int) $this->elementText($listener, 'Connected')
+            );
+
+        }
+
+        return Listeners::finalize($rows);
+    }
+
+
+    /**
+     * Text of the first <Tag>...</Tag> in a fragment, entities decoded, "" when absent or self-closing
+     *
+     * @param  string  $fragment
+     * @param  string  $tag
+     *
+     * @return string
+     */
+    private function elementText(string $fragment, string $tag): string
+    {
+        if ( ! preg_match('#<'.$tag.'(?:\s[^>]*)?>(.*?)</'.$tag.'>#is', $fragment, $m)) {
+            return '';
+        }
+
+        return html_entity_decode(trim($m[1]), ENT_QUOTES | ENT_XML1, 'UTF-8');
+    }
+
 
     /**
      * Make sure requirements are meet and then get info, parse it and return

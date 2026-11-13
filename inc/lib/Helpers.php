@@ -52,6 +52,11 @@ final class Helpers
 
         $arr = self::xmlToArray($sxe);
 
+        // A root with only text (an error page like <error>text</error>) is not a structure
+        if ( ! is_array($arr)) {
+            return [];
+        }
+
         return $lower ? self::changeKeyCaseRecursive($arr, CASE_LOWER) : $arr;
     }
 

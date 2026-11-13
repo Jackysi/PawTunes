@@ -41,4 +41,11 @@ return array (
   'error_playback' => 'ERREUR : Échec de la lecture, le chargement du flux a échoué !',
   'up_next' => 'À suivre',
   'live_badge' => 'EN DIRECT',
+  'listeners_title' => 'Auditeurs',
+  'listeners_none' => 'Personne n\'écoute en ce moment.',
+  'listeners_error' => 'Les informations sur les auditeurs ne sont pas disponibles.',
+  'listeners_unknown' => 'Inconnu',
+  'unit_hour_short' => 'h',
+  'unit_min_short' => 'min',
+  'unit_sec_short' => 's',
 );

@@ -772,7 +772,9 @@ class PawTunes
      */
     private function generateConfigJSON(): array
     {
-        $channels = [];
+        $channels         = [];
+        $listenersEnabled = $this->listenersEnabled();
+
         if (count($this->channels) >= 1) {
             foreach ($this->channels as $channel) {
 
@@ -802,6 +804,12 @@ class PawTunes
 
                     }
 
+                }
+
+                // Listeners page: offered only when the template option is on and the channel's method can
+                // list listeners with the credentials it has (the endpoint checks both again)
+                if ($listenersEnabled && $this->listenersProvider($channel) !== null) {
+                    $chn['listeners'] = true;
                 }
 
                 $channels[] = $chn;
@@ -894,6 +902,62 @@ class PawTunes
 
         return [];
 
+    }
+
+
+    /**
+     * Fully qualified StreamInfo class of a stats method key ("icecast-public" -> IcecastPublic), null when
+     * no such class exists. The file name must match exactly: PSR-4 lookups are case-sensitive on Linux.
+     *
+     * @param  string  $method
+     *
+     * @return string|null
+     */
+    public function streamInfoClass(string $method): ?string
+    {
+        if ( ! preg_match('/^[a-z-]+$/', $method)) {
+            return null;
+        }
+
+        $class = 'lib\\PawTunes\\StreamInfo\\'.str_replace('-', '', ucwords($method, '-'));
+
+        return class_exists($class) ? $class : null;
+    }
+
+
+    /**
+     * Listener list provider of a channel: its StreamInfo instance when the method implements
+     * ListenersInterface and the channel carries the credentials it needs, null otherwise. No network.
+     *
+     * @param  array  $channel
+     *
+     * @return \lib\PawTunes\StreamInfo\ListenersInterface|null
+     */
+    public function listenersProvider(array $channel): ?PawTunes\StreamInfo\ListenersInterface
+    {
+        $class = $this->streamInfoClass((string) ($channel['stats']['method'] ?? ''));
+        if ($class === null || ! is_subclass_of($class, PawTunes\StreamInfo\ListenersInterface::class)) {
+            return null;
+        }
+
+        $provider = new $class($this, $channel);
+
+        return $provider->supportsListeners() ? $provider : null;
+    }
+
+
+    /**
+     * May the listener list be shown? Private by default: only the active template's "showListeners"
+     * option (a manifest checkbox saved per template in tplOptions) opens it, whatever a request says.
+     *
+     * @return bool
+     * @throws \JsonException
+     */
+    public function listenersEnabled(): bool
+    {
+        $options = $this->getAdvancedTemplateOptions($this->config('template'));
+
+        return filter_var($options['showListeners'] ?? false, FILTER_VALIDATE_BOOLEAN);
     }
 
 

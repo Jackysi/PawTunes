@@ -41,4 +41,11 @@ return array (
   'error_playback' => 'ERROR: Playback failed, loading stream failed!',
   'up_next' => 'Up next',
   'live_badge' => 'LIVE',
+  'listeners_title' => 'Listeners',
+  'listeners_none' => 'Nobody is listening right now.',
+  'listeners_error' => 'Listener information is unavailable.',
+  'listeners_unknown' => 'Unknown',
+  'unit_hour_short' => 'h',
+  'unit_min_short' => 'min',
+  'unit_sec_short' => 's',
 );

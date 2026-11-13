@@ -41,4 +41,11 @@ return array (
   'error_playback' => 'FEHLER: Wiedergabe fehlgeschlagen, Stream lädt nicht!',
   'up_next' => 'Als Nächstes',
   'live_badge' => 'LIVE',
+  'listeners_title' => 'Hörer',
+  'listeners_none' => 'Im Moment hört niemand zu.',
+  'listeners_error' => 'Hörerinformationen sind nicht verfügbar.',
+  'listeners_unknown' => 'Unbekannt',
+  'unit_hour_short' => 'Std.',
+  'unit_min_short' => 'Min.',
+  'unit_sec_short' => 'Sek.',
 );

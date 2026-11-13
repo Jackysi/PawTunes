@@ -34,14 +34,26 @@ export interface Channel {
     name: string,
     logo: string | null,
     skin: string,
+
+    // Set by the server for azuracast and custom channels with a stats URL (PawTunes::generateConfigJSON),
+    // empty otherwise. url is false when the stats URL is not a wss:// socket (the channel is polled).
     ws: {
-        [key: string]: string
+        method?: string,
+        url?: string | false,
+        station?: string,                      // AzuraCast only from here on
+        history?: boolean,
+        useRemoteCovers?: boolean,
+        upNext?: boolean,
     },
     streams: {
         [key: string]: {
             [key: string]: string
         }
-    }
+    },
+
+    // true when the server can list this channel's listeners (modern template option); a template may
+    // clear it after the endpoint refused
+    listeners?: boolean
 }
 
 export interface Format {

@@ -63,6 +63,12 @@ try {
         exit;
     }
 
+    ## Listener list (template "Listeners" page, gated server-side by the template option)
+    if (isset($_GET['listeners'])) {
+        require 'inc/listeners-handler.php';
+        exit;
+    }
+
     ## Handle requests & other backend stuff
     if (isset($_GET['channel'])) {
         require 'inc/handler.php';

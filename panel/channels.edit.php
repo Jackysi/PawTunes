@@ -179,6 +179,7 @@ if ( ! empty($_POST)) {
                         'method'        => 'azuracast',
                         'url'           => $_POST['azura-url'] ?? null,
                         'station'       => $_POST['azura-station'] ?? null,
+                        'api-key'       => (trim((string) ($_POST['azura-api-key'] ?? '')) !== '') ? trim((string) $_POST['azura-api-key']) : null,
                         'use-cover'     => ! empty($_POST['azura-use-cover']) && (bool) $_POST['azura-use-cover'] === true,
                         'azura-history' => ! empty($_POST['azura-history']) && (bool) $_POST['azura-history'] === true,
                         'up-next'       => ! empty($_POST['azura-up-next']) && (bool) $_POST['azura-up-next'] === true,

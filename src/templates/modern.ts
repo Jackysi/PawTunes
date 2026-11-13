@@ -28,6 +28,16 @@ export default class ModernTpl {
     private accentFrame: number = 0;
     private isDarkMode: boolean = false;
 
+    // Listeners page: fetched only while the page is open and the tab visible, rows tick locally
+    private listeners = {
+        open      : false,
+        timer     : 0 as any,
+        tick      : 0 as any,
+        fetchedAt : 0,
+        rows      : [] as { connected: number, el: HTMLElement }[],
+        controller: null as AbortController | null,
+    };
+
 
     constructor(PawTunes: PawTunes) {
 
@@ -88,12 +98,31 @@ export default class ModernTpl {
             this.pawtunes._('.page.settings-page', (el: HTMLElement) => el.remove());
         }
 
+        // Listeners tab: needs the template option and a channel the server marked as able to list them.
+        // With one channel that cannot change, so the tab goes the same way as the channels tab.
+        const listenersPossible = this.optionOn('showListeners', false) && this.pawtunes.channels.some((c) => c.listeners === true);
+        if (!listenersPossible && isSingleChannel) {
+            this.pawtunes._('.tab-bar .nav-listeners', (el: HTMLElement) => el.remove());
+            this.pawtunes._('.page.listeners', (el: HTMLElement) => el.remove());
+        }
+        this.updateListenersTab();
+
         // Hide entire tab bar if there's only the home tab left
         const singleStream = isSingleChannel && Object.keys(this.pawtunes.channels[0]?.streams || {}).length <= 1;
-        if (singleStream && !this.pawtunes.settings.history) {
+        if (singleStream && !this.pawtunes.settings.history && !listenersPossible) {
             this.pawtunes._('.tab-bar', (el: HTMLElement) => el.remove());
             this.pawtunes._('', (el: HTMLElement) => el.classList.add('no-tab-bar'));
         }
+
+        // No fetching while the browser tab is hidden; catch up as soon as it is visible again
+        document.addEventListener('visibilitychange', () => {
+            if (!this.listeners.open) return;
+            if (document.hidden) {
+                clearTimeout(this.listeners.timer);
+            } else {
+                this.fetchListeners();
+            }
+        });
 
         // Artwork search on tap
         if (this.pawtunes.settings.tpl?.songSearchEnable) {
@@ -165,6 +194,8 @@ export default class ModernTpl {
         this.pawtunes.on('channel.change', (channel: any) => {
             this.updateChannelName(channel);
             this.switchPage('main');
+            this.resetListenersView();
+            this.updateListenersTab();
         });
 
         this.pawtunes.on('track.change', (track: { artist: string; title: string }) => {
@@ -207,9 +238,10 @@ export default class ModernTpl {
 
         // Tab bar items
         const tabMap: Record<string, string> = {
-            '.nav-home'    : 'main',
-            '.nav-history' : 'history',
-            '.nav-channels': 'settings-page',
+            '.nav-home'     : 'main',
+            '.nav-history'  : 'history',
+            '.nav-listeners': 'listeners',
+            '.nav-channels' : 'settings-page',
         };
 
         for (const [selector, page] of Object.entries(tabMap)) {
@@ -256,6 +288,7 @@ export default class ModernTpl {
         const pageToTab: Record<string, string> = {
             'main'         : '.nav-home',
             'history'      : '.nav-history',
+            'listeners'    : '.nav-listeners',
             'settings-page': '.nav-channels',
         };
 
@@ -263,6 +296,228 @@ export default class ModernTpl {
         const activeSelector = pageToTab[pageClass];
         if (activeSelector) {
             this.pawtunes._(activeSelector, (el: HTMLElement) => el.classList.add('active'));
+        }
+
+        // The listeners page is the only one that costs requests: fetch while it is open, never otherwise
+        if (pageClass === 'listeners' && !this.listeners.open) {
+            this.startListenersPolling();
+        } else if (pageClass !== 'listeners' && this.listeners.open) {
+            this.stopListenersPolling();
+        }
+
+    }
+
+
+    // ── Listeners page ────────────────────────────────────────────────────
+    /**
+     * May the current channel show its listeners? The template option plus the server's per-channel
+     * flag (set only when the method can list listeners and the credentials are there).
+     */
+    private listenersAllowed(): boolean {
+
+        return this.optionOn('showListeners', false) && this.pawtunes.channel.listeners === true;
+
+    }
+
+    /**
+     * Shows or hides the tab for the current channel; leaves the page when it is no longer allowed
+     */
+    private updateListenersTab() {
+
+        const allowed = this.listenersAllowed();
+        this.pawtunes._('.tab-bar .nav-listeners', (el: HTMLElement) => el.classList.toggle('hidden', !allowed));
+
+        if (!allowed && this.currentPage === 'listeners') {
+            this.switchPage('main');
+        }
+
+    }
+
+    private startListenersPolling() {
+
+        this.listeners.open = true;
+        this.fetchListeners();
+        this.listeners.tick = setInterval(() => this.tickListeners(), 1000);
+
+    }
+
+    private stopListenersPolling() {
+
+        this.listeners.open = false;
+        clearTimeout(this.listeners.timer);
+        clearInterval(this.listeners.tick);
+        this.listeners.controller?.abort();
+        this.listeners.controller = null;
+
+    }
+
+    /**
+     * Back to the loading state with no rows (a channel switch: the old list belongs to another station)
+     */
+    private resetListenersView() {
+
+        this.listeners.rows = [];
+        this.pawtunes._('.listeners-list', (el: HTMLElement) => el.replaceChildren());
+        this.pawtunes._('.listeners-total', (el: HTMLElement) => el.classList.add('hidden'));
+        this.showListenersState('loading');
+
+    }
+
+    /**
+     * One request to ?listeners&channel=<name>; the server's "refresh" sets the next delay. A 403/404
+     * means the server does not offer the page for this channel after all: the tab goes away.
+     */
+    private async fetchListeners() {
+
+        if (!this.listeners.open || document.hidden) return;
+
+        clearTimeout(this.listeners.timer);
+        this.listeners.controller?.abort();
+        this.listeners.controller = new AbortController();
+
+        const channel = this.pawtunes.channel;
+        let delay = 30000;
+
+        try {
+
+            const response = await fetch(`${this.pawtunes.settings.api}?listeners&channel=${encodeURIComponent(channel.name)}`, {signal: this.listeners.controller.signal});
+
+            // Switched away or to another channel while waiting: this answer is no longer wanted
+            if (!this.listeners.open || channel !== this.pawtunes.channel) return;
+
+            if (response.status === 403 || response.status === 404) {
+                channel.listeners = false;
+                this.updateListenersTab();
+                return;
+            }
+
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+            const data = await response.json();
+            if (!this.listeners.open || channel !== this.pawtunes.channel) return;
+
+            if (data.status === 'ok' && Array.isArray(data.listeners)) {
+                this.renderListeners(data);
+            } else if (data.status === 'pending') {
+                // The server is fetching for someone else: keep the rows we have, otherwise keep waiting
+                if (this.listeners.rows.length === 0) this.showListenersState('loading');
+            } else {
+                this.showListenersState('error');
+            }
+
+            // One second past the server's refresh: its Cache-Control max-age ends with the refresh window,
+            // so the next poll must land after it or the browser answers from its own HTTP cache
+            delay = (Math.max(2, Number(data.refresh) || 30) + 1) * 1000;
+
+        } catch (e: any) {
+
+            if (e?.name === 'AbortError') return;
+            this.showListenersState('error');
+            delay = 10000;
+
+        }
+
+        if (this.listeners.open) {
+            this.listeners.timer = setTimeout(() => this.fetchListeners(), delay);
+        }
+
+    }
+
+    /**
+     * Rows are DOM-built: the device label and the masked address are upstream data, written as text
+     */
+    private renderListeners(data: { total: number, listeners: { ip: string, device: string, connected: number }[] }) {
+
+        const list = this.pawtunes._('.listeners-list')[0] as HTMLElement | undefined;
+        if (!list) return;
+
+        const unknown = this.pawtunes.translate('listeners_unknown');
+        const rows: { connected: number, el: HTMLElement }[] = [];
+        const items: HTMLElement[] = [];
+
+        for (const item of data.listeners) {
+
+            const li = document.createElement('li');
+            li.className = 'listener';
+
+            const device = document.createElement('span');
+            device.className = 'listener-device';
+            device.textContent = item.device ? String(item.device) : unknown;
+
+            const ip = document.createElement('span');
+            ip.className = 'listener-ip';
+            ip.textContent = item.ip ? String(item.ip) : unknown;
+
+            const time = document.createElement('span');
+            time.className = 'listener-time';
+
+            li.append(device, ip, time);
+            items.push(li);
+            rows.push({connected: Math.max(0, Number(item.connected) || 0), el: time});
+
+        }
+
+        // First list of this channel fades in, refreshes swap the rows in place
+        list.classList.toggle('animate', this.listeners.rows.length === 0);
+        list.replaceChildren(...items);
+
+        this.listeners.rows = rows;
+        this.listeners.fetchedAt = Date.now();
+        this.tickListeners();
+
+        this.pawtunes._('.listeners-total', (el: HTMLElement) => {
+            el.textContent = String(Math.max(0, Number(data.total) || 0));
+            el.classList.remove('hidden');
+        });
+
+        this.showListenersState(rows.length ? 'list' : 'empty');
+
+    }
+
+    /**
+     * Listening times keep counting between refreshes
+     */
+    private tickListeners() {
+
+        const elapsed = Math.floor((Date.now() - this.listeners.fetchedAt) / 1000);
+        for (const row of this.listeners.rows) {
+            row.el.textContent = this.formatDuration(row.connected + elapsed);
+        }
+
+    }
+
+    /**
+     * "1 h 23 min", "45 min", "12 s" with translated units
+     */
+    private formatDuration(seconds: number): string {
+
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const t = (key: string) => this.pawtunes.translate(key);
+
+        if (hours >= 1) return `${hours} ${t('unit_hour_short')} ${minutes} ${t('unit_min_short')}`;
+        if (minutes >= 1) return `${minutes} ${t('unit_min_short')}`;
+
+        return `${Math.floor(seconds % 60)} ${t('unit_sec_short')}`;
+
+    }
+
+    private showListenersState(state: 'loading' | 'empty' | 'error' | 'list') {
+
+        const blocks: Record<string, string> = {
+            loading: '.listeners-loading',
+            empty  : '.listeners-empty',
+            error  : '.listeners-error',
+            list   : '.listeners-list',
+        };
+
+        for (const [name, selector] of Object.entries(blocks)) {
+            this.pawtunes._(selector, (el: HTMLElement) => el.classList.toggle('hidden', name !== state));
+        }
+
+        // The count belongs to a list (even an empty one), not to an error or a pending load
+        if (state === 'error' || state === 'loading') {
+            this.pawtunes._('.listeners-total', (el: HTMLElement) => el.classList.add('hidden'));
         }
 
     }

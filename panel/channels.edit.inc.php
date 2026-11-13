@@ -44,6 +44,16 @@ return [
                 'description' => 'URL stub or short name.',
             ],
             [
+                'label'        => 'API Key',
+                'name'         => 'azura-api-key',
+                'map'          => 'api-key',
+                'placeholder'  => 'Optional, only for the Listeners page',
+                'class'        => 'col-sm-6',
+                'type'         => 'password',
+                'autocomplete' => 'new-password',
+                'description'  => 'Optional. Needed only by the Listeners page (Modern template option): an AzuraCast API key with the "View Station Reports" permission. The key stays on the server.',
+            ],
+            [
                 'label'       => 'Track Artwork',
                 'class'       => 'col-sm-9',
                 'name'        => 'azura-use-cover',

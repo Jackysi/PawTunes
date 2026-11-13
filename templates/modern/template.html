@@ -184,6 +184,23 @@
                         </div>
                     </div>
 
+                    <!-- Page: Listeners (shown only when the template option is on and the channel supports it) -->
+                    <div class="page listeners">
+                        <div class="page-header">
+                            <h3>{{$listeners_title}}</h3>
+                            <span class="listeners-total hidden"></span>
+                        </div>
+                        <div class="listeners-content">
+                            <div class="listeners-state listeners-loading">
+                                <div class="listeners-spinner"></div>
+                                {{$loading_message}}
+                            </div>
+                            <div class="listeners-state listeners-empty hidden">{{$listeners_none}}</div>
+                            <div class="listeners-state listeners-error hidden">{{$listeners_error}}</div>
+                            <ul class="listeners-list hidden"></ul>
+                        </div>
+                    </div>
+
                     <!-- Page: Channels & Streams -->
                     <div class="page settings-page">
                         <div class="page-header">
@@ -216,6 +233,12 @@
                         <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
                     </svg>
                     <span>{{$song_history}}</span>
+                </a>
+                <a class="tab-item nav-listeners hidden" href="#">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    <span>{{$listeners_title}}</span>
                 </a>
                 <a class="tab-item nav-channels" href="#">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

@@ -41,4 +41,11 @@ return array (
   'error_playback' => 'ERRORE: Riproduzione non riuscita, impossibile caricare lo stream!',
   'up_next' => 'A seguire',
   'live_badge' => 'IN DIRETTA',
+  'listeners_title' => 'Ascoltatori',
+  'listeners_none' => 'Nessuno sta ascoltando in questo momento.',
+  'listeners_error' => 'Le informazioni sugli ascoltatori non sono disponibili.',
+  'listeners_unknown' => 'Sconosciuto',
+  'unit_hour_short' => 'h',
+  'unit_min_short' => 'min',
+  'unit_sec_short' => 's',
 );

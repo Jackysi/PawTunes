@@ -41,4 +41,11 @@ return array (
   'error_playback' => 'NAPAKA: Predvajanje ni bilo mogoče!',
   'up_next' => 'Sledi',
   'live_badge' => 'V ŽIVO',
+  'listeners_title' => 'Poslušalci',
+  'listeners_none' => 'Trenutno nihče ne posluša.',
+  'listeners_error' => 'Podatki o poslušalcih niso na voljo.',
+  'listeners_unknown' => 'Neznano',
+  'unit_hour_short' => 'h',
+  'unit_min_short' => 'min',
+  'unit_sec_short' => 's',
 );

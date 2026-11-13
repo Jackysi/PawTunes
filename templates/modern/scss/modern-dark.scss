@@ -232,6 +232,27 @@ $overlay-color:   rgba(255, 255, 255, .04);
     }
 
 
+    // ── Listeners ────────────────────────────────────────────────────────
+    .listeners-total {
+        color: #fff;
+        background: rgba($accent-color, .35);
+    }
+
+    .listeners-spinner {
+        border-color: rgba(255, 255, 255, .1);
+        border-top-color: $accent-color;
+    }
+
+    .listeners-list .listener {
+        border-color: rgba(255, 255, 255, .06);
+        background: rgba(255, 255, 255, .03);
+    }
+
+    .listeners-list .listener-time {
+        color: lighten($accent-color, 10%);
+    }
+
+
     // ── History ──────────────────────────────────────────────────────────
     .history-item td {
         border-bottom-color: rgba(255, 255, 255, .05);

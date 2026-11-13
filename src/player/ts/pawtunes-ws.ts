@@ -79,8 +79,14 @@ export default class PawtunesWS {
      */
     connectToSocket() {
 
+        // Callers check this first; false means the channel is polled instead
+        const url = this.pawtunes.channel.ws.url;
+        if (!url) {
+            return;
+        }
+
         this.pawtunes.showLoading();
-        this.socket = new WebSocket(this.pawtunes.channel.ws.url);
+        this.socket = new WebSocket(url);
         this.bindSocketEvents();
 
     }

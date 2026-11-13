@@ -82,6 +82,13 @@
             "description": "Live DJ badge: show a LIVE badge with the streamer name while an AzuraCast channel has a live DJ",
             "type": "checkbox",
             "value": "true"
+        },
+        "showListeners": {
+            "default": false,
+            "name": "showListeners",
+            "description": "Listeners page: adds a tab that shows EVERY visitor who is listening (masked IP such as 93.103.x.x, device, listening time). Off by default for privacy. Works for channels whose track info method is AzuraCast (with an API key), Icecast (admin) or Shoutcast (admin).",
+            "type": "checkbox",
+            "value": "true"
         }
     }
 }
