@@ -76,16 +76,11 @@ if ( ! empty($_POST)) {
                 $pawtunes::deleteFile($channels[$_GET['channel']]['logo']);
             }
 
-            // Attempt to save
-            $up = $panel->upload('logo', 'data/images/', $filename);
+            // Attempt to save (upload() verifies the file is really one of the allowed image formats)
+            $up = $panel->upload('logo', 'data/images/', $filename, $logo_ext);
             if ( ! empty($up['error'])) {
 
                 $error = $panel->alert("Uploading logo failed! ERROR: {$up['error']}", 'error');
-
-            } elseif ( ! in_array($pawtunes->extGet($up['path']), $logo_ext)) {
-
-                $error = $panel->alert("Invalid image format! You can only upload JPEG, JPG, PNG, WEBP and SVG images!", 'error');
-                $pawtunes::deleteFile($up['path']);
 
             } else { // Save success, now do tell!
 

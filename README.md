@@ -191,6 +191,39 @@ Since **PawTunes 1.0.7**, the `entrypoint.sh` script will automatically copy def
 PawTunes includes an Nginx server by default, but for TLS/HTTPS you'll usually want to put it behind a reverse proxy (e.g. Traefik, NGINX Proxy Manager, Caddy, etc...).  
 You _can_ modify the bundled Nginx config for TLS directly, but that's out of scope here.
 
+### Deployment and security
+Everything PawTunes writes lives in `data/`. Only the images are meant to be public: the player links to
+`data/images/` (artwork, logos, default artwork) and to the downloaded artwork copies in `data/cache/`.
+Logs, cache entries (they can hold API tokens) and update archives are private, and nothing under `data/`
+may ever run as a script.
+
+**Apache**: the shipped `data/.htaccess`, `data/logs/.htaccess` and `data/updates/.htaccess` enforce this on
+Apache 2.2 and 2.4. Grant the PawTunes directory `AllowOverride All`, or at least these override classes:
+`AuthConfig` (the `Require` deny rules), `Limit` (the Apache 2.2 `Order`/`Deny` fallbacks) and `FileInfo`
+(the `Content-Security-Policy` header set on served SVGs). The files intentionally do **not** use
+`php_flag engine off`: that is an `Options`-class directive and would make Apache return 500 for every
+`data/` URL on a mod_php host that does not also grant `Options`. Blocking the script requests by name is
+enough.
+
+**nginx** ignores `.htaccess`, so add the equivalent rules to your `server` block. Regex locations are matched
+in order, so place these **before** your `location ~ \.php$` block (adjust the `/data/` prefix when PawTunes
+is installed in a sub-folder):
+
+```nginx
+# Logs and update files are never served
+location ~ ^/data/(logs|updates)/ { deny all; }
+
+# Cache entries, logs and archives anywhere under data/
+location ~ ^/data/.*\.(cache|log|zip)$ { deny all; }
+
+# Nothing under data/ is ever executed: PHP in any position of the name (x.php.png included), other script
+# types as the final extension only (artwork named after a track such as x.sh.y.jpeg stays servable)
+location ~* ^/data/.*\.(php[3-8]?|phtml|phar|pht|phps)(\.|$) { deny all; }
+location ~* ^/data/.*\.(cgi|pl|py|sh|asp|aspx|jsp|shtml)$ { deny all; }
+```
+
+The Docker image bundles its own nginx configuration; apply the same rules there if you replace it.
+
 ---
 
 ## Developer API & Customization

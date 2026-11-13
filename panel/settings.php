@@ -122,7 +122,7 @@ if ( ! empty($_POST)) {
     // Upload, but also works with input field
     if ( ! empty($_FILES['override_image']['name'])) {
 
-        $uploadOverride = $panel->upload('override_image', 'data/images/', 'override-image');
+        $uploadOverride = $panel->upload('override_image', 'data/images/', 'override-image', $pawtunes->artworkExtensions);
         if ($uploadOverride['error'] !== null) {
 
             $message = $panel->alert($uploadOverride['error'], 'error');

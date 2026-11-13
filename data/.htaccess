@@ -1,0 +1,67 @@
+################################################################################################################
+## PawTunes data directory (Apache 2.2 and 2.4)
+##
+## Everything the application writes lives under data/. Only images are meant to be public: the player links
+## to data/images/ (uploaded artwork, logos, default artwork) and to the downloaded artwork copies in
+## data/cache/. Logs, cache entries (they can hold API tokens) and update archives are private, and nothing in
+## this tree may ever run as a script, whatever the upload or file name looks like.
+##
+## nginx ignores this file: see the "Deployment and security" section of README.md for the equivalent rules.
+################################################################################################################
+
+# Deny script-like files regardless of the handler. This blocks the script requests themselves, so there is
+# deliberately no "php_flag engine off": that is an Options-class directive, and a mod_php host with a limited
+# AllowOverride (AuthConfig Limit) returns 500 for every data/ URL when it appears in .htaccess.
+#
+# The PHP family is denied in ANY position of the name (x.php.png included): a mod_php "AddHandler" setup maps
+# every extension of a multi-extension name, so x.php.png can run as PHP. The other script types are denied only
+# as the FINAL extension. Downloaded artwork is named after the track with every non-alphanumeric character
+# turned into a dot, so a real title with a standalone "Sh", "Pl", "Py" or "Asp" word (x.sh.y.jpeg) must stay
+# servable. Matching is case-insensitive because Apache's extension mapping is too (x.PHP runs like x.php).
+<FilesMatch "(?i)\.(php[3-8]?|phtml|phar|pht|phps)(\.|$)">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+<FilesMatch "(?i)\.(cgi|pl|py|sh|asp|aspx|jsp|shtml)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Deny cache entries (.cache is the default "cache.ext" setting), log files and update archives
+<FilesMatch "\.(cache|log|zip)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# The self-update lock file
+<Files "lock">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</Files>
+
+# Served SVG images (logos, uploaded artwork) run no script even if one slipped past the upload check
+<FilesMatch "\.svg$">
+    <IfModule mod_headers.c>
+        Header set Content-Security-Policy "script-src 'none'"
+    </IfModule>
+</FilesMatch>

@@ -39,36 +39,65 @@ $allow_ext = ['jpeg', 'jpg', 'png', 'svg', 'webp'];
 // Get list of templates available
 $templates = $pawtunes->getTemplates();
 
+if ( ! function_exists('isCssColor')) {
+    /**
+     * Accept only real CSS color literals: #rgb, #rgba, #rrggbb, #rrggbbaa and rgb()/rgba()/hsl()/hsla()
+     * with numeric (optionally percent) arguments. The value is interpolated into SCSS source, so nothing
+     * else may pass.
+     *
+     * @param  string  $color
+     *
+     * @return bool
+     */
+    function isCssColor(string $color): bool
+    {
+        $hex    = '#(?:[0-9a-f]{3}|[0-9a-f]{4}|[0-9a-f]{6}|[0-9a-f]{8})';
+        $number = '-?\d+(?:\.\d+)?%?';
+        $func   = '(?:rgb|hsl)a?\(\s*'.$number.'\s*,\s*'.$number.'\s*,\s*'.$number.'(?:\s*,\s*'.$number.')?\s*\)';
+
+        return (bool) preg_match('/^(?:'.$hex.'|'.$func.')$/i', $color);
+    }
+}
+
 // Handle compiling new CSS stylesheet
-if ( ! empty($_POST) && $_POST['form'] === 'compile') {
+if ( ! empty($_POST) && ($_POST['form'] ?? '') === 'compile') {
 
-    // Path
-    $base_path = $templates[$_POST['template']]['path'];
+    // Every field ends up in a file name or in SCSS source, so each one is validated against a
+    // strict shape before it is used anywhere. The is_string() guards keep a posted array
+    // (filename[]=x, template[]=x) from throwing a TypeError in trim() or an illegal-offset fatal
+    // in the $templates[$template] lookup on PHP 8.
+    $filename    = is_string($_POST['filename'] ?? '') ? strtolower(trim($_POST['filename'])) : '';
+    $template    = is_string($_POST['template'] ?? '') ? $_POST['template'] : '';
+    $baseTheme   = is_string($_POST['base-theme'] ?? '') ? $_POST['base-theme'] : '';
+    $accentColor = is_string($_POST['base-color'] ?? '') ? trim($_POST['base-color']) : '';
+    $bgColor     = is_string($_POST['bg-color'] ?? '') ? trim($_POST['bg-color']) : '';
+
+    // The base theme must be one of the chosen template's compilable schemes (manifest "compile" key)
+    $base_path = $templates[$template]['path'] ?? '';
     $scss_file = '';
-
-    // Find scheme
-    if (is_array($templates[$_POST['template']]['schemes']) && count($templates[$_POST['template']]['schemes']) >= 1) {
-        foreach ($templates[$_POST['template']]['schemes'] as $key => $path) {
-
-            if ($path['name'] === $_POST['base-theme']) {
-
-                $scss_file = $path['compile'];
-                break;
-
-            }
-
+    foreach ($templates[$template]['schemes'] ?? [] as $scheme) {
+        if (($scheme['name'] ?? null) === $baseTheme && ! empty($scheme['compile'])) {
+            $scss_file = $scheme['compile'];
+            break;
         }
     }
 
-
     // Validate data
-    if (empty($_POST['filename']) || empty($_POST['base-theme']) || empty($_POST['base-color'])) {
+    if ( ! isset($templates[$template])) {
 
-        $theme_message = $panel->alert('Invalid data submission! There are some missing fields, please try again!', 'error');
+        $theme_message = $panel->alert('Please select one of the installed templates!', 'error');
+
+    } elseif ( ! preg_match('/^[a-z0-9_-]{1,64}$/', $filename)) {
+
+        $theme_message = $panel->alert('The theme name may only contain lowercase letters, numbers, "-" and "_" (up to 64 characters)!', 'error');
 
     } elseif ($scss_file === '' || ! is_file("{$base_path}/{$scss_file}")) {
 
-        $theme_message = $panel->alert('Unable to compile a new theme since the <b>base theme</b> file or <b>template</b> path is missing!', 'error');
+        $theme_message = $panel->alert('Unable to compile a new theme since the <b>base theme</b> is not a compilable scheme of the selected template!', 'error');
+
+    } elseif ( ! isCssColor($accentColor) || ! isCssColor($bgColor)) {
+
+        $theme_message = $panel->alert('Colors must be CSS colors such as <b>#3498db</b>, <b>rgb(52, 152, 219)</b> or <b>hsl(204, 70%, 53%)</b>!', 'error');
 
     } elseif ( ! is_dir("{$base_path}/custom/") && ! mkdir("{$base_path}/custom/", 0755) && ! is_dir("{$base_path}/custom/")) {
 
@@ -76,37 +105,30 @@ if ( ! empty($_POST) && $_POST['form'] === 'compile') {
 
     } else {
 
-        // Compile SASS and save it as file.
-        $scss = new ScssPhp\ScssPhp\Compiler();
-        $scss->setImportPaths($base_path.'/'.dirname($scss_file));
-        $scss->setOutputStyle(OutputStyle::COMPRESSED);
+        // scssphp 1.x is the last line that runs on PHP 7.4 and it is not clean under the PHP 8.4
+        // deprecation notices (implicit nullable parameters). They are compile-time noise, so they are
+        // muted around the compiler, which would otherwise print them into the page when debugging is
+        // "enabled".
+        $errorReporting = error_reporting(error_reporting() & ~E_DEPRECATED);
 
-        // Compile!
+        // Compile SASS and save it as file.
         try {
 
-            $contents = $scss->compileString("\$accent-color: {$_POST[ 'base-color' ]}; \$bg-color: {$_POST['bg-color']}; @import '".basename($scss_file)."';");
+            $scss = new ScssPhp\ScssPhp\Compiler();
+            $scss->setImportPaths($base_path.'/'.dirname($scss_file));
+            $scss->setOutputStyle(OutputStyle::COMPRESSED);
+
+            $contents = $scss->compileString("\$accent-color: {$accentColor}; \$bg-color: {$bgColor}; @import '".basename($scss_file)."';")->getCss();
 
             // Append color & scheme to the output file so we can use the information on update
-            if ($contents->getCss() !== null) {
-
-                // Replace pre-defined text strings
-                $contents = preg_replace(
-                    ['/accent=([^;]*);/i', '/scheme=([^;]*);/i'],
-                    ["accent={$_POST['base-color']};", "scheme=".basename($scss_file).";"],
-                    $contents->getCss()
-                );
-
-            }
-
-            // Create directory if not existing
-            if ( ! is_dir("{$base_path}/custom/")) {
-                if ( ! mkdir("{$base_path}/custom/", 0755) && ! is_dir("{$base_path}/custom/")) {
-                    throw new RuntimeException(sprintf('Directory "%s" was not created', "{$base_path}/custom/"));
-                }
-            }
+            $contents = preg_replace(
+                ['/accent=([^;]*);/i', '/scheme=([^;]*);/i'],
+                ["accent={$accentColor};", "scheme=".basename($scss_file).";"],
+                $contents
+            );
 
             // Attempt to save
-            if (file_put_contents("{$base_path}/custom/{$_POST['filename']}.css", $contents)) {
+            if (file_put_contents("{$base_path}/custom/{$filename}.css", $contents)) {
 
                 // Clear templates cache
                 $pawtunes->cache->delete('templates');
@@ -120,7 +142,11 @@ if ( ! empty($_POST) && $_POST['form'] === 'compile') {
 
         } catch (SassException $e) {
 
-            $theme_message = $panel->alert('SASS Compilation ERROR occurred: '.$e->getMEssage().'!', 'error');
+            $theme_message = $panel->alert('SASS Compilation ERROR occurred: '.htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8').'!', 'error');
+
+        } finally {
+
+            error_reporting($errorReporting);
 
         }
 
@@ -146,15 +172,23 @@ if ( ! empty($_POST) && $_POST['form'] === 'artwork') {
 
 
     $track = $pawtunes->parseTrack($_POST['track']);
-    $panel->deleteArtwork($_POST['track']);
 
-    // Attempt to save
-    $up = $panel->upload('image', 'data/images/', $track);
+    // Attempt to save (upload() verifies the file is really one of the allowed image formats)
+    $up = $panel->upload('image', 'data/images/', $track, $allow_ext);
     if ( ! empty($up['error'])) {
 
         $panel->sendError("Uploading failed! ERROR: {$up['error']}");
 
-    } elseif ( ! extension_loaded('gd')) {
+    }
+
+    // The new file replaced its own format; drop copies of this track in the other formats
+    foreach ($allow_ext as $ext) {
+        if ("data/images/{$track}.{$ext}" !== $up['path'] && is_file("data/images/{$track}.{$ext}")) {
+            $pawtunes::deleteFile("data/images/{$track}.{$ext}");
+        }
+    }
+
+    if ( ! extension_loaded('gd')) {
 
         $pawtunes::deleteFile($up['path']);
         $panel->sendError('Cropping image failed because GD extension is not available!');

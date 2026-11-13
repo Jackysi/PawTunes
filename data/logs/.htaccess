@@ -1,0 +1,8 @@
+# Log files are never served over HTTP (Apache 2.2 and 2.4). data/.htaccess adds the file-type rules.
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+</IfModule>

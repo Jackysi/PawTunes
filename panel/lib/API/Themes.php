@@ -32,7 +32,7 @@ class Themes extends Base
         foreach ($templates as $template) {
             if (is_dir($template['path'].'/custom')) {
 
-                $list = $this->pawtunes->browse($template['path'].'/custom');
+                $list = $this->pawtunes->browse($template['path'].'/custom/');
                 foreach ($list as $custom) {
                     $schemes[] = [
                         'name'     => $custom,
