@@ -189,6 +189,144 @@ window.toast = function (message, type, duration) {
 })();
 
 /**
+ * Artwork browser (Tools > Artwork Manager, AI > Stored AI Artwork): search filter, List/Gallery view and a
+ * larger preview on hover. Every listener is delegated, so items a page renders later work too. After adding
+ * or removing items, call refreshArtworkBrowser(browser) so the count and the active filter follow.
+ */
+(function () {
+
+    const storageKey = 'pawtunes.panel.artwork-view.';
+    const previewSize = 280; // the default stored artwork size, so the preview is not upscaled
+    const previewGap = 16;   // distance between the cursor and the preview
+
+    let preview = null;
+    let previewFor = null;
+
+    // Letters and digits only, any case: "ace of base" finds "ace.of.base"
+    function normalize(text) {
+        return text.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
+    }
+
+    function setView(browser, view) {
+        browser.classList.toggle('is-list', view === 'list');
+        browser.classList.toggle('is-gallery', view === 'gallery');
+        browser.querySelectorAll('[data-view]').forEach(function (button) {
+            button.setAttribute('aria-pressed', String(button.dataset.view === view));
+        });
+    }
+
+    function filter(browser) {
+        if (!browser) return;
+
+        let input = browser.querySelector('.artwork-search input');
+        let query = normalize(input ? input.value : '');
+        let items = browser.querySelectorAll('.artwork-item');
+        let shown = 0;
+
+        items.forEach(function (item) {
+            // Normalized once per item, the names do not change while the page is open
+            if (item.dataset.search === undefined) item.dataset.search = normalize(item.dataset.name || '');
+
+            item.hidden = query !== '' && !item.dataset.search.includes(query);
+            if (!item.hidden) shown++;
+        });
+
+        let count = browser.querySelector('.artwork-count');
+        if (count) count.textContent = (query === '') ? items.length + (items.length === 1 ? ' image' : ' images') : shown + ' of ' + items.length;
+
+        let noMatch = browser.querySelector('.artwork-no-match');
+        if (noMatch) noMatch.hidden = shown > 0 || items.length === 0;
+    }
+
+    window.refreshArtworkBrowser = filter;
+
+    function init() {
+        document.querySelectorAll('.artwork-browser').forEach(function (browser) {
+            let view = null;
+            try { view = localStorage.getItem(storageKey + browser.dataset.viewKey); } catch (e) {}
+
+            setView(browser, (view === 'list' || view === 'gallery') ? view : (browser.dataset.defaultView || 'list'));
+            filter(browser);
+        });
+    }
+
+    document.addEventListener('input', function (e) {
+        if (e.target.matches('.artwork-search input')) filter(e.target.closest('.artwork-browser'));
+    });
+
+    // Escape clears the search (type=search does that natively in some browsers only)
+    document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape' || !e.target.matches('.artwork-search input') || e.target.value === '') return;
+
+        e.preventDefault();
+        e.target.value = '';
+        filter(e.target.closest('.artwork-browser'));
+    });
+
+    document.addEventListener('click', function (e) {
+        let button = e.target.closest('.artwork-browser [data-view]');
+        if (!button) return;
+
+        let browser = button.closest('.artwork-browser');
+        setView(browser, button.dataset.view);
+        try { localStorage.setItem(storageKey + browser.dataset.viewKey, button.dataset.view); } catch (err) {}
+    });
+
+    // Preview beside the cursor, flipped to the other side near the viewport edges
+    function movePreview(e) {
+        let left = e.clientX + previewGap, top = e.clientY + previewGap;
+        if (left + previewSize > window.innerWidth) left = e.clientX - previewGap - previewSize;
+        if (top + previewSize > window.innerHeight) top = e.clientY - previewGap - previewSize;
+
+        preview.style.left = Math.max(8, left) + 'px';
+        preview.style.top = Math.max(8, top) + 'px';
+    }
+
+    function hidePreview() {
+        if (preview) preview.classList.remove('in');
+        previewFor = null;
+    }
+
+    // Mouse only: a touch tap also fires pointerover, and there is no pointerout to close it again
+    document.addEventListener('pointerover', function (e) {
+        if (e.pointerType !== 'mouse') return;
+
+        let thumb = e.target.closest('.artwork-browser .artwork-thumb');
+        if (!thumb || thumb === previewFor) return;
+
+        if (!preview) {
+            preview = document.createElement('div');
+            preview.className = 'image-preview artwork-preview';
+            preview.innerHTML = '<img alt="" width="' + previewSize + '" height="' + previewSize + '">';
+            document.body.appendChild(preview);
+        }
+
+        previewFor = thumb;
+        preview.firstChild.src = thumb.currentSrc || thumb.src;
+        movePreview(e);
+        preview.classList.add('in');
+    });
+
+    document.addEventListener('pointermove', function (e) {
+        if (previewFor && e.target === previewFor) movePreview(e);
+    });
+
+    document.addEventListener('pointerout', function (e) {
+        if (previewFor && e.target === previewFor) hidePreview();
+    });
+
+    // The preview is position: fixed, so it would stay behind on scroll
+    window.addEventListener('scroll', hidePreview, {passive: true, capture: true});
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+
+})();
+
+/**
  * Compares two version strings.
  *
  * @returns {boolean} - Returns 1 if v1 > v2, -1 if v1 < v2, or 0 if equal.

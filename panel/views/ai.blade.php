@@ -264,23 +264,27 @@
     @if (count($aiImages) > 0)
         <div class="panel">
             <div class="heading">
-                <i class="icon fa fa-images"></i> Stored AI Artwork ({{ count($aiImages) }})
+                <i class="icon fa fa-images"></i> Stored AI Artwork
             </div>
             <div class="content form-content">
-                @if (count($aiImages) > 48)
-                    <p class="text-muted">Showing the 48 newest.</p>
-                @endif
-                <div class="ai-artwork-grid">
-                    @foreach (array_slice($aiImages, 0, 48) as $file)
-                        @php $name = pathinfo($file, PATHINFO_FILENAME); @endphp
-                        <form method="POST" action="index.php?page=ai" class="ai-artwork">
-                            {!! $panel->csrfField() !!}
-                            <input type="hidden" name="name" value="{{ $name }}">
-                            <img src="./../{{ ltrim($file, './') }}?v={{ filemtime($file) }}" alt="{{ $name }}" width="160" height="160" loading="lazy">
-                            <span class="ai-artwork-name" title="{{ $name }}">{{ $name }}</span>
-                            <button type="submit" name="action" value="delete-ai-image" class="ai-artwork-delete" title="Delete" aria-label="Delete {{ $name }}"><i class="fa fa-trash"></i></button>
-                        </form>
-                    @endforeach
+                <div class="artwork-browser is-gallery" data-view-key="ai" data-default-view="gallery">
+                    @include('template.artwork-toolbar')
+                    <div class="artwork-items">
+                        @foreach ($aiImages as $file)
+                            @php $name = pathinfo($file, PATHINFO_FILENAME); @endphp
+                            <div class="artwork-item" data-name="{{ $name }}">
+                                <img class="artwork-thumb" src="./../{{ ltrim($file, './') }}?v={{ filemtime($file) }}" alt="" width="160" height="160" loading="lazy">
+                                <span class="artwork-name" title="{{ $name }}">{{ $name }}</span>
+                                <span class="artwork-size">{{ \lib\Helpers::formatBytes(filesize($file)) }}</span>
+                                <form method="POST" action="index.php?page=ai" class="artwork-actions">
+                                    {!! $panel->csrfField() !!}
+                                    <input type="hidden" name="name" value="{{ $name }}">
+                                    <button type="submit" name="action" value="delete-ai-image" class="btn btn-danger btn-small css-hint" data-title="Delete" aria-label="Delete {{ $name }}" data-confirm><i class="fa fa-trash"></i></button>
+                                </form>
+                            </div>
+                        @endforeach
+                    </div>
+                    <p class="artwork-no-match" hidden>No artwork matches your search.</p>
                 </div>
                 <form method="POST" action="index.php?page=ai">
                     {!! $panel->csrfField() !!}

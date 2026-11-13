@@ -595,104 +595,279 @@ tbody .handle {
     margin-bottom: 0;
 }
 
-/* Artwork manager & Crop feature */
-.artwork-manager {
-    margin-bottom: 15px;
+/* Artwork browser: Tools > Artwork Manager and AI > Stored AI Artwork. One item markup, two layouts. */
+.artwork-browser {
+    margin-bottom: 20px;
+}
+
+.artwork-browser-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.artwork-search {
+    position: relative;
+    flex: 0 1 320px;
+    min-width: 0;
+
+    .fa {
+        position: absolute;
+        top: 50%;
+        left: 12px;
+        transform: translateY(-50%);
+        pointer-events: none;
+        color: $slate-400;
+        font-size: 13px;
+    }
+
+    .form-control {
+        padding-left: 34px;
+    }
+}
+
+.artwork-count {
+    margin-left: auto;
+    white-space: nowrap;
+    color: $slate-500;
+    font-size: 12px;
+}
+
+.artwork-view-toggle {
+    display: flex;
+    padding: 3px;
+    border-radius: 8px;
+    background: $slate-100;
+
+    button {
+        display: grid;
+        place-items: center;
+        width: 32px;
+        height: 29px;
+        padding: 0;
+        cursor: pointer;
+        transition: background-color 150ms ease, color 150ms ease;
+        color: $slate-500;
+        border: 0;
+        border-radius: 6px;
+        background: transparent;
+
+        &:hover {
+            color: $slate-800;
+        }
+
+        &[aria-pressed="true"] {
+            color: $slate-800;
+            background: #fff;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.12);
+        }
+    }
+}
+
+.artwork-items {
     max-height: 70vh;
     overflow-y: auto;
-
-    @media (max-width: 768px) {
-        overflow-x: auto;
-    }
 }
 
-// Stored AI artwork: square tiles that wrap to the card width
-.ai-artwork-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
-    gap: 20px 16px;
-    margin-bottom: 24px;
-}
-
-.ai-artwork {
+.artwork-item {
     position: relative;
-    min-width: 0; // lets the name ellipsize instead of widening the column
-    margin: 0;
+    min-width: 0; // lets the name ellipsize instead of widening its column
 
-    img {
-        display: block;
-        width: 100%;
-        height: auto;
-        aspect-ratio: 1;
-        object-fit: cover;
-        border-radius: 8px;
-        background: $slate-100;
-        // An edge for artwork with white backgrounds; a border would shrink the image
-        outline: 1px solid rgba(15, 23, 42, 0.08);
-        outline-offset: -1px;
+    // Search hides items with [hidden]; the layouts below set display with higher specificity, so it must win outright
+    &[hidden] {
+        display: none !important;
     }
 }
 
-.ai-artwork-name {
+.artwork-thumb {
     display: block;
+    object-fit: cover;
+    background: $slate-100;
+    // An edge for artwork with white backgrounds; a border would shrink the image
+    outline: 1px solid rgba(15, 23, 42, 0.08);
+    outline-offset: -1px;
+}
+
+.artwork-name {
     overflow: hidden;
-    margin-top: 6px;
-    font-size: 12px;
-    text-align: center;
     white-space: nowrap;
     text-overflow: ellipsis;
+}
+
+.artwork-size {
+    white-space: nowrap;
+    color: $slate-500;
+    font-size: 12px;
+}
+
+.artwork-actions {
+    display: flex;
+    gap: 4px;
+    margin: 0;
+}
+
+.artwork-no-match {
+    padding: 32px 0;
+    text-align: center;
     color: $slate-500;
 }
 
-.ai-artwork-delete {
-    position: absolute;
-    top: 6px;
-    right: 6px;
-    display: grid;
-    place-items: center;
-    width: 28px;
-    height: 28px;
-    padding: 0;
-    cursor: pointer;
-    transition: opacity 150ms ease, background-color 150ms ease;
-    opacity: 0;
-    color: #fff;
-    border: 0;
-    border-radius: 6px;
-    background: rgba(15, 23, 42, 0.7);
-    font-size: 12px;
+.artwork-browser.is-empty {
+    .artwork-browser-toolbar {
+        display: none;
+    }
 
-    &:hover,
-    &:focus-visible {
-        background: $danger-color;
+    .artwork-items {
+        display: block;
     }
 }
 
-.ai-artwork:hover .ai-artwork-delete,
-.ai-artwork:focus-within .ai-artwork-delete {
-    opacity: 1;
+// The list grid can still apply to an empty browser, so the empty state spans every column
+.artwork-items > .empty-state {
+    grid-column: 1 / -1;
 }
 
-// Touch screens have no hover, so the button must always show
-@media (hover: none) {
-    .ai-artwork-delete {
+// List: compact rows
+.artwork-browser.is-list {
+    // The rows share these columns (subgrid), so sizes and buttons line up even where a row has fewer actions.
+    // A subgrid's padding is taken out of its edge columns: 46px = 10px row padding + 36px thumbnail.
+    .artwork-items {
+        display: grid;
+        grid-template-columns: 46px minmax(0, 1fr) auto auto;
+        column-gap: 14px;
+    }
+
+    .artwork-item {
+        display: grid;
+        align-items: center;
+        grid-column: 1 / -1;
+        grid-template-columns: subgrid;
+        padding: 6px 10px;
+        transition: background-color 350ms ease;
+        border-bottom: 1px solid $slate-100;
+
+        &:last-child {
+            border-bottom: 0;
+        }
+
+        &:hover {
+            transition-duration: 0ms;
+            background-color: $slate-50;
+        }
+    }
+
+    .artwork-thumb {
+        width: 36px;
+        height: 36px;
+        border-radius: 4px;
+    }
+
+    .artwork-size {
+        min-width: 64px;
+        text-align: right;
+    }
+
+    // Square buttons as tall as the thumbnail, at the page's normal icon size (easy targets, not btn-small)
+    .artwork-actions {
+        gap: 6px;
+
+        .btn {
+            display: grid;
+            place-items: center;
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            font-size: 14px;
+        }
+    }
+}
+
+// Gallery: square tiles that wrap to the card width
+.artwork-browser.is-gallery {
+    .artwork-items {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+        gap: 20px 16px;
+    }
+
+    .artwork-thumb {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 1;
+        border-radius: 8px;
+    }
+
+    .artwork-name {
+        display: block;
+        margin-top: 6px;
+        text-align: center;
+        color: $slate-500;
+        font-size: 12px;
+    }
+
+    .artwork-size {
+        display: none;
+    }
+
+    .artwork-actions {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        transition: opacity 150ms ease;
+        opacity: 0;
+
+        .btn {
+            display: grid;
+            place-items: center;
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            color: #fff;
+            border: 0;
+            border-radius: 6px;
+            background: rgba(15, 23, 42, 0.7);
+            font-size: 13px;
+
+            &:hover,
+            &:focus-visible {
+                background: $primary-bg-color;
+            }
+
+            &.btn-danger:hover,
+            &.btn-danger:focus-visible {
+                background: $danger-color;
+            }
+        }
+    }
+
+    .artwork-item:hover .artwork-actions,
+    .artwork-item:focus-within .artwork-actions {
         opacity: 1;
+    }
+
+    // Touch screens have no hover, so the buttons must always show
+    @media (hover: none) {
+        .artwork-actions {
+            opacity: 1;
+        }
+    }
+}
+
+// Never under the cursor, or it would steal the hover from the thumbnail and flicker
+.artwork-preview {
+    pointer-events: none;
+    border-radius: 8px;
+
+    img {
+        display: block;
+        object-fit: cover;
     }
 }
 
 .schemes-manager {
     @media (max-width: 768px) {
         overflow-x: auto;
-    }
-}
-
-.artwork-manager table.table thead th,
-.artwork-manager table.table tbody td,
-.artwork-manager table.table tr td {
-    padding: 6px 10px !important;
-
-    &.row-btns {
-        padding: 0 !important;
     }
 }
 

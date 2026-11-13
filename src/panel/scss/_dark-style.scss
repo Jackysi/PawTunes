@@ -85,13 +85,46 @@
         background: $slate-800;
     }
 
-    .ai-artwork img {
+    .artwork-thumb {
         outline-color: rgba(255, 255, 255, 0.08);
         background: $slate-900;
     }
 
-    .ai-artwork-name {
+    .artwork-size,
+    .artwork-count,
+    .artwork-no-match,
+    .artwork-browser.is-gallery .artwork-name {
         color: $slate-400;
+    }
+
+    .artwork-search .fa {
+        color: $slate-500;
+    }
+
+    .artwork-view-toggle {
+        background: $slate-900;
+
+        button {
+            color: $slate-400;
+
+            &:hover,
+            &[aria-pressed="true"] {
+                color: #e2e8f0;
+            }
+
+            &[aria-pressed="true"] {
+                background: $slate-700;
+                box-shadow: none;
+            }
+        }
+    }
+
+    .artwork-browser.is-list .artwork-item {
+        border-bottom-color: #334155;
+
+        &:hover {
+            background-color: rgba(255, 255, 255, 0.04);
+        }
     }
 
     .progress-bar {

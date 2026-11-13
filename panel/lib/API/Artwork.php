@@ -74,6 +74,7 @@ class Artwork extends Base
                     'name' => $this->pawtunes->extDel(basename($file)),
                     'path' => "data/images/{$file}",
                     'size' => $this->pawtunes->formatBytes(filesize("data/images/{$file}")),
+                    'time' => filemtime("data/images/{$file}"),
                 ];
 
             }

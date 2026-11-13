@@ -69,18 +69,10 @@
             <p>
                 This option allows you to set your own images for various artists and their tracks. These images also have higher priority over LastFM or any other API's.
             </p>
-            <div class="artwork-manager">
-                <table class="table vertical-center hover">
-                    <thead>
-                        <tr>
-                            <th></th>
-                            <th>File name (formatted)</th>
-                            <th>File size</th>
-                            <th class="text-right">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+            <div class="artwork-browser is-list" data-view-key="tools" data-default-view="list">
+                @include('template.artwork-toolbar')
+                <div class="artwork-items"></div>
+                <p class="artwork-no-match" hidden>No artwork matches your search.</p>
             </div>
             <a href="#" class="btn btn-warning pull-right" data-bs-toggle="modal" data-bs-target=".check-artwork-modal"><i class="icon fa fa-search"></i> Lookup</a>
             <a href="#" class="btn btn-success" data-bs-toggle="modal" data-bs-target=".upload-artwork-modal"><i class="icon fa fa-cloud-upload"></i> Upload</a>
@@ -367,85 +359,35 @@
              */
             function loadArtwork() {
 
-                $('.artworkManager').find('tbody').empty();
                 $.ajax({url: 'index.php?page=api', dataType: 'json', cache: false, data: {action: 'get-artwork'}}).then(function(data) {
 
+                    let browser = $('.artworkManager .artwork-browser'), items = browser.find('.artwork-items').empty();
+                    browser.toggleClass('is-empty', data.length < 1);
+
                     if (data.length >= 1) {
-                        $('.artwork-manager .artwork-empty').remove();
                         $(data).each(function(key, val) {
 
-                            let tableRow = $(
-                                '<tr><td><img alt="Artwork" src="./../' + val.path + '" width="24" height="24" data-preview="true" class="pull-left"></td>' +
-                                '<td class="artist-name">' + val.name + '</td><td>' + val.size + '</td>' +
-                                '<td class="row-btns"><a href="#" class="edit-img btn btn-default btn-small css-hint" data-title="Replace"><i class="icon fa fa-edit"></i></a>' +
-                                ((val['name'].match(/default\./)) ? '' : '<a href="#" class="delete-img btn btn-danger btn-small css-hint" data-title="Delete" data-confirm><i class="icon fa fa-times"></i></a>') +
-                                '</td></tr>',
-                            );
+                            // Built with text()/attr() so file names are escaped. The time busts the browser cache after a Replace.
+                            let item = $('<div class="artwork-item">').attr('data-name', val.name);
+                            item.append($('<img class="artwork-thumb" alt="" width="160" height="160" loading="lazy">').attr('src', './../' + val.path + '?v=' + val.time));
+                            item.append($('<span class="artwork-name">').attr('title', val.name).text(val.name));
+                            item.append($('<span class="artwork-size">').text(val.size));
 
-                            // Bind edit
-                            tableRow.find('.edit-img').on('click', function() {
+                            let actions = $('<div class="artwork-actions">').appendTo(item);
+                            actions.append('<a href="#" class="edit-img btn btn-default btn-small css-hint" data-title="Replace" aria-label="Replace"><i class="fa fa-pen-to-square"></i></a>');
 
-                                $('.upload-artwork-modal').modal('show');
-                                let artist_name = $(this).closest('tr').find('.artist-name').text();
-                                $('input#track').val(artist_name).focus();
-                                $('.croparea').html(`<img alt="Cropped Image" height="140" src="${$(this).closest('tr').find('img').attr('src')}" width="140">`);
+                            // The default image is restored by the panel when missing, so it cannot be deleted
+                            if (val.name !== 'default') {
+                                actions.append('<a href="#" class="delete-img btn btn-danger btn-small css-hint" data-title="Delete" aria-label="Delete" data-confirm><i class="fa fa-trash"></i></a>');
+                            }
 
-                                return false;
-
-                            });
-
-                            // Bind delete (confirmation handled by data-confirm popover)
-                            tableRow.find('.delete-img').on('click', function(e) {
-
-                                e.preventDefault();
-                                if (!$(this).data('confirmed-action')) return;
-                                $(this).removeData('confirmed-action');
-
-                                let artist_name = $(this).closest('tr').find('.artist-name').text(), elm = $(this);
-                                $.post('index.php?page=api&action=delete-artwork', {name: artist_name, _token: csrfToken}, function() {
-                                    $(elm).closest('tr').remove();
-                                });
-
-                            });
-
-                            // Hover Artist Image
-                            tableRow.find('img[data-preview]').on('mouseover', function() { // Hover
-
-                                let elm = $(this);
-
-                                // Not yet hovered before
-                                if (!elm.next().hasClass('image-preview')) {
-
-                                    let imageFile = (elm.attr('data-preview') != 'true') ? elm.attr('data-preview') : elm.attr('src');
-                                    elm.after(`<div class="image-preview"><img alt="Preview Image" height="180"  width="180" src="${imageFile}"></div>`);
-
-                                }
-
-                                elm.next('.image-preview').addClass('in');
-                                elm.on('mousemove', function(e) { // Mouse Move
-                                    let calcOffset = (window.screen.width > 1024) ? 90 : 0;
-                                    elm.next('.image-preview').css(
-                                        {
-                                            'left': (e.clientX - calcOffset) + 'px',
-                                            'top' : (e.clientY - 190) + 'px',
-                                        },
-                                    );
-                                });
-
-                            });
-
-                            // Mouse Out on Artist image
-                            tableRow.find('img[data-preview]').on('mouseout', function() { // Mouse Out
-                                $(this).next('.image-preview').removeClass('in');
-                            });
-
-                            $('.artworkManager').find('tbody').append(tableRow);
+                            items.append(item);
 
                         });
 
                     } else {
-                        $('.artwork-manager').html(
-                            '<div class="artwork-empty empty-state">' +
+                        items.html(
+                            '<div class="empty-state">' +
                             '<i class="icon fa fa-image"></i>' +
                             '<h3>No custom artwork</h3>' +
                             '<p>Upload artwork to override automatic images.</p>' +
@@ -453,11 +395,39 @@
                         );
                     }
 
+                    refreshArtworkBrowser(browser[0]);
                     $('.artworkManager').removeClass('hidden');
                     $('.loadArtwork').remove();
 
                 });
             }
+
+            // Replace: open the upload modal for this name
+            $('.artworkManager').on('click', '.edit-img', function() {
+
+                let item = $(this).closest('.artwork-item');
+                $('.upload-artwork-modal').modal('show');
+                $('input#track').val(item.find('.artwork-name').text()).focus();
+                $('.croparea').html($('<img alt="Cropped Image" height="140" width="140">').attr('src', item.find('.artwork-thumb').attr('src')));
+
+                return false;
+
+            });
+
+            // Delete (confirmation handled by the data-confirm popover)
+            $('.artworkManager').on('click', '.delete-img', function(e) {
+
+                e.preventDefault();
+                if (!$(this).data('confirmed-action')) return;
+                $(this).removeData('confirmed-action');
+
+                let item = $(this).closest('.artwork-item'), browser = item.closest('.artwork-browser')[0];
+                $.post('index.php?page=api&action=delete-artwork', {name: item.find('.artwork-name').text(), _token: csrfToken}, function() {
+                    item.remove();
+                    refreshArtworkBrowser(browser);
+                });
+
+            });
 
             /**
              * Bind templates to show schemes
