@@ -362,6 +362,59 @@
         background-color: $slate-800;
     }
 
+    // The panel's Bootstrap hard-codes light divider colors on these
+    .modal-header {
+        border-bottom-color: $slate-700;
+    }
+
+    .modal-footer {
+        border-top-color: $slate-700;
+    }
+
+    // Template options
+    .option-row + .option-row {
+        border-top-color: $slate-700;
+    }
+
+    .option-title {
+        color: $slate-200;
+    }
+
+    .option-description {
+        color: $slate-400;
+
+        code {
+            color: $slate-200;
+            background: $slate-700;
+        }
+    }
+
+    .option-group-title {
+        color: #e2e8f0;
+        border-bottom-color: $slate-700;
+    }
+
+    .switch {
+        background: #475569;
+
+        &:hover {
+            background: $slate-500;
+        }
+
+        &:checked {
+            background: $primary-bg-color;
+
+            &:hover {
+                background: $primary-hover-color;
+            }
+        }
+    }
+
+    .option-tag {
+        color: #fcd34d;
+        background: rgba(245, 158, 11, .15);
+    }
+
     .close {
         color: #fff;
     }

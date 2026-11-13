@@ -537,7 +537,8 @@
     @foreach ( $templates as $index => $data )
         @if ( !empty( $data[ 'extra' ] ) )
             <div class="modal fade template-options-modal" tabindex="-1" role="dialog" id="template-options-{{$index}}" aria-labelledby="template-options-{{$index}}-title">
-                <div class="modal-dialog" role="document">
+                {{-- Scrollable: long option lists scroll inside the body, the save status and Done stay in view --}}
+                <div class="modal-dialog modal-dialog-scrollable" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title" id="template-options-{{$index}}-title"><i class="icon fas fa-gear"></i> {{$data[ 'name' ]}} Options</h5>
@@ -547,11 +548,47 @@
                             <form method="POST" data-action="index.php?page=settings&advanced-options" class="template-options-form">
                                 {!! $panel->csrfField() !!}
                                 <input type="hidden" name="template" value="{{$index}}">
-                                @php $opts = $pawtunes->getAdvancedTemplateOptions( $index ); @endphp
-                                @foreach ( $data[ 'extra' ] as $key => $value )
+                                @php
+                                    $opts  = $pawtunes->getAdvancedTemplateOptions( $index );
+                                    $group = null;
+                                @endphp
+                                {{-- One row per option: title and description, with the switch on the right.
+                                     Other controls go under the description at the row's full width.
+                                     A heading starts each run of options sharing a manifest "group". --}}
+                                @foreach ( $data[ 'extra' ] as $key => $option )
                                     @php
-                                        echo $form->add([ 'id' => "{$index}_{$value['name']}",'label-full' => true, 'class'=> 'col-sm-12'] + $value,$opts[ $key ] ?? null);
+                                        $id       = "{$index}_{$option['name']}";
+                                        $type     = $option[ 'type' ] ?? 'text';
+                                        $isSwitch = $type === 'checkbox';
+                                        $isWide   = in_array( $type, [ 'text', 'url', 'email', 'password', 'textarea' ] );
+
+                                        // Older manifests put a checkbox's whole text into "description": show it as the title
+                                        $title       = $option[ 'label' ] ?? $option[ 'description' ] ?? $key;
+                                        $description = isset( $option[ 'label' ] ) ? ( $option[ 'description' ] ?? '' ) : '';
+                                        $optionGroup = $option[ 'group' ] ?? '';
                                     @endphp
+                                    @if ( $optionGroup !== $group && $optionGroup !== '' )
+                                        <h6 class="option-group-title">{{ $optionGroup }}</h6>
+                                    @endif
+                                    @php $group = $optionGroup; @endphp
+                                    <div class="option-row{{ $isWide ? ' is-wide' : '' }}">
+                                        {{-- Manifest texts are trusted HTML (some use <code> or <strong>), like everywhere Forms renders them --}}
+                                        <label class="option-text" for="{{ $id }}">
+                                            <span class="option-title">{!! $title !!}</span>
+                                            @if ( $description !== '' )
+                                                <span class="option-description">{!! $description !!}</span>
+                                            @endif
+                                        </label>
+                                        @if ( $isSwitch )
+                                            @php $checkedValue = $option[ 'value' ] ?? 'true'; @endphp
+                                            <input type="checkbox" class="switch" role="switch" name="{{ $option[ 'name' ] }}" id="{{ $id }}" value="{{ $checkedValue }}"{{ ( isset( $opts[ $key ] ) && $opts[ $key ] == $checkedValue ) ? ' checked' : '' }}>
+                                        @else
+                                            {{-- The texts are rendered above, Forms only draws the control --}}
+                                            <div class="option-control">
+                                                {!! $form->field( [ 'id' => $id, 'class' => '' ] + array_diff_key( $option, array_flip( [ 'label', 'description', 'group' ] ) ), $opts[ $key ] ?? null ) !!}
+                                            </div>
+                                        @endif
+                                    </div>
                                 @endforeach
                             </form>
                         </div>

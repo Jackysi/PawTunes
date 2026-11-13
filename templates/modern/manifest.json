@@ -20,74 +20,93 @@
         }
     ],
     "extra": {
-        "songSearch": {
-            "default": "https://music.apple.com/us/search?term={query}",
-            "name": "songSearch",
-            "description": "{query} - will be replaced by an actual playing song.",
-            "label": "Song search/purchase URL",
-            "type": "text"
-        },
         "songSearchEnable": {
-            "default": true,
             "name": "songSearchEnable",
-            "description": "Enable song search/purchase when artwork is clicked.",
             "type": "checkbox",
+            "group": "Song search",
+            "label": "Search on artwork click",
+            "description": "Clicking the artwork opens the search URL below for the playing song.",
+            "default": true,
             "value": "true"
+        },
+        "songSearch": {
+            "name": "songSearch",
+            "type": "text",
+            "group": "Song search",
+            "label": "Search URL",
+            "description": "<code>{query}</code> is replaced with the playing artist and title.",
+            "default": "https://music.apple.com/us/search?term={query}"
         },
         "useChannelLogos": {
-            "default": false,
             "name": "useChannelLogos",
-            "description": "Instead of showing channel names, show channel logotypes (images).",
             "type": "checkbox",
-            "value": "true"
-        },
-        "spectrumVisualizer": {
-            "default": true,
-            "name": "spectrumVisualizer",
-            "description": "Audio Spectrum Visualizer",
-            "type": "checkbox",
-            "value": "true"
-        },
-        "alphaBars": {
-            "default": true,
-            "name": "alphaBars",
-            "description": "Spectrum Visualizer bars use alpha transparency for animations as well",
-            "type": "checkbox",
-            "value": "true"
-        },
-        "artworkAccent": {
+            "group": "Layout",
+            "label": "Channel logos",
+            "description": "Show channel logos instead of channel names in the channel list.",
             "default": false,
-            "name": "artworkAccent",
-            "description": "Artwork accent: tint the play button, volume bar, tabs and highlights with the current artwork's color",
-            "type": "checkbox",
-            "value": "true"
-        },
-        "artworkBackground": {
-            "default": false,
-            "name": "artworkBackground",
-            "description": "Artwork background: tint only the background gradient with the current artwork's color",
-            "type": "checkbox",
             "value": "true"
         },
         "showUpNext": {
-            "default": true,
             "name": "showUpNext",
-            "description": "Up next: show the queued track below the current one (AzuraCast and SAM channels with their \"Up Next\" switch on)",
             "type": "checkbox",
+            "group": "Layout",
+            "label": "Up next",
+            "description": "Show the queued track below the current one. Works for AzuraCast and SAM channels with their Up Next switch on.",
+            "default": true,
             "value": "true"
         },
         "showLiveBadge": {
-            "default": true,
             "name": "showLiveBadge",
-            "description": "Live DJ badge: show a LIVE badge with the streamer name while an AzuraCast channel has a live DJ",
             "type": "checkbox",
+            "group": "Layout",
+            "label": "Live DJ badge",
+            "description": "Show a LIVE badge with the streamer name while an AzuraCast channel has a live DJ.",
+            "default": true,
+            "value": "true"
+        },
+        "spectrumVisualizer": {
+            "name": "spectrumVisualizer",
+            "type": "checkbox",
+            "group": "Visualizer",
+            "label": "Spectrum visualizer",
+            "description": "Radial audio spectrum around the artwork.",
+            "default": true,
+            "value": "true"
+        },
+        "alphaBars": {
+            "name": "alphaBars",
+            "type": "checkbox",
+            "group": "Visualizer",
+            "label": "Fading bars",
+            "description": "Bars fade with their level as well as changing height.",
+            "default": true,
+            "value": "true"
+        },
+        "artworkAccent": {
+            "name": "artworkAccent",
+            "type": "checkbox",
+            "group": "Artwork colors",
+            "label": "Accent from artwork",
+            "description": "Tint the play button, volume bar, tabs and highlights with the current artwork's color.",
+            "default": false,
+            "value": "true"
+        },
+        "artworkBackground": {
+            "name": "artworkBackground",
+            "type": "checkbox",
+            "group": "Artwork colors",
+            "label": "Background from artwork",
+            "description": "Tint only the background gradient with the current artwork's color.",
+            "default": false,
             "value": "true"
         },
         "showListeners": {
-            "default": false,
             "name": "showListeners",
-            "description": "Listeners page: adds a tab that shows EVERY visitor who is listening (masked IP such as 93.103.x.x, device, listening time). Off by default for privacy. Works for channels whose track info method is AzuraCast (with an API key), Icecast (admin) or Shoutcast (admin).",
             "type": "checkbox",
+            "group": "Listeners",
+            "label": "Listeners page",
+            "description": "Add a tab listing every current listener: masked IP (such as 93.103.x.x), device and listening time. Off by default for privacy. Needs the AzuraCast (with an API key), Icecast (admin) or Shoutcast (admin) track info method.",
+            "default": false,
             "value": "true"
         }
     }

@@ -14,41 +14,51 @@
     "background_color": "#962d22",
     "screenshot": "screenshot.webp",
     "template": "template.html",
-    "extra":    {
-        "autoWindowResize":   {
-            "default":     false,
-            "name":        "autoWindowResize",
-            "description": "Automatically resize a player popup window to fit the player container <strong class=\"text-danger\">(experimental)</strong>",
-            "type":        "checkbox",
-            "value":       "true"
+    "extra": {
+        "autoWindowResize": {
+            "name": "autoWindowResize",
+            "type": "checkbox",
+            "group": "Window",
+            "label": "Auto-resize popup <span class=\"option-tag\">Experimental</span>",
+            "description": "Resize the player popup window to fit the player.",
+            "default": false,
+            "value": "true"
         },
-        "visualization":      {
-            "default":     true,
-            "name":        "visualization",
-            "description": "Enable Audio Spectrum Visualization using Web Audio API <strong class=\"text-danger\">(experimental)</strong>",
-            "type":        "checkbox",
-            "value":       "true"
+        "visualization": {
+            "name": "visualization",
+            "type": "checkbox",
+            "group": "Visualizer",
+            "label": "Spectrum visualizer <span class=\"option-tag\">Experimental</span>",
+            "description": "Animated audio spectrum drawn with the Web Audio API.",
+            "default": true,
+            "value": "true"
         },
         "visualizationColor": {
-            "default":     false,
-            "name":        "visualizationColor",
-            "description": "Use accent color from the template color scheme to set main color of Audio Spectrum Visualization",
-            "type":        "checkbox",
-            "value":       "true"
+            "name": "visualizationColor",
+            "type": "checkbox",
+            "group": "Visualizer",
+            "label": "Accent colored spectrum",
+            "description": "Draw the spectrum in the color scheme's accent color instead of white.",
+            "default": false,
+            "value": "true"
         },
-        "artworkAccent":      {
-            "default":     false,
-            "name":        "artworkAccent",
-            "description": "Artwork accent: tint the player bar, play button and highlights with the current artwork's color",
-            "type":        "checkbox",
-            "value":       "true"
+        "artworkAccent": {
+            "name": "artworkAccent",
+            "type": "checkbox",
+            "group": "Artwork colors",
+            "label": "Accent from artwork",
+            "description": "Tint the player bar, play button and highlights with the current artwork's color.",
+            "default": false,
+            "value": "true"
         },
-        "artworkBackground":  {
-            "default":     false,
-            "name":        "artworkBackground",
-            "description": "Artwork background: tint only the background gradient with the current artwork's color",
-            "type":        "checkbox",
-            "value":       "true"
+        "artworkBackground": {
+            "name": "artworkBackground",
+            "type": "checkbox",
+            "group": "Artwork colors",
+            "label": "Background from artwork",
+            "description": "Tint only the background gradient with the current artwork's color.",
+            "default": false,
+            "value": "true"
         }
     }
 }

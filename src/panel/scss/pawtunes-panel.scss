@@ -1461,10 +1461,151 @@ html.login-page {
     }
 }
 
-// Wider than the 500px default so bundled option descriptions stay on one line (the longest common one
-// needs ~655px in Chrome, the rest is headroom for wider font rendering), still well short of modal-lg (920px)
+// Template options: plain rows in the panel's own style with the switch on the right, and a small
+// panel-style heading per group. 600px keeps descriptions at a comfortable length next to a switch.
 .modal.template-options-modal {
-    --bs-modal-width: 680px;
+    --bs-modal-width: 600px;
+
+    .modal-body {
+        padding: 1rem 1.5rem 1.25rem;
+    }
+}
+
+.option-group-title {
+    font-size: 16px;
+    font-weight: $font-bold;
+    margin: 1.5rem 0 .375rem;
+    padding: .25rem 0 .625rem;
+    color: $slate-900;
+    border-bottom: 1px solid $slate-100;
+
+    // The modal body padding already spaces the first heading
+    &:first-of-type {
+        margin-top: 0;
+    }
+}
+
+// Two columns: the text, then the switch centered beside it. A faint divider between rows ties each
+// title to its switch across the gap. The left padding (Bootstrap's ps-2) sets the rows in under their
+// group heading.
+.option-row {
+    display: grid;
+    align-items: center;
+    padding: .75rem 0 .75rem .5rem;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 1.5rem;
+
+    & + & {
+        border-top: 1px solid $slate-100;
+    }
+}
+
+.option-text {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    cursor: pointer;
+    gap: 2px;
+}
+
+.option-title {
+    font-size: 14px;
+    font-weight: $font-bold;
+    line-height: 1.5;
+    color: $slate-800;
+}
+
+.option-description {
+    font-size: 13px;
+    line-height: 1.5;
+    color: $slate-500;
+
+    code {
+        font-size: 12px;
+        padding: 1px 5px;
+        color: $slate-700;
+        border-radius: 4px;
+        background: $slate-100;
+    }
+}
+
+// Under the text, across both columns (there is no switch beside it)
+.option-control {
+    margin-top: .5rem;
+    grid-column: 1 / -1;
+
+    // Forms wraps each control in a grid row with negative gutters, not wanted inside a row
+    .form-group {
+        margin: 0;
+    }
+
+    // Numbers and selects stay compact, URLs and other text take the full column. Sized on the wrapper,
+    // so the reset button panel.js adds around allow-reset fields stays inside the field.
+    .option-row:not(.is-wide) > & {
+        width: 140px;
+    }
+}
+
+// Toggle switch on a native checkbox: keeps keyboard, form serialization and label clicks for free
+.switch {
+    position: relative;
+    flex: none;
+    width: 40px;
+    height: 22px;
+    margin: 0;
+    cursor: pointer;
+    transition: background-color .2s ease;
+    border-radius: 999px;
+    background: $slate-300;
+    appearance: none;
+
+    &::before {
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 16px;
+        height: 16px;
+        content: "";
+        transition: transform .2s ease;
+        border-radius: 50%;
+        background: #fff;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, .3);
+    }
+
+    &:hover {
+        background: $slate-400;
+    }
+
+    &:checked {
+        background: $primary-bg-color;
+
+        &::before {
+            transform: translateX(18px);
+        }
+
+        &:hover {
+            background: $primary-hover-color;
+        }
+    }
+
+    &:focus-visible {
+        outline: 2px solid $primary-bg-color;
+        outline-offset: 2px;
+    }
+}
+
+// Small inline tag for manifest titles, e.g. <span class="option-tag">Experimental</span>
+.option-tag {
+    font-size: 10px;
+    font-weight: $font-bold;
+    margin-left: 6px;
+    padding: 2px 6px;
+    vertical-align: 1px;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: #b45309;
+    border-radius: 4px;
+    background: #fef3c7;
 }
 
 .template-options-status {
@@ -1487,7 +1628,9 @@ html.login-page {
     .template-card-preview img,
     .template-card-check,
     .template-card .template-card-options,
-    .template-card .template-card-options i {
+    .template-card .template-card-options i,
+    .switch,
+    .switch::before {
         transition: none;
     }
 }

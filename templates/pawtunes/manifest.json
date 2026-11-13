@@ -19,55 +19,68 @@
     "background_color": "#ffffff",
     "screenshot": "screenshot.webp",
     "url":      "https://prahec.com",
-    "extra":    {
-        "songSearch":         {
-            "default":     "https://music.apple.com/us/search?term={query}",
-            "name":        "songSearch",
-            "description": "{query} - will be replaced by an actual playing song.",
-            "label":       "Song search/purchase URL",
-            "type":        "text"
+    "extra": {
+        "songSearchEnable": {
+            "name": "songSearchEnable",
+            "type": "checkbox",
+            "group": "Song search",
+            "label": "Search on artwork click",
+            "description": "Clicking the artwork opens the search URL below for the playing song.",
+            "default": true,
+            "value": "true"
         },
-        "songSearchEnable":   {
-            "default":     true,
-            "name":        "songSearchEnable",
-            "description": "Enable song search/purchase when artwork is clicked.",
-            "type":        "checkbox",
-            "value":       "true"
+        "songSearch": {
+            "name": "songSearch",
+            "type": "text",
+            "group": "Song search",
+            "label": "Search URL",
+            "description": "<code>{query}</code> is replaced with the playing artist and title.",
+            "default": "https://music.apple.com/us/search?term={query}"
         },
-        "useChannelLogos":    {
-            "default":     false,
-            "name":        "useChannelLogos",
-            "description": "Instead of showing channel names, show channel logotypes (images).",
-            "type":        "checkbox",
-            "value":       "true"
+        "useChannelLogos": {
+            "name": "useChannelLogos",
+            "type": "checkbox",
+            "group": "Layout",
+            "label": "Channel logos",
+            "description": "Show channel logos instead of channel names in the channel list.",
+            "default": false,
+            "value": "true"
         },
-        "disableSettings":    {
-            "default":     false,
-            "name":        "disableSettings",
-            "description": "Disable settings page & the button - disables ability to switch channels / stream groups.",
-            "type":        "checkbox",
-            "value":       "true"
+        "disableSettings": {
+            "name": "disableSettings",
+            "type": "checkbox",
+            "group": "Layout",
+            "label": "Hide settings",
+            "description": "Remove the settings page and its button, so listeners cannot switch channels or stream quality.",
+            "default": false,
+            "value": "true"
         },
         "hideBlurredArtwork": {
-            "default":     false,
-            "name":        "hideBlurredArtwork",
-            "description": "Hide blurred background, makes player look a little more clean.",
-            "type":        "checkbox",
-            "value":       "true"
+            "name": "hideBlurredArtwork",
+            "type": "checkbox",
+            "group": "Layout",
+            "label": "Hide blurred background",
+            "description": "Drop the blurred artwork behind the player for a cleaner look.",
+            "default": false,
+            "value": "true"
         },
-        "artworkAccent":      {
-            "default":     false,
-            "name":        "artworkAccent",
-            "description": "Artwork accent: tint the play button, volume bar and highlights with the current artwork's color.",
-            "type":        "checkbox",
-            "value":       "true"
+        "artworkAccent": {
+            "name": "artworkAccent",
+            "type": "checkbox",
+            "group": "Artwork colors",
+            "label": "Accent from artwork",
+            "description": "Tint the play button, volume bar and highlights with the current artwork's color.",
+            "default": false,
+            "value": "true"
         },
-        "artworkBackground":  {
-            "default":     false,
-            "name":        "artworkBackground",
-            "description": "Artwork background: tint only the background gradient with the current artwork's color (shows when the blurred artwork is hidden).",
-            "type":        "checkbox",
-            "value":       "true"
+        "artworkBackground": {
+            "name": "artworkBackground",
+            "type": "checkbox",
+            "group": "Artwork colors",
+            "label": "Background from artwork",
+            "description": "Tint the background gradient with the current artwork's color. Visible when the blurred background is hidden.",
+            "default": false,
+            "value": "true"
         }
     }
 }

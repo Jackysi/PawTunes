@@ -14,37 +14,43 @@
     "screenshot": "screenshot.webp",
     "template": "template.html",
     "url":      "https://prahec.com",
-    "extra":    {
-        "playlistIconSize":      {
-            "label-full":  false,
-            "default":     32,
+    "extra": {
+        "playlistIconSize": {
+            "name": "playlistIconSize",
+            "type": "number",
+            "group": "Layout",
+            "label": "Playlist icon size",
+            "description": "Size in pixels of the Winamp, Windows Media Player, QuickTime and VLC playlist icons.",
+            "default": 32,
             "placeholder": 32,
-            "name":        "playlistIconSize",
-            "class":       "col-sm-3",
-            "label":       "Playlist(s) icon size",
-            "type":        "number",
-            "reset":       true
+            "reset": true
         },
         "disableArtworkSharing": {
-            "default":     false,
-            "name":        "disableArtworkSharing",
-            "description": " Disable artwork hover and sharing function (Default: <i>Enabled</i>)",
-            "type":        "checkbox",
-            "value":       "true"
+            "name": "disableArtworkSharing",
+            "type": "checkbox",
+            "group": "Layout",
+            "label": "Disable artwork sharing",
+            "description": "Turn off the hover overlay and share buttons on the artwork.",
+            "default": false,
+            "value": "true"
         },
-        "artworkAccent":         {
-            "default":     false,
-            "name":        "artworkAccent",
-            "description": " Artwork accent: tint the header and volume bar with the current artwork's color",
-            "type":        "checkbox",
-            "value":       "true"
+        "artworkAccent": {
+            "name": "artworkAccent",
+            "type": "checkbox",
+            "group": "Artwork colors",
+            "label": "Accent from artwork",
+            "description": "Tint the header and volume bar with the current artwork's color.",
+            "default": false,
+            "value": "true"
         },
-        "artworkBackground":     {
-            "default":     false,
-            "name":        "artworkBackground",
-            "description": " Artwork background: tint only the background gradient with the current artwork's color",
-            "type":        "checkbox",
-            "value":       "true"
+        "artworkBackground": {
+            "name": "artworkBackground",
+            "type": "checkbox",
+            "group": "Artwork colors",
+            "label": "Background from artwork",
+            "description": "Tint only the background gradient with the current artwork's color.",
+            "default": false,
+            "value": "true"
         }
     }
 }
