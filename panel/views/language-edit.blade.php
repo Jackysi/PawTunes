@@ -3,13 +3,16 @@
      * Hint IDE already defined variables from parent (this file is part of bigger whole)
      *
      * @var Forms  $form
-     * @var string $language
+     * @var string|null $iso       ISO code of the translation being edited, null while adding a new one
+     * @var string|null $message
      * @var array  $languages
      */
 @endphp
 @section('content')
-    <form action="index.php?page=language&{{( ( isset( $_GET[ 'add' ] ) ) ? 'add' : 'edit=' . $_GET[ 'edit' ] )}}" method="POST" accept-charset="UTF-8">
+    {!! $message !!}
+    <form action="index.php?page=language&{{( ( $iso === null ) ? 'add' : 'edit=' . $iso )}}" method="POST" accept-charset="UTF-8">
         {!! $panel->csrfField() !!}
+        <input type="hidden" name="action" value="save">
         <div class="panel">
             <div class="content">
                 <p>
@@ -17,7 +20,7 @@
                     You can also disable multi-language support under the <b>Settings</b> tab.
                 </p>
 
-                @if ( isset( $_GET[ 'add' ] ) )
+                @if ( $iso === null )
                     <div class="form-group">
                         <label class="col-sm-2 control-label" for="isocode">Language</label>
                         <div class="col-sm-4">
@@ -37,7 +40,7 @@
                                 'label' => 'Language',
                                 'name'  => 'isocode',
                                 'type'  => 'static',
-                                'value' => '<i class="fi fi-' . $languages[ $_GET[ 'edit' ] ]['flag'] . '"></i> <b>' . $languages[ $_GET[ 'edit' ] ]['name'] . '</b> (' . strtoupper( $_GET[ 'edit' ] ) . ')',
+                                'value' => '<i class="fi fi-' . $languages[ $iso ]['flag'] . '"></i> <b>' . $languages[ $iso ]['name'] . '</b> (' . strtoupper( $iso ) . ')',
                             ]
                         );
                     @endphp

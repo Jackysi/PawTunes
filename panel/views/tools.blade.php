@@ -85,7 +85,7 @@
         <div class="modal-dialog modal-lg" role="document">
             <form method="POST" id="compileColorScheme" action="index.php?page=tools#theme-tool">
                 {!! $panel->csrfField() !!}
-                <input type="hidden" name="form" value="compile">
+                <input type="hidden" name="action" value="compile">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h4 class="modal-title"><i class="icon fa fa-folder"></i> Custom Color Scheme(s)</h4>
@@ -152,7 +152,6 @@
     <div class="modal fade upload-artwork-modal" tabindex="-1" role="dialog" aria-labelledby="Upload Artwork">
         <div class="modal-dialog modal-lg" role="document">
             <form enctype="multipart/form-data" id="artworkUpload">
-                <input type="hidden" name="form" value="artwork">
                 {!! $panel->csrfField() !!}
                 <div class="modal-content">
                     <div class="modal-header">
@@ -540,7 +539,7 @@
                 let formData = new FormData();
                 formData.append('image', file);
                 formData.append('track', $(this).find('input[name="track"]').val());
-                formData.append('form', 'artwork');
+                formData.append('action', 'upload-artwork');
                 formData.append('cropX', $(this).find('input[name="cropX"]').val());
                 formData.append('cropY', $(this).find('input[name="cropY"]').val());
                 formData.append('_token', $(this).find('input[name="_token"]').val());

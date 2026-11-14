@@ -11,16 +11,29 @@
  * Contributions and feedback are welcome! Visit the repository or website for more details.
  */
 
+namespace Pages;
+
+use Panel;
+
 /**
- * Hint IDE already defined variables from parent (this file is included)
- * Returns default image if not found
- *
- * @var lib\PawTunes $pawtunes
+ * Logs page: the view loads and deletes the log files through the panel API
  */
+final class Logs extends Page
+{
 
-if ( ! isset($panel)) {
-    header("Location: index.php?page=home");
-    exit;
+    private Panel $panel;
+
+
+    public function __construct(Panel $panel)
+    {
+        $this->panel = $panel;
+    }
+
+
+    protected function index(): void
+    {
+        $this->panel->view('logs');
+
+    }
+
 }
-
-$panel->view("logs");

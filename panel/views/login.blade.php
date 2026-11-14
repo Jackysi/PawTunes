@@ -1,6 +1,7 @@
 @include('template.header')
 <section class="col-sm-6 login-form">
     <form class="form-horizontal" method="POST" action="{{$_SERVER[ 'REQUEST_URI' ]}}">
+        <input type="hidden" name="action" value="login">
         <div class="text-center login-logo">
             <img width="auto" height="70" src="./assets/logo.svg" alt="PawTunes Logo">
         </div>

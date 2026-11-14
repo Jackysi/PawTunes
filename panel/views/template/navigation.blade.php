@@ -9,13 +9,16 @@
     '<i class="icon fa fa-screwdriver-wrench"></i> Settings'  => 'settings',
     '<i class="icon fa fa-cloud-download"></i> Updates'       => 'updates',
     ];
+
+    ## The channel editor (page "channel") belongs to the Channels tab
+    $currentPage = ( ( $_GET[ 'page' ] ?? '' ) === 'channel' ) ? 'channels' : ( $_GET[ 'page' ] ?? '' );
 @endphp
 <div class="menu">
     <div class="container">
         <ul class="nav nav-menu tabs d-mobile-none">
             @foreach( $tabs as $tab => $link )
                 @php
-                    $active = ( ( !empty( $_GET[ 'page' ] ) && $_GET[ 'page' ] === $link ) || ( empty( $_GET[ 'page' ] ) && $link === 'home' ) ) ? ' class="active"' : '';
+                    $active = ( $currentPage === $link || ( $currentPage === '' && $link === 'home' ) ) ? ' class="active"' : '';
                 @endphp
                 <li{!! $active !!}>
                     <a id="tab-{{$link}}" href="index.php?page={{$link}}">{!!$tab!!}</a>
@@ -27,7 +30,7 @@
             <ul class="dropdown-menu">
                 @foreach( $tabs as $tab => $link )
                     @php
-                        $active = ( ( !empty( $_GET[ 'page' ] ) && $_GET[ 'page' ] === $link ) || ( empty( $_GET[ 'page' ] ) && $link === 'home' ) ) ? ' class="active"' : '';
+                        $active = ( $currentPage === $link || ( $currentPage === '' && $link === 'home' ) ) ? ' class="active"' : '';
                     @endphp
                     <li{!! $active !!}>
                         <a id="tab-{{$link}}" href="index.php?page={{$link}}">{!!$tab!!}</a>

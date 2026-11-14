@@ -16,6 +16,19 @@ $deleteFiles = [
     'panel/lib/splitbrain/PHPArchive/Tar.php',
     'panel/lib/splitbrain/PHPArchive/Zip.php',
 
+    # Page scripts replaced by classes in panel/lib/Pages
+    'panel/api.php',
+    'panel/channels.edit.inc.php',
+    'panel/channels.edit.php',
+    'panel/channels.php',
+    'panel/home.php',
+    'panel/language.php',
+    'panel/login.php',
+    'panel/logs.php',
+    'panel/settings.php',
+    'panel/tools.php',
+    'panel/updates.php',
+
     # Delete folders
     'panel/lib/splitbrain/PHPArchive',
     'panel/lib/splitbrain',

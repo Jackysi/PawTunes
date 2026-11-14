@@ -6,6 +6,7 @@
     @if ( isset( $mode ) && $mode === 'custom' )
         <form method="POST" action="index.php?page=channels&sort=custom">
             {!! $panel->csrfField() !!}
+            <input type="hidden" name="action" value="reorder">
             @endif
 
             @if ( count( $channels ) <= 0 )
@@ -15,7 +16,7 @@
                             <i class="icon fa fa-headphones"></i>
                             <h3>No channels configured</h3>
                             <p>Add your first radio channel to get started.</p>
-                            <a href="index.php?page=channels&action=add" class="btn btn-primary"><i class="icon fa fa-plus-circle"></i> Add Channel</a>
+                            <a href="index.php?page=channel" class="btn btn-primary"><i class="icon fa fa-plus-circle"></i> Add Channel</a>
                         </div>
                     </div>
                 </div>
@@ -62,8 +63,9 @@
                                             <td class="mobile-hidden"><i>{{$cached_song}}</i></td>
                                             <td>{{ucwords( $method )}}</td>
                                             <td class="text-right row-btns">
-                                                <a class="btn btn-default btn-small css-hint" data-title="Edit" href="index.php?page=channels&action=edit&channel={{$key}}"><i class="icon fa fa-edit"></i></a>
-                                                <button type="submit" form="channel-actions" name="delete" value="{{$key}}" class="btn btn-danger btn-small css-hint" data-title="Delete" data-confirm><i class="icon fa fa-times"></i></button>
+                                                <a class="btn btn-default btn-small css-hint" data-title="Edit" href="index.php?page=channel&id={{$key}}"><i class="icon fa fa-edit"></i></a>
+                                                {{-- The channel to delete travels in the URL, a button can only carry the action name --}}
+                                                <button type="submit" form="channel-actions" formaction="index.php?page=channels&channel={{$key}}" name="action" value="delete" class="btn btn-danger btn-small css-hint" data-title="Delete" data-confirm><i class="icon fa fa-times"></i></button>
                                             </td>
                                         </tr>
 
@@ -81,7 +83,7 @@
                     <li><a href="index.php?page=channels&sort=custom"><i class="icon fa fa-fire"></i> Custom</a></li>
                 </ul>
             </div>
-            <button type="submit" form="channel-actions" name="cache" value="flush" data-confirm class="btn btn-danger pull-right mobile-nofloat" style="margin-right: 8px;">
+            <button type="submit" form="channel-actions" name="action" value="flush-cache" data-confirm class="btn btn-danger pull-right mobile-nofloat" style="margin-right: 8px;">
                 <i class="icon fa fa-trash"></i> Flush Cache
             </button>
             @if ( isset( $mode ) && $mode === 'custom' )
@@ -95,21 +97,23 @@
             } )
         </script>
     @else
-        <a class="btn btn-success mobile-mt" href="index.php?page=channels&action=add"><i class="icon fa fa-plus"></i> Add Channel</a>
+        <a class="btn btn-success mobile-mt" href="index.php?page=channel"><i class="icon fa fa-plus"></i> Add Channel</a>
     @endif
 
     {{-- Delete, sort and cache flush change state, so they POST (CSRF-checked) through this form. It sits outside
          the drag & drop form because forms cannot be nested; the buttons above target it with form="channel-actions". --}}
     <form method="POST" action="index.php?page=channels" id="channel-actions">
         {!! $panel->csrfField() !!}
-        <input type="hidden" name="sort" value="">
+        <input type="hidden" name="order" value="">
     </form>
     <script type="text/javascript">
         window.addEventListener( 'load', function() {
-            // Sort menu entries stay links for the dropdown styling, they submit the POST form instead of navigating
+            // Sort menu entries stay links for the dropdown styling, they submit the POST form instead of navigating.
+            // The action field is added here and not in the form: the Delete and Flush Cache buttons name their own.
             $( '[data-sort]' ).on( 'click', function() {
                 let form = $( '#channel-actions' );
-                form.find( 'input[name="sort"]' ).val( $( this ).attr( 'data-sort' ) );
+                form.find( 'input[name="order"]' ).val( $( this ).attr( 'data-sort' ) );
+                form.append( '<input type="hidden" name="action" value="sort">' );
                 form.trigger( 'submit' );
                 return false;
             } );

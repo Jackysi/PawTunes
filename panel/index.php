@@ -16,6 +16,40 @@ chdir('./../');
 require 'vendor/autoload.php';
 
 use lib\PawTunes;
+use Pages\Home;
+use Pages\Login;
+use Pages\Page;
+use Services\ConfigStore;
+use Services\Request;
+use Services\Uploads;
+
+/**
+ * Build a page and run it. The page's constructor lists what it needs by type, and each parameter is
+ * filled from $services: there is no container behind this, only that fixed list.
+ *
+ * @param  string  $class  A subclass of Pages\Page
+ * @param  array  $services  [class name => instance]
+ *
+ * @return void
+ */
+function showPage(string $class, array $services): void
+{
+    $arguments   = [];
+    $constructor = (new ReflectionClass($class))->getConstructor();
+
+    foreach ($constructor ? $constructor->getParameters() : [] as $parameter) {
+
+        $type = (string) $parameter->getType();
+        if ( ! isset($services[$type])) {
+            throw new LogicException("{$class} asks for \"{$type}\", which panel/index.php does not provide.");
+        }
+
+        $arguments[] = $services[$type];
+
+    }
+
+    (new $class(...$arguments))->dispatch($services[Request::class]);
+}
 
 // Variables & functions
 $item   = 'pawhtn3S';
@@ -54,7 +88,9 @@ ob_start();
 session_start();
 
 // Required control panel files
-$panel = new Panel(
+$config  = new ConfigStore();
+$uploads = new Uploads();
+$panel   = new Panel(
     $pawtunes,
     $prefix,
     [
@@ -62,8 +98,19 @@ $panel = new Panel(
         'item'     => $item,
         'version'  => (is_file('panel/version.txt')) ? file_get_contents('panel/version.txt') : 'development',
         'settings' => $pawtunes->getConfigAll(),
-    ]
+    ],
+    $config,
+    $uploads
 );
+
+// Everything a page may ask for in its constructor. A page lists what it needs by type and gets exactly that.
+$services = [
+    PawTunes::class    => $pawtunes,
+    Panel::class       => $panel,
+    ConfigStore::class => $config,
+    Uploads::class     => $uploads,
+    Request::class     => Request::fromGlobals(),
+];
 
 // If password is missing, generate one
 if (empty($pawtunes->config('admin_password'))) {
@@ -81,7 +128,8 @@ if ( ! $panel->isAuthorized()) {
         exit();
     }
 
-    require 'login.php';
+    // Whatever page was asked for, a visitor without a session gets the login page
+    showPage(Login::class, $services);
     exit();
 
 }
@@ -119,13 +167,7 @@ if (isset($_GET['logout']) && $_SERVER['REQUEST_METHOD'] === 'POST') {
 // Safety feature, replaces anything but numbers or letters
 $_GET['page'] = preg_replace('/[^0-9a-z_]/i', '', (( ! empty($_GET['page'])) ? $_GET['page'] : 'home'));
 
-// Now rest
-if ( ! empty($_GET['page']) && is_file("panel/{$_GET['page']}.php")) {
+// A page is a class in panel/lib/Pages ("?page=ai" -> Pages\Ai), anything unknown shows the home page
+$class = 'Pages\\'.ucfirst(strtolower($_GET['page']));
 
-    require "panel/{$_GET['page']}.php";
-
-} else {
-
-    require 'panel/home.php';
-
-}
+showPage(is_subclass_of($class, Page::class) ? $class : Home::class, $services);

@@ -15,7 +15,9 @@
     "autoload": {
         "psr-4": {
             "lib\\": "inc/lib/",
-            "API\\": "panel/lib/API/"
+            "API\\": "panel/lib/API/",
+            "Pages\\": "panel/lib/Pages/",
+            "Services\\": "panel/lib/Services/"
         },
         "classmap": [
             "panel/lib/BladeOne.php",

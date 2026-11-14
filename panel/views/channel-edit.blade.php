@@ -1,7 +1,9 @@
 @section('content')
     {!! $error !!}
-    <form method="POST" action="index.php?page=channels&action={{($_GET['action'] === 'add') ? 'add' : 'edit&channel='.$_GET['channel']}}" autocomplete="off" enctype="multipart/form-data">
+    {{-- $cid is the index of the channel being edited, null while adding a new one. $values holds the field values. --}}
+    <form method="POST" action="index.php?page=channel{{( $cid !== null ) ? '&id=' . $cid : ''}}" autocomplete="off" enctype="multipart/form-data">
         {!! $panel->csrfField() !!}
+        <input type="hidden" name="action" value="save">
         <div class="panel">
             <div class="content">
                 <p style="margin-bottom: 2rem;">
@@ -11,7 +13,7 @@
                 <div class="form-group">
                     <label class="control-label col-sm-2" for="name">Channel Name</label>
                     <div class="col-sm-5">
-                        <input class="form-control" type="text" name="name" id="name" value="{{htmlentities( ( !empty( $_POST[ 'name' ] ) ) ? $_POST[ 'name' ] : ''  )}}" placeholder="Rock channel">
+                        <input class="form-control" type="text" name="name" id="name" value="{{htmlentities( ( !empty( $values[ 'name' ] ) ) ? $values[ 'name' ] : ''  )}}" placeholder="Rock channel">
                     </div>
                 </div>
                 <div class="form-group">
@@ -27,10 +29,10 @@
                             </div>
                         </div>
                         <div class="help-block">{!! Forms::hint( 'Resized to 80px height, keeping its proportions. SVG logos are used as they are.' ) !!}JPG, PNG, WEBP or SVG</div>
-                        @if ( isset($_GET['channel']) && !empty( $channels[ $_GET[ 'channel' ] ][ 'logo' ] ) && is_file( $channels[ $_GET[ 'channel' ] ][ 'logo' ] ) )
+                        @if ( $cid !== null && !empty( $channels[ $cid ][ 'logo' ] ) && is_file( $channels[ $cid ][ 'logo' ] ) )
                             <div class="logo-container"><br>
                                 <div class="channel-logo">
-                                    <img src="./../{{$channels[ $_GET[ 'channel' ] ][ 'logo' ] }}" width="auto" height="40"></div>
+                                    <img src="./../{{$channels[ $cid ][ 'logo' ] }}" width="auto" height="40"></div>
                                 <br>
                                 <a href="#" class="delete-logo"><i class="icon fa fa-times"></i> Delete</a>
                             </div>
@@ -46,7 +48,7 @@
                             @if ( count( $schemesList ) >= 1 )
                                 @foreach ( $schemesList as $key => $file )
                                     @php
-                                        $vv = ( ( isset( $_GET[ 'channel' ] ) && $_GET[ 'channel' ] !== 'add' && $channels[ $_GET[ 'channel' ] ][ 'skin' ] === $file ) ? ' selected' : '' );
+                                        $vv = ( ( $cid !== null && ( $channels[ $cid ][ 'skin' ] ?? null ) === $file ) ? ' selected' : '' );
                                     @endphp
                                     <option value="{{$file}}"{{$vv}}>{{$key}}</option>
                                 @endforeach
@@ -87,33 +89,33 @@
                         <div class="streams-list">
 
                             {{-- If this is post, or edit create quality/streams inputs --}}
-                            @if ( isset( $_POST[ 'quality' ] ) && is_array( $_POST[ 'quality' ] ) )
+                            @if ( isset( $values[ 'quality' ] ) && is_array( $values[ 'quality' ] ) )
 
-                                @php $c = count( $_POST[ 'quality' ] ) - 1; @endphp
+                                @php $c = count( $values[ 'quality' ] ) - 1; @endphp
                                 @for ( $i = 0; $i <= $c; $i++ )
 
                                     <div class="quality-group">
-                                        <input title="Click to edit" class="input-quality" type="text" name="quality[]" value="{{$_POST[ 'quality' ][ $i ]}}">
+                                        <input title="Click to edit" class="input-quality" type="text" name="quality[]" value="{{$values[ 'quality' ][ $i ]}}">
                                         <div class="pull-right"><a href="#" class="delete-group text-red"><i class="icon fa fa-times"></i> Delete Group</a></div>
                                         <table class="table vertical-center streams">
                                             <tbody>
                                                 {{-- Count fields --}}
                                                 @php
                                                     $name = 'url_' . $i;
-                                                    $totalFields = count( $_POST[ $name ] ) - 1;
+                                                    $totalFields = count( $values[ $name ] ?? [] ) - 1;
                                                 @endphp
 
                                                 {{-- Loop through fields --}}
                                                 @for ( $f = 0; $f <= $totalFields; $f++ )
                                                     <tr>
                                                         <td class="col-sm-9">
-                                                            <input class="form-control" name="url_{{$i}}[]" placeholder="Stream URL (read above!)" type="url" value="{{$_POST[ 'url_' . $i ][ $f ]}}">
+                                                            <input class="form-control" name="url_{{$i}}[]" placeholder="Stream URL (read above!)" type="url" value="{{$values[ 'url_' . $i ][ $f ]}}">
                                                         </td>
                                                         <td class="col-sm-2">
                                                             <select name="codec_{{$i}}[]" class="form-control">';
                                                                 @foreach ( $codecs as $codec => $name )
                                                                     {{-- If selected --}}
-                                                                    @if ( $_POST[ 'codec_' . $i ][ $f ] === $codec )
+                                                                    @if ( ( $values[ 'codec_' . $i ][ $f ] ?? null ) === $codec )
                                                                         @php $codec .= '" selected="selected'; @endphp
                                                                     @endif
                                                                     <option value="{!!$codec!!}">{{$name}}</option>
@@ -144,7 +146,7 @@
                     <div class="col-sm-4">
                         <select class="form-control" name="stats" id="stats">
                             @foreach( $trackInfoMethods as $key => $method )
-                                <option value="{{ $key }}" {{( isset( $_POST[ 'stats' ] ) && $_POST[ 'stats' ] === $key )?' selected' : ''}}>{{ $method[ 'label' ] }}</option>
+                                <option value="{{ $key }}" {{( isset( $values[ 'stats' ] ) && $values[ 'stats' ] === $key )?' selected' : ''}}>{{ $method[ 'label' ] }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -380,13 +382,13 @@
 
             // ### Delete Existing Logo (Edit Mode Only)
             // Allow users to delete the existing logo when editing.
-            @if (isset($_GET['action']) && $_GET['action'] === 'edit')
+            @if ($cid !== null)
             $('.delete-logo').on('click', function () {
 
                 let $this = $(this);
 
                 // Deleting a file changes state, so it is a POST with the CSRF token (checked in panel/index.php)
-                $.post('index.php?page=channels&action=edit&channel={{(int) ($_GET['channel'] ?? 0)}}', {logo_delete: 1, _token: '{{$panel->csrfToken()}}'}, function () {
+                $.post('index.php?page=channel&id={{(int) $cid}}', {action: 'delete-logo', _token: '{{$panel->csrfToken()}}'}, function () {
 
                     // Remove the logo container from the DOM.
                     $this.closest('.logo-container').remove();
@@ -399,10 +401,8 @@
             @endif
 
             // ### Trigger Stats Change on Page Load
-            // If the form has been submitted or the action is not 'add', trigger the stat change event to populate fields.
-            @if (!empty( $_POST ) || $_GET['action'] !== 'add')
+            // Draws the fields of the selected track info method.
             $('select#stats').trigger('change');
-            @endif
 
             // ### Ensure at Least One Quality Group Exists
             // If no quality groups are present, automatically add one.

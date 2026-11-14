@@ -35,7 +35,8 @@
                                         <i class="icon fa fa-edit"></i>
                                     </a>
                                     @if ( $translation !== 'en.php' )
-                                        <button type="submit" form="language-actions" name="delete_language" value="{{$language}}" class="btn btn-danger btn-small css-hint" data-title="Delete" data-confirm>
+                                        {{-- The language to delete travels in the URL, a button can only carry the action name --}}
+                                        <button type="submit" form="language-actions" formaction="index.php?page=language&iso={{$language}}" name="action" value="delete" class="btn btn-danger btn-small css-hint" data-title="Delete" data-confirm>
                                             <i class="icon fa fa-times"></i></button>
                                     @endif
                                 </td>

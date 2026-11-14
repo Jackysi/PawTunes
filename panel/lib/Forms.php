@@ -24,6 +24,21 @@ class Forms
      */
     private ?string $html = null;
 
+    /**
+     * @var array Field values by field name: what each field shows unless a value is forced.
+     */
+    private array $values;
+
+
+    /**
+     * @param  array  $values  The values the form shows, by field name: the stored settings, or what was
+     *                         just submitted when the form is shown again after an error.
+     */
+    public function __construct(array $values = [])
+    {
+        $this->values = $values;
+    }
+
 
     /**
      * Append a form field to the list.
@@ -110,7 +125,7 @@ class Forms
 
         $output     = '';
         $fieldName  = $o['name'] ?? null;
-        $fieldValue = $forceValue ?? $_POST[$fieldName] ?? null;
+        $fieldValue = $forceValue ?? $this->values[$fieldName] ?? null;
 
         // Begin form-group div
         $output .= '<div class="form-group">';

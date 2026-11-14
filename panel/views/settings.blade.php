@@ -6,9 +6,10 @@
      * @var $templates
      * @var $selectedTemplate
      * @var $pawtunes
+     * @var array $values  Field values by field name: the stored settings, or the form as it was just submitted
      */
 
-    $form = new Forms;
+    $form = new Forms( $values );
 
     // General Player Settings
     // Inline text stays one short line, longer explanations go into 'hint' (an info icon tooltip next to the label)
@@ -322,6 +323,7 @@
 @section('content')
     <form method="POST" action="index.php?page=settings" enctype="multipart/form-data">
         {!! $panel->csrfField() !!}
+        <input type="hidden" name="action" value="save">
 
         {!! $message !!}
         <div class="panel">
@@ -338,7 +340,7 @@
                             <div class="col-sm-6">
                                 {{-- .input-group is display: table, a col-* class is what stretches it to the column width --}}
                                 <div class="input-group col-sm-12">
-                                    <input type="text" name="share_image_override" id="share_image_override" class="form-control" value="{{$_POST[ 'share_image_override' ] ?? ''}}" placeholder="Image URL, or upload one">
+                                    <input type="text" name="share_image_override" id="share_image_override" class="form-control" value="{{$values[ 'share_image_override' ] ?? ''}}" placeholder="Image URL, or upload one">
                                     <div class="input-group-btn">
                                         <label for="override_image" class="btn btn-primary">
                                             <input type="file" id="override_image" class="hidden" name="override_image" accept="image/jpeg,image/png,image/webp,image/svg+xml"><i class="icon fa fa-folder-open"></i> Browse
@@ -346,10 +348,10 @@
                                     </div>
                                 </div>
                             </div>
-                            @if ( !empty( $_POST[ 'share_image_override' ] ) && is_file( $_POST[ 'share_image_override' ] ) )
+                            @if ( !empty( $values[ 'share_image_override' ] ) && is_file( $values[ 'share_image_override' ] ) )
                                 <div class="col-sm-10 col-sm-offset-2 logo-container">
                                     <div class="override-image">
-                                        <img src="{{$_POST[ 'share_image_override' ]}}" width="auto" height="80">
+                                        <img src="{{$values[ 'share_image_override' ]}}" width="auto" height="80">
                                     </div>
                                     <a href="#" class="delete-override"><i class="icon fa fa-times"></i> Delete</a>
                                 </div>
@@ -393,7 +395,7 @@
                             <div class="col-sm-4">
                                 <select name="default_lang" class="form-control" id="isocode">
                                     @foreach( $languages as $index => $lang )
-                                        <option data-html="<i class='fi ico-left fi-{{$lang['flag']}}'></i> {{$lang['name']}}" value="{{$index}}"{{( ( $index === $_POST['default_lang' ] ) ? 'selected' : '' )}}>
+                                        <option data-html="<i class='fi ico-left fi-{{$lang['flag']}}'></i> {{$lang['name']}}" value="{{$index}}"{{( ( $index === ( $values['default_lang' ] ?? '' ) ) ? 'selected' : '' )}}>
                                             {{$lang['name']}}
                                         </option>
                                     @endforeach
@@ -490,7 +492,7 @@
                             <div class="col-sm-2">
                                 <div class="input-append">
                                     <div class="append">sec</div>
-                                    <input type="number" name="stats_refresh" class="form-control" id="stats_refresh" placeholder="15" required="" value="{{$_POST[ 'stats_refresh' ]}}">
+                                    <input type="number" name="stats_refresh" class="form-control" id="stats_refresh" placeholder="15" required="" value="{{$values[ 'stats_refresh' ] ?? ''}}">
                                 </div>
                             </div>
                             <div class="help-block">{!! Forms::hint( 'How often each listener asks for track info. Lower values mean more requests to your web and stream servers.' ) !!}Default 15</div>
@@ -514,7 +516,7 @@
                     <div class="col-sm-2">
                         <div class="input-append">
                             <div class="append">px</div>
-                            <input class="form-control" id="images_size" name="images_size" placeholder="280" type="number" value="{{( !empty( $_POST[ 'images_size' ] ) ? $_POST[ 'images_size' ] : '' )}}">
+                            <input class="form-control" id="images_size" name="images_size" placeholder="280" type="number" value="{{( !empty( $values[ 'images_size' ] ) ? $values[ 'images_size' ] : '' )}}">
                         </div>
                     </div>
                     <div class="help-block">{!! Forms::hint( 'Square size artwork is cropped to. Larger images cost more disk space, bandwidth and processing.' ) !!}Default 280</div>
@@ -596,13 +598,13 @@
     {{-- App icon removal: its own POST form (CSRF-checked), the Remove button inside the settings form targets it --}}
     <form method="POST" action="index.php?page=settings" id="remove-app-icon">
         {!! $panel->csrfField() !!}
-        <input type="hidden" name="remove_app_icon" value="1">
+        <input type="hidden" name="action" value="remove-app-icon">
     </form>
 
     {{-- Templates cache reset: its own POST form (CSRF-checked), the Flush Cache button in the Template heading targets it --}}
     <form method="POST" action="index.php?page=settings" id="reset-templates">
         {!! $panel->csrfField() !!}
-        <input type="hidden" name="reset_templates" value="1">
+        <input type="hidden" name="action" value="reset-templates">
     </form>
 
     <!-- Template Options Modals (one per template, outside the main form since forms can't be nested) -->
@@ -617,8 +619,9 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            <form method="POST" data-action="index.php?page=settings&advanced-options" class="template-options-form">
+                            <form method="POST" data-action="index.php?page=settings" class="template-options-form">
                                 {!! $panel->csrfField() !!}
+                                <input type="hidden" name="action" value="save-template-options">
                                 <input type="hidden" name="template" value="{{$index}}">
                                 @php
                                     $opts  = $pawtunes->getAdvancedTemplateOptions( $index );
@@ -723,7 +726,7 @@
 
                 let elm = $(this);
                 // POST with the CSRF token: a GET that deletes files could be triggered by any page the admin visits
-                $.post('index.php?page=settings', {delete_share_image: 1, _token: '{{$panel->csrfToken()}}'}, function() {
+                $.post('index.php?page=settings', {action: 'delete-share-image', _token: '{{$panel->csrfToken()}}'}, function() {
                     $(elm).closest('.logo-container').remove();
                 });
 

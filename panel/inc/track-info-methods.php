@@ -1,5 +1,22 @@
 <?php
 
+/**
+ * Track info methods of the channel editor (Pages\Channel), keyed by the stats "method" value.
+ *
+ * This list is the single definition of a method's settings: the editor draws the fields from it AND builds
+ * the stored "stats" array from it, so a new method needs nothing else in the panel.
+ *
+ * Field keys read by Pages\Channel:
+ *  - name      POST field name
+ *  - map       key the value is stored under in the channel's "stats" array
+ *  - type      'checkbox' is stored as a boolean, everything else as the posted text
+ *  - validate  'url'      a valid URL (may stay empty unless the field is "required")
+ *              'server'   a URL PawTunes can read a host from (http, https or wss)
+ *              'required' must not be empty
+ *  - trim      true: surrounding whitespace is removed and an empty value is stored as null
+ *
+ * Every other key is a Forms field option (label, placeholder, class, required, description, hint, ...).
+ */
 return [
     'direct'           => [
         'label'  => 'Live Stream (Direct)',
@@ -8,6 +25,7 @@ return [
                 'label'       => 'Stream URL',
                 'name'        => 'direct-url',
                 'map'         => 'url',
+                'validate'    => 'url',
                 'placeholder' => 'http://192.168.1.1:8000/mount',
                 'required'    => true,
                 'class'       => 'col-sm-5',
@@ -16,6 +34,7 @@ return [
                 'label'       => 'Stream URL (Fallback)',
                 'name'        => 'direct-url-fallback',
                 'map'         => 'fallback',
+                'validate'    => 'url',
                 'placeholder' => 'http://192.168.1.1:8000/fallback-mount',
                 'class'       => 'col-sm-5',
                 'description' => 'Optional',
@@ -30,6 +49,7 @@ return [
                 'label'       => 'Azuracast API URL',
                 'name'        => 'azura-url',
                 'map'         => 'url',
+                'validate'    => 'server',
                 'placeholder' => 'http://your-azuracast-site.example.com/api/nowplaying/station_shortcode',
                 'class'       => 'col-sm-6',
                 'required'    => true,
@@ -40,6 +60,7 @@ return [
                 'label'       => 'Station Shortcode',
                 'name'        => 'azura-station',
                 'map'         => 'station',
+                'validate'    => 'required',
                 'placeholder' => 'your_station_name',
                 'class'       => 'col-sm-6',
                 'required'    => true,
@@ -49,6 +70,7 @@ return [
                 'label'        => 'API Key',
                 'name'         => 'azura-api-key',
                 'map'          => 'api-key',
+                'trim'         => true,
                 'placeholder'  => 'AzuraCast API key',
                 'class'        => 'col-sm-6',
                 'type'         => 'password',
@@ -95,6 +117,7 @@ return [
                 'label'        => 'Shoutcast Status Page',
                 'name'         => 'shoutcast-url',
                 'map'          => 'url',
+                'validate'     => 'server',
                 'required'     => true,
                 'placeholder'  => 'http://192.168.1.1:8000/',
                 'class'        => 'col-sm-5',
@@ -137,6 +160,7 @@ return [
                 'label'       => 'Shoutcast URL',
                 'name'        => 'shoutcast-public-url',
                 'map'         => 'url',
+                'validate'    => 'server',
                 'placeholder' => 'http://192.168.1.1:8000/',
                 'class'       => 'col-sm-5',
                 'required'    => true,
@@ -158,6 +182,7 @@ return [
                 'label'       => 'Icecast Status Page',
                 'name'        => 'icecast-url',
                 'map'         => 'url',
+                'validate'    => 'server',
                 'placeholder' => 'http://shoutcast:8000/',
                 'class'       => 'col-sm-5',
                 'required'    => true,
@@ -207,6 +232,7 @@ return [
                 'label'       => 'Icecast URL',
                 'name'        => 'icecast-public-url',
                 'map'         => 'url',
+                'validate'    => 'server',
                 'placeholder' => 'http://icecast.com:8000/',
                 'class'       => 'col-sm-5',
                 'required'    => true,
@@ -277,6 +303,7 @@ return [
                 'label'       => 'Centovacast URL',
                 'name'        => 'centova-url',
                 'map'         => 'url',
+                'validate'    => 'server',
                 'placeholder' => 'http://192.168.1.1:2199/',
                 'class'       => 'col-sm-5',
                 'required'    => true,
