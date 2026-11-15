@@ -100,14 +100,15 @@ final class Settings extends Page
         // Passwords are never sent back to the browser
         unset($values['admin_password'], $values['admin_pass2']);
 
-        // Cache section fields, from the "cache" array (stored, or as submitted). Forms does not escape values.
+        // Cache section fields, from the "cache" array (stored, or as submitted). An ACL [user, password]
+        // pair as Redis auth cannot be shown in one field, it stays empty.
         $cache                  = is_array($values['cache'] ?? null) ? $values['cache'] : [];
         $cacheAuth              = $cache['extra']['auth'] ?? '';
         $values['cache_mode']   = Cache::normalizeMode((string) ($cache['mode'] ?? ''));
-        $values['cache_path']   = htmlspecialchars((string) ($cache['path'] ?? ''), ENT_QUOTES, 'UTF-8');
-        $values['cache_host']   = htmlspecialchars((string) ($cache['host'] ?? ''), ENT_QUOTES, 'UTF-8');
-        $values['cache_auth']   = is_string($cacheAuth) ? htmlspecialchars($cacheAuth, ENT_QUOTES, 'UTF-8') : '';
-        $values['cache_prefix'] = htmlspecialchars((string) ($cache['prefix'] ?? ''), ENT_QUOTES, 'UTF-8');
+        $values['cache_path']   = (string) ($cache['path'] ?? '');
+        $values['cache_host']   = (string) ($cache['host'] ?? '');
+        $values['cache_auth']   = is_string($cacheAuth) ? $cacheAuth : '';
+        $values['cache_prefix'] = (string) ($cache['prefix'] ?? '');
 
         $channels = ['0' => 'Default'];
         foreach ((array) $this->pawtunes->getChannels() as $channel) {

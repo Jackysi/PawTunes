@@ -216,7 +216,7 @@ class Forms
             case 'url':
             case 'email':
                 $inputType = $o['type'];
-                $valueAttr = isset($fieldValue) ? 'value="'.$fieldValue.'"' : '';
+                $valueAttr = isset($fieldValue) ? 'value="'.self::escape($fieldValue).'"' : '';
                 $output    .= sprintf(
                     '<div class="%s"><input type="%s" name="%s" id="%s" class="form-control" %s %s></div>',
                     $fieldClass,
@@ -237,7 +237,7 @@ class Forms
                     $fieldId,
                     $heightStyle,
                     $extras,
-                    $fieldValue ?? ''
+                    self::escape($fieldValue ?? '')
                 );
                 break;
 
@@ -254,7 +254,7 @@ class Forms
                         $selected = ($fieldValue == $optValue) ? ' selected' : '';
                         $output   .= sprintf(
                             '<option value="%s"%s>%s</option>',
-                            $optValue,
+                            self::escape($optValue),
                             $selected,
                             $optLabel
                         );
@@ -277,7 +277,7 @@ class Forms
                     $inputType,
                     $fieldName,
                     $fieldId,
-                    $o['value'],
+                    self::escape($o['value']),
                     $checked,
                     $extras,
                     $o['description'] ?? '',
@@ -303,7 +303,8 @@ class Forms
                 break;
 
             case 'static':
-                $staticValue = $o['value'] ?? $fieldValue ?? '';
+                // A "value" option is HTML written in the view (a flag icon, bold text); a stored value is data
+                $staticValue = $o['value'] ?? self::escape($fieldValue ?? '');
                 $output      .= sprintf(
                     '<div class="%s"><p class="form-control-static">%s</p></div>',
                     $fieldClass,
@@ -348,12 +349,30 @@ class Forms
             if (isset($o[$key])) {
 
                 $attrValue    = is_bool($o[$key]) ? '' : $o[$key];
-                $attributes[] = $attrValue !== '' ? sprintf('%s="%s"', $attrName, $attrValue) : $attrName;
+                $attributes[] = $attrValue !== '' ? sprintf('%s="%s"', $attrName, self::escape($attrValue)) : $attrName;
 
             }
         }
 
         return implode(' ', $attributes);
+    }
+
+
+    /**
+     * Escape a value for HTML text and for a quoted attribute. Everything that is data goes through here:
+     * field values (stored settings, submitted input) and attribute values. Without it a quote in a value
+     * ends the attribute early, and the next save stores the truncated text.
+     *
+     * NOT escaped on purpose, because views write them as HTML: "label", "description", option labels and
+     * the "value" of a static field.
+     *
+     * @param  mixed  $value
+     *
+     * @return string
+     */
+    private static function escape($value): string
+    {
+        return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
     }
 
 }

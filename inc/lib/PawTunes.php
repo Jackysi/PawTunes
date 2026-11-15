@@ -931,11 +931,21 @@ class PawTunes
         $localeDir = realpath("{$this->currentDir}/../locale");
         $langFile  = realpath("{$this->currentDir}/../locale/{$lang}.php");
 
-        if ($langFile !== false && strpos($langFile, $localeDir) === 0 && is_file($langFile)) {
-            return require($langFile);
+        if ($langFile === false || strpos($langFile, $localeDir) !== 0 || ! is_file($langFile)) {
+            $langFile = "{$this->currentDir}/../locale/{$this->config('default_lang')}";
         }
 
-        return require("{$this->currentDir}/../locale/{$this->config('default_lang')}");
+        $texts = require($langFile);
+
+        // English fills in every text the chosen language does not have. A translation made before a release
+        // added texts (or a hand-written one) would otherwise leave {{$key}} unresolved in the template, which
+        // is an error page for every listener while debugging is enabled.
+        $english = "{$this->currentDir}/../locale/en.php";
+        if (is_file($english)) {
+            $texts += require($english);
+        }
+
+        return $texts;
 
     }
 

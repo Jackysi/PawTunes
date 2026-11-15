@@ -115,7 +115,9 @@ final class Language extends Page
             return;
         }
 
-        if ($this->config->save("locale/{$iso}", $texts)) {
+        // The form is not the whole translation: a text without a field here (one a newer release added, or
+        // one a template brought along) keeps its stored value, or starts as the English one
+        if ($this->config->save("locale/{$iso}", $texts + $this->knownTexts($iso))) {
 
             $done = $this->request->hasQuery('add') ? 'added' : 'updated';
             $this->panel->flash($this->panel->alert("<b>{$this->languages[$iso]['name']}</b> translation has been {$done} successfully!", 'success'), self::URL);
@@ -165,7 +167,7 @@ final class Language extends Page
     /**
      * @param  string  $iso
      *
-     * @return array The texts of a stored translation
+     * @return array The texts of a stored translation, shown in the editor
      */
     private function storedTexts(string $iso): array
     {
@@ -173,7 +175,25 @@ final class Language extends Page
             $this->panel->flash($this->panel->alert('Invalid ISO code or file name, please select another language and try again.', 'error'), self::URL);
         }
 
-        return include "inc/locale/{$iso}.php";
+        return $this->knownTexts($iso);
+
+    }
+
+
+    /**
+     * Every text a translation must have: its stored ones, and the English text for each one it lacks.
+     * English (inc/locale/en.php) is the reference list of all texts.
+     *
+     * @param  string  $iso
+     *
+     * @return array
+     */
+    private function knownTexts(string $iso): array
+    {
+        $stored  = is_file("inc/locale/{$iso}.php") ? include "inc/locale/{$iso}.php" : [];
+        $english = is_file('inc/locale/en.php') ? include 'inc/locale/en.php' : [];
+
+        return $stored + $english;
 
     }
 

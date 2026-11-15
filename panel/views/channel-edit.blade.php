@@ -238,8 +238,9 @@
                         $fields .= $form->field($opt);
                     }
                     @endphp
-                    case '<?= $key ?>':
-                        $statsConf.html('<?= $fields ?>');
+                    {{-- json_encode, not quotes: a stored value with a quote or "</script>" must not end the string or the script --}}
+                    case <?= json_encode( $key ) ?>:
+                        $statsConf.html(<?= json_encode( $fields, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ) ?>);
                         break;
                     @php endforeach @endphp
 
