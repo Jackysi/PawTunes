@@ -154,10 +154,7 @@ class HttpClient
 
         }
 
-        // PHP < 8.0: resource needs explicit closing
-        if (is_resource($CURL)) {
-            curl_close($CURL);
-        }
+        // CurlHandle is freed when it goes out of scope (curl_close() is a no-op since PHP 8.0)
 
         return $data;
 

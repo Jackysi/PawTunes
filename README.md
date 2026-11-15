@@ -2,7 +2,7 @@
 
 # PawTunes - Open Source Web Radio Player
 
-[![PHP 7.4+](https://img.shields.io/badge/PHP-7.4%2B-777BB4?logo=php&logoColor=white)](#requirements)
+[![PHP 8.1+](https://img.shields.io/badge/PHP-8.1%2B-777BB4?logo=php&logoColor=white)](#requirements)
 [![License](https://img.shields.io/github/license/Jackysi/pawtunes)](LICENSE)
 [![Docker Pulls](https://img.shields.io/docker/pulls/jackyprahec/pawtunes)](https://hub.docker.com/r/jackyprahec/pawtunes)
 [![GitHub Stars](https://img.shields.io/github/stars/Jackysi/pawtunes?style=social)](https://github.com/Jackysi/pawtunes)
@@ -312,7 +312,7 @@ is never cached. The channel list (`?channel=all`) is cacheable for 60 seconds.
 
 ## Requirements
 PawTunes has minimal requirements to ensure smooth operation:
-- **PHP 7.4+** with CURL Extension.
+- **PHP 8.1+** with the cURL, JSON, SimpleXML, GD and mbstring extensions.
 - **PHP ZipArchive Extension** (optional, for updates).
 - **Access to API Ports**: Ensure proper configuration for ports (e.g., Shoutcast uses port 8000 by default).
 

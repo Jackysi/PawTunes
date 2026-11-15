@@ -137,8 +137,8 @@ class Sam extends TrackInfo
 
 
     /**
-     * Opens the connection. PHP 8.1+ reports mysqli failures as exceptions by default, older versions
-     * through connect_errno: both end as a PawException so the handler keeps its JSON contract.
+     * Opens the connection. mysqli reports failures as exceptions (the PHP 8.1+ default), which end as a
+     * PawException so the handler keeps its JSON contract.
      *
      * @throws \lib\PawException
      */
@@ -177,8 +177,7 @@ class Sam extends TrackInfo
 
         try {
 
-            // @: PHP < 8.1 also raises a warning, which would end up in the JSON answer; the error is read below
-            $connected = @$this->mysql->real_connect(
+            $this->mysql->real_connect(
                 $this->channel['stats']['host'],
                 $this->channel['stats']['auth-user'],
                 $this->channel['stats']['auth-pass'],
@@ -191,11 +190,6 @@ class Sam extends TrackInfo
 
             throw new PawException("Database connection failed, MySQL returned: {$e->getMessage()}");
 
-        }
-
-        // Check if connection was established (PHP < 8.1 reports failures here, not as exceptions)
-        if ( ! $connected || $this->mysql->connect_errno > 0) {
-            throw new PawException("Database connection failed, MySQL returned: {$this->mysql->connect_error}");
         }
 
     }
@@ -219,10 +213,6 @@ class Sam extends TrackInfo
 
             throw new PawException("SAM Database query failed with error: {$e->getMessage()}");
 
-        }
-
-        if ($result === false) {
-            throw new PawException("SAM Database query failed with error: {$this->mysql->error}");
         }
 
         $row = $result->fetch_assoc();

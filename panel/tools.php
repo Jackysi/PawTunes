@@ -105,12 +105,6 @@ if ( ! empty($_POST) && ($_POST['form'] ?? '') === 'compile') {
 
     } else {
 
-        // scssphp 1.x is the last line that runs on PHP 7.4 and it is not clean under the PHP 8.4
-        // deprecation notices (implicit nullable parameters). They are compile-time noise, so they are
-        // muted around the compiler, which would otherwise print them into the page when debugging is
-        // "enabled".
-        $errorReporting = error_reporting(error_reporting() & ~E_DEPRECATED);
-
         // Compile SASS and save it as file.
         try {
 
@@ -143,10 +137,6 @@ if ( ! empty($_POST) && ($_POST['form'] ?? '') === 'compile') {
         } catch (SassException $e) {
 
             $theme_message = $panel->alert('SASS Compilation ERROR occurred: '.htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8').'!', 'error');
-
-        } finally {
-
-            error_reporting($errorReporting);
 
         }
 

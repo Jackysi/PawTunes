@@ -20,7 +20,7 @@ use lib\PawException;
 
 /**
  * Anthropic Claude through the Messages API with structured outputs, and web search (server tool) for AI Artwork.
- * Raw HTTP on purpose: the official PHP SDK requires PHP 8.1, PawTunes supports 7.4.
+ * Raw HTTP on purpose: one JSON request per call does not justify the official SDK and its dependency tree.
  */
 final class Anthropic implements TextModel, WebSearchModel
 {

@@ -519,8 +519,6 @@ final class ArtworkGenerator
         $temp = "{$file}.".uniqid('', true).'.tmp';
 
         $written = imagejpeg($target, $temp, 88);
-        imagedestroy($source);
-        imagedestroy($target);
 
         if ( ! $written || ! @rename($temp, $file)) {
             @unlink($temp);

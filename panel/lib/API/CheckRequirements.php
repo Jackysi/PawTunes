@@ -73,11 +73,6 @@ class CheckRequirements extends Base
             $response[] = ['type' => 'warning', 'message' => 'PawTunes does not have **default ARTWORK** installed! Please use artwork manager and upload artist image called **"default"**.'];
         }
 
-        // PHP Version
-        if (PHP_VERSION < 7.0) {
-            $response[] = ['type' => 'warning', 'message' => 'The server is running **PHP '.PHP_VERSION.'** while this app requires at least **PHP 7.0** or above!'];
-        }
-
         // Simple XML
         if ( ! function_exists('simplexml_load_string')) {
             $response[] = ['type' => 'warning', 'message' => 'PHP extension **"SimpleXML" ** could not be detected, this will cause SERIOUS issues with the player!'];

@@ -203,19 +203,8 @@ class ImageResize
                 break;
         }
 
-        // PHP < 8.0: use imagedestroy()
-        if (PHP_VERSION_ID < 80000) {
-
-            if (is_resource($this->image_object) && function_exists('imagedestroy')) {
-                imagedestroy($this->image_object);
-            }
-
-        } else {
-
-            // PHP 8.0+: GdImage auto-destructs
-            $this->image_object = null;
-
-        }
+        // GdImage frees itself once nothing references it (imagedestroy() is a no-op since PHP 8.0)
+        $this->image_object = null;
 
         $this->compress($savePath);
 

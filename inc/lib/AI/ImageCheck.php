@@ -117,7 +117,9 @@ TEXT;
         $half   = self::HALF;
         $canvas = imagecreatetruecolor($half * 2, $half);
         imagecopyresampled($canvas, $source, 0, 0, 0, 0, $half, $half, imagesx($source), imagesy($source));
-        imagedestroy($source);
+
+        // Free the full-size image before the pixel loops (imagedestroy() is a no-op since PHP 8.0)
+        $source = null;
 
         // Luminance histogram of the left half
         $luma      = [];
@@ -155,7 +157,6 @@ TEXT;
 
         ob_start();
         imagejpeg($canvas, null, 90);
-        imagedestroy($canvas);
 
         return (string) ob_get_clean();
     }
