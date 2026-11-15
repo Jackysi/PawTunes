@@ -13,7 +13,7 @@
 
 namespace API;
 
-use lib\ImageResize;
+use lib\Image\Image;
 
 class Artwork extends Base
 {
@@ -21,7 +21,7 @@ class Artwork extends Base
     /**
      * @var string[]
      */
-    private array $allowed = ['jpg', 'jpeg', 'png', 'webp', 'svg'];
+    private array $allowed = ['jpg', 'jpeg', 'png', 'webp', 'avif', 'svg'];
 
     /**
      * The import view (tools.blade.php) listens for "artwork" events, unnamed events would never reach it
@@ -65,7 +65,7 @@ class Artwork extends Base
                 }
 
                 // Skip non image files
-                if ( ! preg_match('/\.(jpe?g|png|webp|svg)$/i', $file)) {
+                if ( ! preg_match('/\.(jpe?g|png|webp|avif|svg)$/i', $file)) {
                     continue;
                 }
 
@@ -100,6 +100,10 @@ class Artwork extends Base
     {
         header('Content-Type: text/event-stream');
         flush();
+
+        // No post-save optimizers here: they run after the response, and an event stream cannot be ended early.
+        // Turned off, imported images are written at their final quality right away.
+        Image::postProcess(null);
 
         // Check if path is specified
         if (empty($_GET['path'])) {
@@ -223,6 +227,10 @@ class Artwork extends Base
                     '<span class="text-red">Unable to import file <b>"'.$this->escape(basename($file)).'"</b> because it is not an image file!</span>'
                 );
 
+            } elseif ($this->convertedExists($file)) {
+
+                $this->sendSSE('<span class="text-green">'.$this->escape(basename($file)).' already exists, skipping...</span>');
+
             } else {
 
                 // Same validation as a panel upload; existing files are kept (local imports never overwrite)
@@ -271,11 +279,54 @@ class Artwork extends Base
 
         } else {
 
-            $size = "{$this->pawtunes->config( 'images_size' )}x{$this->pawtunes->config( 'images_size' )}";
-            ImageResize::handle($imported['path'], $size, 'crop');
+            $this->cropImported($imported['path']);
             $this->sendSSE('<span class="text-green">'.$name.' successfully imported.</span>');
 
         }
+    }
+
+
+    /**
+     * Crop an imported image to the configured square and store it in the "Artwork Format", when one is set
+     *
+     * @param  string  $path  The imported file
+     *
+     * @return void
+     */
+    private function cropImported(string $path): void
+    {
+        // An SVG cannot be opened and stays as imported
+        $image = Image::open($path);
+        if ($image === null) {
+            return;
+        }
+
+        $size   = (int) $this->pawtunes->config('images_size') ?: 280;
+        $format = $this->pawtunes->artworkFormat();
+        $stored = ($format !== null) ? substr($path, 0, strrpos($path, '.') + 1).$format : $path;
+
+        // Converted: the imported original is not needed any more
+        if ($image->crop($size, $size)->save($stored) && $stored !== $path) {
+            $this->pawtunes::deleteFile($path);
+        }
+    }
+
+
+    /**
+     * With an "Artwork Format" set, an earlier import stored this image under another extension than the
+     * source file has. Without this check a local import would convert and overwrite it on every run.
+     *
+     * @param  string  $file  Source file name
+     *
+     * @return bool
+     */
+    private function convertedExists(string $file): bool
+    {
+        $format = $this->pawtunes->artworkFormat();
+        $name   = $this->pawtunes->parseTrack($this->pawtunes->extDel(basename($file)));
+
+        // SVG files are never converted, the import's own check handles them
+        return $format !== null && $this->pawtunes->extGet($file) !== 'svg' && is_file("data/images/{$name}.{$format}");
     }
 
 

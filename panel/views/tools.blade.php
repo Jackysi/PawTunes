@@ -189,7 +189,7 @@
                                     </div>
                                     <input type="hidden" name="cropX" value="0">
                                     <input type="hidden" name="cropY" value="0">
-                                    <i>JPEG, JPG, PNG, WEBP and SVG accepted. <br>If an image aspect ratio doesn't fit, you can move the crop area.</i>
+                                    <i>JPEG, JPG, PNG, WEBP, AVIF and SVG accepted. <br>If an image aspect ratio doesn't fit, you can move the crop area.</i>
                                 </div>
                             </div>
                         </div>
@@ -643,7 +643,7 @@
                     let url = $(this).val();
                     let ext = url.substring(url.lastIndexOf('.') + 1).toLowerCase();
 
-                    if (this.files && this.files[0] && (ext == 'svg' || ext == 'png' || ext == 'jpeg' || ext == 'jpg' || ext == 'webp')) {
+                    if (this.files && this.files[0] && (ext == 'svg' || ext == 'png' || ext == 'jpeg' || ext == 'jpg' || ext == 'webp' || ext == 'avif')) {
 
                         let reader = new FileReader();
                         let image = new Image();

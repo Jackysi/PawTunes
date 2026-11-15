@@ -424,7 +424,7 @@ class Panel
     public function deleteArtwork($name): bool
     {
         // Define extensions
-        $allow_ext = ['jpeg', 'jpg', 'png', 'svg', 'webp'];
+        $allow_ext = ['jpeg', 'jpg', 'png', 'svg', 'webp', 'avif'];
 
         // Set variables
         $files = $this->pawtunes->browse('data/images/');
@@ -582,7 +582,7 @@ class Panel
      *
      * @see Uploads::importImage()
      */
-    public function importImage(string $source, string $sourceName, string $name, string $path = 'data/images/', bool $overwrite = true, array $allowed = ['jpg', 'jpeg', 'png', 'webp', 'svg']): array
+    public function importImage(string $source, string $sourceName, string $name, string $path = 'data/images/', bool $overwrite = true, array $allowed = ['jpg', 'jpeg', 'png', 'webp', 'avif', 'svg']): array
     {
         return $this->uploads->importImage($source, $sourceName, $name, $path, $overwrite, $allowed);
 

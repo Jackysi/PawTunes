@@ -14,6 +14,8 @@
 namespace lib;
 
 use lib\AI\ArtworkGenerator;
+use lib\Image\Formats;
+use lib\Image\Image;
 use lib\PawTunes\History;
 use RuntimeException;
 use Throwable;
@@ -34,7 +36,19 @@ class PawTunes
      *
      * @var string[]
      */
-    public array $artworkExtensions = ['jpg', 'jpeg', 'png', 'svg', 'webp'];
+    public array $artworkExtensions = ['jpg', 'jpeg', 'png', 'svg', 'webp', 'avif'];
+
+    /**
+     * Work queued by afterResponse()
+     *
+     * @var callable[]
+     */
+    private array $afterResponseTasks = [];
+
+    /**
+     * The shutdown function that runs the queue exists already
+     */
+    private bool $afterResponseRegistered = false;
     /**
      * @var string
      */
@@ -117,6 +131,18 @@ class PawTunes
                 $this->writeLog('player_errors', $message);
             }
         );
+
+        // Post-save hook of the image library: stored images are recompressed by an installed tool (guetzli,
+        // cwebp, jpegoptim, ...) once the response is out, see lib\Image\Optimizer
+        //
+        // Slow tools (guetzli: seconds per cover) only where the response really ends before the work starts.
+        // Apache with mod_php or CGI holds a response without a body, like the artwork redirect, until the
+        // script exits: a listener would wait for the tool there.
+        $detached = PHP_SAPI === 'cli' || function_exists('fastcgi_finish_request') || function_exists('litespeed_finish_request');
+
+        Image::postProcess(function (callable $work): void {
+            $this->afterResponse($work);
+        }, $detached);
 
     }
 
@@ -497,7 +523,16 @@ class PawTunes
         // ledger and the logs next to php.exe. Return to the directory the request ran in first.
         $cwd = getcwd();
 
-        register_shutdown_function(function () use ($task, $cwd) {
+        // One shutdown function for all tasks: a response can only be ended once (a second
+        // fastcgi_finish_request() answers false), so a function per task would skip every task but the first
+        $this->afterResponseTasks[] = $task;
+        if ($this->afterResponseRegistered) {
+            return;
+        }
+
+        $this->afterResponseRegistered = true;
+
+        register_shutdown_function(function () use ($cwd) {
 
             if ($cwd !== false) {
                 chdir($cwd);
@@ -509,15 +544,39 @@ class PawTunes
                 return;
             }
 
-            set_time_limit(360);
+            // The panel's session file stays locked while this process runs, the admin's next click would wait
+            if (session_status() === PHP_SESSION_ACTIVE) {
+                session_write_close();
+            }
 
-            try {
-                $task();
-            } catch (Throwable $e) {
-                $this->handleException($e);
+            // array_shift() instead of foreach: a task may queue another one
+            while (($task = array_shift($this->afterResponseTasks)) !== null) {
+
+                set_time_limit(360);
+
+                try {
+                    $task();
+                } catch (Throwable $e) {
+                    $this->handleException($e);
+                }
+
             }
 
         });
+    }
+
+
+    /**
+     * The one format new artwork is stored in ("Artwork Format" setting)
+     *
+     * @return string|null  File extension (jpg, png, webp, avif), null = every image keeps the format it came in
+     */
+    public function artworkFormat(): ?string
+    {
+        $format = Formats::byExtension((string) $this->config('artwork_format'));
+
+        // A format this server's GD cannot write (config copied from another server) counts as not set
+        return ($format !== null && $format->supported()) ? $format->extension() : null;
     }
 
 
@@ -546,7 +605,7 @@ class PawTunes
 
         // Other SAPIs (Apache mod_php, CGI): end the response by framing it ourselves. Content-Length tells the
         // client where the body ends and Connection: close that nothing follows. That needs the headers unsent
-        // (the sendfile branch of handle-artwork.php flushes them) and every output buffer removable.
+        // (an event stream of the panel has sent them) and every output buffer removable.
         if (headers_sent()) {
             return false;
         }

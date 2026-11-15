@@ -15,6 +15,7 @@ namespace Pages;
 
 use lib\Cache;
 use lib\Helpers;
+use lib\Image\Formats;
 use lib\PawTunes;
 use lib\PawTunes\History;
 use Panel;
@@ -135,6 +136,7 @@ final class Settings extends Page
                 'selectedTemplate' => isset($templates[$values['template'] ?? '']) ? $values['template'] : array_key_first($templates),
                 'channels'         => $channels,
                 'cacheModeOptions' => $cacheModeOptions,
+                'artworkFormats'   => $this->artworkFormats(),
                 'cacheStatus'      => $this->cacheStatus($values['cache_mode']),
             ]
         );
@@ -362,6 +364,12 @@ final class Settings extends Page
             return 'Invalid range for Track History Length. The value must not be lower than <b>1</b> and higher than <b>'.History::MAX_LENGTH.'</b>!';
         }
 
+        // Missing = an older form without the field, that keeps the original formats. An array is never valid.
+        $artworkFormat = $posted['artwork_format'] ?? '';
+        if ( ! is_string($artworkFormat) || ! isset($this->artworkFormats()[$artworkFormat])) {
+            return 'Unknown artwork format, please pick one from the list.';
+        }
+
         if ( ! isset($cacheModes[$cache['mode']])) {
             return 'Unknown cache mode, please pick one from the list.';
         }
@@ -416,6 +424,25 @@ final class Settings extends Page
             'memcached' => ['label' => 'Memcached', 'available' => class_exists('Memcached')],
             'memcache'  => ['label' => 'Memcache (legacy extension)', 'available' => class_exists('Memcache')],
         ];
+
+    }
+
+
+    /**
+     * Choices of the "Artwork Format" select: only formats this server's GD can write are offered
+     *
+     * @return array ['<extension>' => label], '' = no conversion
+     */
+    private function artworkFormats(): array
+    {
+        $labels  = ['jpg' => 'JPEG', 'png' => 'PNG', 'webp' => 'WebP', 'avif' => 'AVIF'];
+        $formats = ['' => 'Keep original'];
+
+        foreach (Formats::supported() as $extension) {
+            $formats[$extension] = $labels[$extension] ?? strtoupper($extension);
+        }
+
+        return $formats;
 
     }
 

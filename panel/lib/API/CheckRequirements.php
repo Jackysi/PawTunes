@@ -59,7 +59,7 @@ class CheckRequirements extends Base
         }
 
         // Find default artwork
-        $extensions = ['jpg', 'jpeg', 'png', 'svg', 'webp'];
+        $extensions = ['jpg', 'jpeg', 'png', 'svg', 'webp', 'avif'];
         $artwork    = false;
         foreach ($extensions as $ext) {
             if (is_file("data/images/default.{$ext}")) {

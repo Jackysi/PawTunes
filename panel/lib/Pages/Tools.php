@@ -14,7 +14,7 @@
 namespace Pages;
 
 use lib\Helpers;
-use lib\ImageResize;
+use lib\Image\Image;
 use lib\PawTunes;
 use Panel;
 use ScssPhp\ScssPhp\Compiler;
@@ -179,36 +179,39 @@ final class Tools extends Page
             $this->panel->sendError("Uploading failed! ERROR: {$upload['error']}");
         }
 
-        // The new file replaced its own format; drop copies of this track in the other formats
-        foreach ($extensions as $extension) {
-            if ("data/images/{$track}.{$extension}" !== $upload['path'] && is_file("data/images/{$track}.{$extension}")) {
-                PawTunes::deleteFile("data/images/{$track}.{$extension}");
-            }
-        }
-
         if ( ! extension_loaded('gd')) {
             PawTunes::deleteFile($upload['path']);
             $this->panel->sendError('Cropping image failed because GD extension is not available!');
         }
 
-        $size = $this->pawtunes->config('images_size');
-        if ( ! is_numeric($size) || $size < 100) {
+        $size = (int) $this->pawtunes->config('images_size');
+        if ($size < 100) {
             $size = 280;
         }
 
         // The crop offset was picked on a 140px preview, scale it to the stored size
         $scale = $size / 140;
 
-        ImageResize::handle(
-            $upload['path'],
-            "{$size}x{$size}",
-            'crop',
-            null,
-            [
-                'cropY' => (int) trim($this->request->post('cropY')) * $scale,
-                'cropX' => (int) trim($this->request->post('cropX')) * $scale,
-            ]
-        );
+        // "Artwork Format": stored in that one format, otherwise in the uploaded one
+        $format = $this->pawtunes->artworkFormat();
+        $stored = ($format !== null) ? "data/images/{$track}.{$format}" : $upload['path'];
+
+        // An SVG cannot be opened (nor cropped or converted) and stays as uploaded
+        $image   = Image::open($upload['path']);
+        $cropped = $image !== null && $image
+                ->crop($size, $size, (int) round((int) $this->request->post('cropX') * $scale), (int) round((int) $this->request->post('cropY') * $scale))
+                ->save($stored);
+
+        if ( ! $cropped) {
+            $stored = $upload['path'];
+        }
+
+        // Drop the other copies of this track: older uploads in other formats, and the upload itself once converted
+        foreach ($extensions as $extension) {
+            if ("data/images/{$track}.{$extension}" !== $stored && is_file("data/images/{$track}.{$extension}")) {
+                PawTunes::deleteFile("data/images/{$track}.{$extension}");
+            }
+        }
 
         die('Artwork image was uploaded and handled successfully!');
 

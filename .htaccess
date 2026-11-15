@@ -28,3 +28,5 @@ AddType audio/ogg .ogg
 AddType video/mp4 .mp4
 AddType audio/mpeg .mp3
 AddType image/svg+xml .svg
+AddType image/webp .webp
+AddType image/avif .avif

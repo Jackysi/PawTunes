@@ -67,6 +67,7 @@ return array(
     'history'              => true,
     'historyLength'        => 20,
     'cache_images'         => true,
+    'artwork_format'       => '',
     'cache_api_requests'   => true,
     'clean_artwork_search' => true,
     'serve_via_web'        => false,

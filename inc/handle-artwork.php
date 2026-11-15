@@ -69,7 +69,9 @@ if (
     header('X-Sendfile: '.$art);
     header('X-Accel-Redirect: '.$art);
     header('X-LiteSpeed-Location: '.$art);
-    flush();
+
+    // No flush() here: sent headers would stop PawTunes::afterResponse() from ending the response, and the
+    // work queued for after it (recompressing the artwork just downloaded) would be skipped
     exit;
 
 }

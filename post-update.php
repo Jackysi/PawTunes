@@ -29,6 +29,9 @@ $deleteFiles = [
     'panel/tools.php',
     'panel/updates.php',
 
+    # Replaced by the image library in inc/lib/Image
+    'inc/lib/ImageResize.php',
+
     # Delete folders
     'panel/lib/splitbrain/PHPArchive',
     'panel/lib/splitbrain',

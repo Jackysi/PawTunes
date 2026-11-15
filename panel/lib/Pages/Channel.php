@@ -15,7 +15,7 @@ namespace Pages;
 
 use Forms;
 use lib\Helpers;
-use lib\ImageResize;
+use lib\Image\Image;
 use lib\PawTunes;
 use Panel;
 use Services\ConfigStore;
@@ -473,16 +473,10 @@ final class Channel extends Page
             PawTunes::deleteFile($current);
         }
 
-        if ($upload['extension'] !== 'svg') {
-
-            // Width that keeps the proportions at 80px height
-            $size  = getimagesize($upload['path']);
-            $width = $size[0] / ($size[1] / 80);
-
-            $image = new ImageResize($upload['path']);
-            $image->resize("{$width}x80");
-            $image->save($upload['path']);
-
+        // 80px high, proportions kept. An SVG cannot be opened and is used as it is.
+        $image = Image::open($upload['path']);
+        if ($image !== null) {
+            $image->scaleToHeight(80)->save($upload['path']);
         }
 
         return $upload['path'];

@@ -14,7 +14,7 @@
 namespace Services;
 
 use lib\Helpers;
-use lib\ImageResize;
+use lib\Image\Image;
 use lib\PawTunes;
 use RuntimeException;
 
@@ -43,6 +43,7 @@ final class Uploads
             IMAGETYPE_PNG  => 'png',
             IMAGETYPE_GIF  => 'gif',
             IMAGETYPE_WEBP => 'webp',
+            IMAGETYPE_AVIF => 'avif',
         ];
 
 
@@ -165,7 +166,7 @@ final class Uploads
      *
      * @return array{filename: string, path: string, skipped: bool, error: string|null}
      */
-    public function importImage(string $source, string $sourceName, string $name, string $path = 'data/images/', bool $overwrite = true, array $allowed = ['jpg', 'jpeg', 'png', 'webp', 'svg']): array
+    public function importImage(string $source, string $sourceName, string $name, string $path = 'data/images/', bool $overwrite = true, array $allowed = ['jpg', 'jpeg', 'png', 'webp', 'avif', 'svg']): array
     {
         $result = ['filename' => '', 'path' => '', 'skipped' => false, 'error' => null];
 
@@ -229,7 +230,9 @@ final class Uploads
         $sizes = [512, 192, 180];
         foreach ($sizes as $size) {
 
-            if (ImageResize::handle($source, "{$size}x{$size}", 'crop', "data/images/app-icon-{$size}.png") === false) {
+            // Opened again for every size: crop() changes the image, and each icon must come from the full source
+            $image = Image::open($source);
+            if ($image === null || ! $image->crop($size, $size)->save("data/images/app-icon-{$size}.png")) {
 
                 PawTunes::deleteFile($source);
                 foreach ($sizes as $cleanup) {

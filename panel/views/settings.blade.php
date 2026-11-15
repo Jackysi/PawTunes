@@ -247,6 +247,14 @@
             'description' => 'Download, crop and serve artwork from this server',
         ],
         [
+            'label'   => 'Artwork Format',
+            'name'    => 'artwork_format',
+            'class'   => 'col-sm-4',
+            'type'    => 'select',
+            'options' => $artworkFormats,
+            'hint'    => 'Stores all new artwork (downloaded, uploaded or imported) in one format. WebP and AVIF files are much smaller than JPEG. Artwork you already have stays as it is and is still found, and SVG files are never converted.',
+        ],
+        [
             'label'       => 'Cache API Requests',
             'name'        => 'cache_api_requests',
             'class'       => 'col-sm-9',

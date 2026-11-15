@@ -14,6 +14,7 @@
 namespace lib\PawTunes\Artwork;
 
 use lib\Helpers;
+use lib\Image\Image;
 use lib\PawTunes;
 
 abstract class Artwork
@@ -51,7 +52,7 @@ abstract class Artwork
      *
      * @var string[]
      */
-    public $extensions = ['jpg', 'jpeg', 'png', 'svg', 'webp'];
+    public $extensions = ['jpg', 'jpeg', 'png', 'svg', 'webp', 'avif'];
 
     /**
      * @var integer
@@ -356,12 +357,24 @@ abstract class Artwork
             return null;
         }
 
-        // Where to store image
-        $path = "{$this->cachePath}/{$imageName}.".$imageType;
-        file_put_contents($path, $img);
+        // Stored as downloaded first
+        $source = "{$this->cachePath}/{$imageName}.".$imageType;
+        file_put_contents($source, $img);
 
-        // Resize/Crop image
-        \lib\ImageResize::handle($path, "{$this->imageWidth}x{$this->imageHeight}", 'crop');
+        // "Artwork Format": every new image is stored in that one format, otherwise in the one it came in
+        $format = $this->pawtunes->artworkFormat();
+        $path   = ($format !== null) ? "{$this->cachePath}/{$imageName}.{$format}" : $source;
+
+        // Crop to the configured square. A file GD cannot read stays as it was downloaded.
+        $image = Image::open($source);
+        if ($image === null || ! $image->crop((int) $this->imageWidth, (int) $this->imageHeight)->save($path)) {
+            return $source;
+        }
+
+        // Converted: the download itself is not needed any more
+        if ($path !== $source) {
+            Helpers::deleteFile($source);
+        }
 
         return $path;
     }
