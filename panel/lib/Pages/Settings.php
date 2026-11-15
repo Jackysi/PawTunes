@@ -186,7 +186,7 @@ final class Settings extends Page
         }
 
         // Each artwork source posts its fields as one array, they are stored together as "artwork_sources"
-        $artworkSources = $this->panel->mapArtworkSourcesPost($posted);
+        $artworkSources = $this->panel->mapArtworkSourcesPost($posted, $this->pawtunes->config('artwork_sources') ?: []);
         $posted         = array_diff_key($posted, $artworkSources);
 
         // Uploads come first: a stored share image becomes the value of its text field

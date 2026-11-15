@@ -44,7 +44,8 @@ class Panel
      */
     private array $globals;
     /**
-     * Rendered using "Forms" class
+     * Artwork sources and their settings fields. A field with 'secret' => true (API key, private key) is
+     * never sent back to the browser, see mapArtworkSourcesView() and mapArtworkSourcesPost().
      *
      * @var array
      */
@@ -68,6 +69,7 @@ class Panel
                     [
                         'name'        => 'private_key',
                         'type'        => 'password',
+                        'secret'      => true,
                         'placeholder' => 'file:///path/to/AuthKey_XXXX.p8',
                         'helpText'    => 'Absolute path to AuthKey_XXXX.p8 (downloaded when creating the MusicKit key), prefixed with file://. Pasting the key contents here does not work, as this field drops the line breaks the key needs.',
                     ],
@@ -83,6 +85,8 @@ class Panel
                 'name'  => 'FanArtTV (API key required)',
                 'field' => [
                     'name'        => 'api_key',
+                    'type'        => 'password',
+                    'secret'      => true,
                     'placeholder' => 'Your API key',
                     'helpText'    => 'Click to open providers website in a new tab.',
                     'helpURL'     => 'https://fanart.tv/get-an-api-key/',
@@ -92,6 +96,8 @@ class Panel
                 'name'  => 'Spotify (API key required)',
                 'field' => [
                     'name'        => 'api_key',
+                    'type'        => 'password',
+                    'secret'      => true,
                     'placeholder' => 'client-id:client-secret format',
                     'helpText'    => 'Click to open providers website in a new tab.',
                     'helpURL'     => 'https://developer.spotify.com/dashboard/',
@@ -101,6 +107,8 @@ class Panel
                 'name'  => 'LastFM (API key required)',
                 'field' => [
                     'name'        => 'api_key',
+                    'type'        => 'password',
+                    'secret'      => true,
                     'placeholder' => 'Your API key',
                     'helpText'    => 'Click to open providers website in a new tab.',
                     'helpURL'     => 'https://www.last.fm/api/account/create',
@@ -446,7 +454,24 @@ class Panel
 
 
     /**
-     * This will be passed to the view
+     * The settings fields of one artwork source: a source defines one 'field', a list of 'fields', or none
+     *
+     * @param  string  $key  Artwork source key
+     *
+     * @return array
+     */
+    private function artworkSourceFields(string $key): array
+    {
+        $source = $this->artworkSources[$key] ?? [];
+
+        return $source['fields'] ?? (isset($source['field']) ? [$source['field']] : []);
+
+    }
+
+
+    /**
+     * This will be passed to the view. Secret fields come out empty: the view only learns that a value is
+     * saved, from the field names listed under 'saved'.
      *
      * @param $data
      *
@@ -466,6 +491,19 @@ class Panel
             } else {
 
                 $finalData[$key] = $value;
+            }
+
+            $finalData[$key]['saved'] = [];
+            foreach ($this->artworkSourceFields($key) as $field) {
+                if ( ! empty($field['secret'])) {
+
+                    if ( ! empty($finalData[$key][$field['name']])) {
+                        $finalData[$key]['saved'][] = $field['name'];
+                    }
+
+                    $finalData[$key][$field['name']] = '';
+
+                }
             }
         }
 
@@ -495,15 +533,38 @@ class Panel
      * array under its key. The list is drag & drop sortable, so the order the sources arrive in is the
      * order they are tried in: it is stored as "index" (0 = first).
      *
+     * Secret fields are never sent to the browser, so an empty one keeps the stored value and removing it
+     * takes the "forget_<field>" checkbox.
+     *
      * @param  array  $post  The posted settings form
+     * @param  array  $stored  The stored "artwork_sources" configuration
      *
      * @return array The "artwork_sources" configuration
      */
-    public function mapArtworkSourcesPost(array $post): array
+    public function mapArtworkSourcesPost(array $post, array $stored = []): array
     {
         $finalData = [];
         foreach ($post as $key => $value) {
             if (array_key_exists($key, $this->artworkSources) && is_array($value)) {
+
+                foreach ($this->artworkSourceFields($key) as $field) {
+
+                    if (empty($field['secret'])) {
+                        continue;
+                    }
+
+                    $name   = $field['name'];
+                    $forget = ! empty($value["forget_{$name}"]);
+                    $typed  = is_string($value[$name] ?? null) && trim($value[$name]) !== '';
+                    unset($value["forget_{$name}"]);
+
+                    if ($forget) {
+                        $value[$name] = '';
+                    } elseif ( ! $typed) {
+                        $value[$name] = $stored[$key][$name] ?? '';
+                    }
+
+                }
 
                 $finalData[$key]          = $value;
                 $finalData[$key]['index'] = count($finalData) - 1;

@@ -14,6 +14,9 @@
  *              'server'   a URL PawTunes can read a host from (http, https or wss)
  *              'required' must not be empty
  *  - trim      true: surrounding whitespace is removed and an empty value is stored as null
+ *  - sent_to   marks a secret (password, API key) and names the "map" key of the server it is sent to. The
+ *              saved value is never sent back to the browser: an empty field keeps it, and it is only kept
+ *              while that server stays the same. The server's field must come BEFORE the secret in the list.
  *
  * Every other key is a Forms field option (label, placeholder, class, required, description, hint, ...).
  */
@@ -69,6 +72,7 @@ return [
             [
                 'label'        => 'API Key',
                 'name'         => 'azura-api-key',
+                'sent_to'      => 'url',
                 'map'          => 'api-key',
                 'trim'         => true,
                 'placeholder'  => 'AzuraCast API key',
@@ -126,6 +130,7 @@ return [
             [
                 'label'        => 'Admin Password',
                 'name'         => 'shoutcast-pass',
+                'sent_to'      => 'url',
                 'map'          => 'auth',
                 'placeholder'  => 'password',
                 'class'        => 'col-sm-5',
@@ -200,6 +205,7 @@ return [
                 'autocomplete' => 'new-password',
                 'label'        => 'Admin Password',
                 'name'         => 'icecast-pass',
+                'sent_to'      => 'url',
                 'map'          => 'auth-pass',
                 'placeholder'  => 'password',
                 'class'        => 'col-sm-5',
@@ -271,6 +277,7 @@ return [
                 'autocomplete' => 'new-password',
                 'label'        => 'MySQL Password',
                 'name'         => 'sam-pass',
+                'sent_to'      => 'host',
                 'map'          => 'auth-pass',
                 'placeholder'  => 'password',
                 'class'        => 'col-sm-5',
@@ -355,6 +362,7 @@ return [
             [
                 'label'        => 'HTTP-Auth Password',
                 'name'         => 'custom-pass',
+                'sent_to'      => 'url',
                 'map'          => 'auth-pass',
                 'placeholder'  => 'Password',
                 'class'        => 'col-sm-4',

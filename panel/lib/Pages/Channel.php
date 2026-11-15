@@ -103,6 +103,15 @@ final class Channel extends Page
     {
         $values = $this->submitted ?? $this->storedValues();
 
+        // Secrets are never sent back to the browser, not even the ones just submitted with a rejected form
+        foreach ($this->methods as $method) {
+            foreach ($method['fields'] as $field) {
+                if (isset($field['sent_to'])) {
+                    unset($values[$field['name']]);
+                }
+            }
+        }
+
         $this->panel->view(
             'channel-edit',
             [
@@ -113,7 +122,7 @@ final class Channel extends Page
                 'cid'              => $this->id,
                 'error'            => $this->error,
                 'schemesList'      => $this->colorSchemes(),
-                'trackInfoMethods' => $this->methods,
+                'trackInfoMethods' => $this->methodsForView(),
             ]
         );
 
@@ -296,7 +305,11 @@ final class Channel extends Page
                 $value = trim((string) $value) !== '' ? trim($value) : null;
             }
 
-            $this->error = $this->fieldProblem($field, $value);
+            if (isset($field['sent_to'])) {
+                $value = $this->secretFromPost($field, $value, $stats, $post);
+            }
+
+            $this->error = $this->error ?? $this->fieldProblem($field, $value);
             if ($this->error !== null) {
                 return null;
             }
@@ -306,6 +319,99 @@ final class Channel extends Page
         }
 
         return $stats;
+
+    }
+
+
+    /**
+     * Value to store for a secret field (one with "sent_to"). The saved secret is never sent to the browser,
+     * so an empty field means "keep the saved one" and removing it takes the "forget-<name>" checkbox.
+     *
+     * @param  array  $field  Field definition from panel/inc/track-info-methods.php
+     * @param  string|null  $value  The posted value
+     * @param  array  $stats  The stats array built so far, it already holds the "sent_to" field
+     * @param  array  $post
+     *
+     * @return string|null The value to store. A saved secret that cannot be kept sets $this->error.
+     */
+    private function secretFromPost(array $field, ?string $value, array $stats, array $post): ?string
+    {
+        if ( ! empty($post["forget-{$field['name']}"])) {
+            return null;
+        }
+
+        $saved = $this->savedStats();
+        $typed = $value !== null && $value !== '';
+        if ($typed || ($saved['method'] ?? null) !== $stats['method'] || empty($saved[$field['map']])) {
+            return $value;
+        }
+
+        // A saved secret belongs to the server it was entered for. Keeping it after the server changed would
+        // send it to the new address, which is how someone in the panel could read it without ever seeing it.
+        if (($saved[$field['sent_to']] ?? null) !== ($stats[$field['sent_to']] ?? null)) {
+            $this->error = "The saved <b>{$field['label']}</b> belongs to the server this channel used before. Enter it again to use it with the new one.";
+
+            return null;
+        }
+
+        return $saved[$field['map']];
+
+    }
+
+
+    /**
+     * @return array The stored "stats" array of the channel being edited, empty while adding a new one
+     */
+    private function savedStats(): array
+    {
+        return $this->id !== null ? (array) ($this->channels[$this->id]['stats'] ?? []) : [];
+
+    }
+
+
+    /**
+     * The track info methods as the form draws them. A secret that is saved shows that in its placeholder,
+     * is no longer required (empty keeps it) and, when the method works without it, gets a checkbox to remove it.
+     *
+     * @return array
+     */
+    private function methodsForView(): array
+    {
+        $saved   = $this->savedStats();
+        $methods = $this->methods;
+
+        foreach ($methods as $method => $definition) {
+
+            $fields = [];
+            foreach ($definition['fields'] as $field) {
+
+                $isSaved  = isset($field['sent_to']) && ($saved['method'] ?? null) === $method && ! empty($saved[$field['map']]);
+                $optional = empty($field['required']);
+
+                if ($isSaved) {
+                    $field['placeholder'] = 'Saved, leave blank to keep it';
+                    unset($field['required']);
+                }
+
+                $fields[] = $field;
+
+                if ($isSaved && $optional) {
+                    $fields[] = [
+                        'name'        => "forget-{$field['name']}",
+                        'type'        => 'checkbox',
+                        'value'       => 'true',
+                        'class'       => 'col-sm-9 col-sm-offset-2',
+                        'description' => "Remove the saved {$field['label']}",
+                    ];
+                }
+
+            }
+
+            $methods[$method]['fields'] = $fields;
+
+        }
+
+        return $methods;
 
     }
 

@@ -548,11 +548,13 @@
                                     {{-- Sources define either one 'field' or a list of 'fields' --}}
                                     <div class="input-row">
                                         @foreach(($api['fields'] ?? (isset($api['field']) ? [$api['field']] : [])) as $field)
+                                            {{-- A secret field never carries its saved value (Panel::mapArtworkSourcesView() empties it): blank keeps it --}}
+                                            @php $saved = in_array( $field['name'], $api['saved'] ?? [], true ); @endphp
                                             <div class="input-append {{$field['size'] ?? ''}}">
                                                 <input class="form-control" type="{{$field['type'] ?? 'text'}}"
                                                        name="{{$key}}[{{$field['name']}}]"
-                                                       placeholder="{{$field['placeholder']}}"
-                                                       autocomplete="off"
+                                                       placeholder="{{$saved ? 'Saved, leave blank to keep it' : $field['placeholder']}}"
+                                                       autocomplete="{{!empty( $field['secret'] ) ? 'new-password' : 'off'}}"
                                                        value="{{$api[$field['name']] ?? ''}}">
                                                 <div class="append css-hint left" data-title="{{$field['helpText'] ?? $field['placeholder']}}">
                                                     @if (!empty($field['helpURL']))
@@ -564,6 +566,14 @@
                                                     @endif
                                                 </div>
                                             </div>
+                                            @if ($saved)
+                                                <div class="checkbox">
+                                                    <label class="css-hint" data-title="Remove the saved key when the settings are saved">
+                                                        <input type="checkbox" name="{{$key}}[forget_{{$field['name']}}]" value="true">
+                                                        <span class="icon fa fa-check"></span> <span class="description">Remove</span>
+                                                    </label>
+                                                </div>
+                                            @endif
                                         @endforeach
                                     </div>
                                 </td>
