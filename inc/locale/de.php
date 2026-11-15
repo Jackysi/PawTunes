@@ -51,4 +51,7 @@ return array (
   'sleep_timer' => 'Sleep-Timer',
   'sleep_off' => 'Aus',
   'sleep_remaining' => 'Stoppt in {TIME}',
+  'tab_now' => 'Jetzt',
+  'tab_played' => 'Gespielt',
+  'tab_stations' => 'Sender',
 );

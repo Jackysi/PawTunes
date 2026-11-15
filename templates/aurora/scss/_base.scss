@@ -1,0 +1,1278 @@
+// ─── Aurora: shared styles of every scheme ──────────────────────────────────────
+// Schemes (aurora.scss, aurora-day.scss) set the variables below with !default and import this file. The panel's
+// theme compiler prepends "$accent-color: X; $bg-color: Y;", so both must stay plain !default variables.
+// Kept to @import and plain functions: it compiles with Dart Sass (build) and scssphp (panel) alike. Math that mixes
+// units (rem with cqi/cqh) must sit inside calc(): scssphp 1.x evaluates it inside clamp()/min() and fails.
+
+$accent-color: #3DDCC0 !default; // Glacier: aurora and buttons while the artwork gives no color
+$accent-2: #8B7BFF !default; // Aurora violet: the second curtain hue
+$bg-color: #0E1622 !default; // Polar night
+
+// A light background flips the whole scheme (text, glass, blend mode), so custom panel colors stay readable
+$is-day: lightness($bg-color) > 55%;
+$ink: if($is-day, #13202F, #E9EFF6) !default;
+$frost: if($is-day, #5A6B80, #8FA0B5) !default;
+$on-accent: if(lightness($accent-color) > 60%, #0E1622, #FFFFFF) !default;
+$glass: if($is-day, rgba(#F7FAFC, .82), rgba(darken($bg-color, 3%), .78)) !default;
+$live-color: #FF5468 !default;
+
+$ease-out: cubic-bezier(.2, .8, .2, 1);
+
+// Registered as colors so the browser can transition them: a new artwork recolors the sky, the buttons and
+// (read back by the visualizer) the aurora over the same second and a half
+@property --ac {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #{$accent-color};
+}
+
+@property --ac2 {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #{$accent-2};
+}
+
+@property --sky {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #{$bg-color};
+}
+
+
+// ─── Base ───────────────────────────────────────────────────────────────────────
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+body {
+    overflow: hidden;
+    background: $bg-color;
+    color: $ink;
+    font-family: 'Bricolage Grotesque', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-optical-sizing: auto;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+}
+
+button {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+}
+
+.pawtunes .hidden {
+    display: none !important;
+}
+
+.pawtunes :focus-visible {
+    outline: 2px solid var(--ac);
+    outline-offset: 3px;
+    border-radius: 8px;
+}
+
+
+// ─── Player shell ───────────────────────────────────────────────────────────────
+// The player measures itself (container queries), never the window: full page, popup or a box on another site
+// all get the layout that fits the space they actually have.
+.pawtunes {
+    position: relative;
+    height: 100%;
+    container: player / size;
+}
+
+.pawtunes .shell {
+    --ac: #{$accent-color};
+    --ac2: color-mix(in oklch, var(--ac) 40%, #{$accent-2});
+    --sky: #{$bg-color};
+    --on-ac: #{$on-accent};
+    --ink: #{$ink};
+    --frost: #{$frost};
+    --line: #{rgba($ink, .1)};
+    --surface: #{rgba($ink, .06)};
+    --glass: #{$glass};
+    --aurora-blend: #{if($is-day, multiply, lighter)};
+    --tabs-h: calc(64px + env(safe-area-inset-bottom, 0px));
+
+    position: relative;
+    display: grid;
+    grid-template: "stage" minmax(0, 1fr) "tabs" auto / minmax(0, 1fr);
+    height: 100%;
+    overflow: hidden;
+    background: radial-gradient(110% 75% at 10% -10%, color-mix(in oklab, var(--ac) 24%, transparent), transparent 62%),
+    radial-gradient(85% 65% at 105% 115%, color-mix(in oklab, var(--ac2) 20%, transparent), transparent 70%),
+    var(--sky);
+    color: var(--ink);
+    transition: --ac 1.4s ease, --ac2 1.4s ease, --sky 1.4s ease;
+}
+
+// Artwork colors from the player (classes and --artwork-* variables on <html>), each with the scheme's own fallback
+html.artwork-tint-accent .pawtunes .shell {
+    --ac: var(--artwork-color, #{$accent-color});
+    --on-ac: var(--artwork-color-text, #{$on-accent});
+}
+
+html.artwork-tint-background .pawtunes .shell {
+    --sky: var(--artwork-#{if($is-day, pale, deep)}, #{$bg-color});
+}
+
+
+// ─── Stage ──────────────────────────────────────────────────────────────────────
+.pawtunes .stage {
+    grid-area: stage;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    padding: clamp(14px, 3.2cqi, 36px) clamp(16px, 4cqi, 48px) 0;
+    container: stage / size;
+    isolation: isolate;
+    transition: transform .42s $ease-out, opacity .42s $ease-out;
+}
+
+// The visualizer paints the whole stage; the aurora itself lives in its lower half
+.pawtunes .sky {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+
+// ─── Top bar ────────────────────────────────────────────────────────────────────
+.pawtunes .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 44px;
+}
+
+.pawtunes .station-picker {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    max-width: min(70cqi, 420px);
+    min-height: 40px;
+    padding: 6px 12px 6px 14px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface);
+    font-size: .95rem;
+    font-weight: 600;
+    letter-spacing: -.005em;
+    transition: background .2s ease, border-color .2s ease;
+
+    &:hover {
+        border-color: color-mix(in oklab, var(--ac) 45%, transparent);
+    }
+
+    .current-channel {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+
+        img {
+            display: block;
+            height: 26px;
+            width: auto;
+            max-width: 100%;
+        }
+    }
+
+    .chevron {
+        flex: none;
+        color: var(--frost);
+    }
+}
+
+// Lit while sound is coming out
+.pawtunes .on-air-dot {
+    flex: none;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--frost);
+    opacity: .6;
+    transition: background .3s ease, box-shadow .3s ease, opacity .3s ease;
+}
+
+.pawtunes.is-playing .on-air-dot {
+    background: var(--ac);
+    opacity: 1;
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--ac) 22%, transparent), 0 0 14px var(--ac);
+}
+
+// Single channel with a single stream: nothing to pick
+.pawtunes.single-station .station-picker {
+    pointer-events: none;
+    border-color: transparent;
+    background: none;
+    padding-left: 0;
+
+    .chevron {
+        display: none;
+    }
+}
+
+.pawtunes .topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.pawtunes .icon-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-width: 40px;
+    height: 40px;
+    padding: 0 10px;
+    border-radius: 999px;
+    color: var(--frost);
+    transition: color .2s ease, background .2s ease;
+
+    &:hover {
+        color: var(--ink);
+        background: var(--surface);
+    }
+
+    svg {
+        flex: none;
+    }
+}
+
+.pawtunes .sleep.active {
+    color: var(--ac);
+}
+
+.pawtunes .sleep-remaining {
+    font-size: .85rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.pawtunes .cast {
+    .icon-cast-connected, .icon-airplay {
+        display: none;
+    }
+
+    &.cast-airplay {
+        .icon-cast {
+            display: none;
+        }
+
+        .icon-airplay {
+            display: block;
+        }
+    }
+
+    &.cast-connected {
+        color: var(--ac);
+
+        .icon-cast {
+            display: none;
+        }
+
+        .icon-cast-connected {
+            display: block;
+        }
+    }
+
+    &.cast-connecting {
+        animation: aurora-breathe 1.2s ease-in-out infinite;
+    }
+}
+
+// Sleep timer menu
+.pawtunes .sleep-wrap {
+    position: relative;
+}
+
+.pawtunes .sleep-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: 20;
+    width: 236px;
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: var(--glass);
+    -webkit-backdrop-filter: blur(22px) saturate(1.4);
+    backdrop-filter: blur(22px) saturate(1.4);
+    box-shadow: 0 24px 48px -16px rgba(0, 0, 0, if($is-day, .18, .55));
+    transform-origin: top right;
+    animation: aurora-pop .2s $ease-out;
+}
+
+.pawtunes .sleep-menu-title {
+    margin-bottom: 10px;
+    font-size: .85rem;
+    font-weight: 600;
+    color: var(--frost);
+}
+
+.pawtunes .sleep-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.pawtunes .sleep-option {
+    padding: 7px 12px;
+    border-radius: 999px;
+    background: var(--surface);
+    font-size: .88rem;
+    font-weight: 550;
+    transition: background .2s ease, color .2s ease;
+
+    &:hover {
+        background: color-mix(in oklab, var(--ac) 20%, transparent);
+    }
+
+    &.active {
+        background: var(--ac);
+        color: var(--on-ac);
+    }
+}
+
+.pawtunes .sleep-menu-status {
+    margin-top: 12px;
+    font-size: .85rem;
+    color: var(--frost);
+    font-variant-numeric: tabular-nums;
+}
+
+
+// ─── Now playing ────────────────────────────────────────────────────────────────
+// Portrait (the default): a centered stack, artwork above the text, so any artwork size looks intended.
+// Landscape (see the stage container queries): side by side with the text left-aligned.
+.pawtunes .now {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: clamp(14px, 3.2cqh, 30px);
+    min-height: 0;
+    padding: clamp(6px, 2cqh, 16px) 0 clamp(18px, 5cqh, 48px);
+    text-align: center;
+}
+
+// The slot is a square as wide as the stage allows, and gives up height (flex-shrink, min-height 0) when the text
+// needs it. It is a size container itself, so the cover is simply the largest square that fits: nothing estimates
+// the text height, and every player size gets the biggest artwork it has room for. Spare height on tall players
+// is shared above and below the whole group (justify-content on .now).
+.pawtunes .cover-slot {
+    flex: 0 1 auto;
+    display: grid;
+    place-items: end center;
+    width: min(100%, 440px);
+    aspect-ratio: 1;
+    min-height: 0;
+    container: cover / size;
+}
+
+.pawtunes .cover {
+    position: relative;
+    width: min(100cqw, 100cqh, 440px);
+    aspect-ratio: 1;
+    overflow: hidden;
+    border-radius: clamp(12px, 2.6cqi, 24px);
+    background: var(--surface);
+    box-shadow: 0 34px 70px -28px rgba(0, 0, 0, if($is-day, .35, .7)), 0 0 0 1px rgba($ink, .07);
+
+    &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08);
+        pointer-events: none;
+    }
+
+    .artwork {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform .6s $ease-out;
+    }
+
+    &.searchable {
+        cursor: pointer;
+
+        &:hover .artwork {
+            transform: scale(1.03);
+        }
+    }
+}
+
+.pawtunes .artwork-preloader {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 30px;
+    height: 30px;
+    margin: -15px 0 0 -15px;
+    border: 2px solid rgba(255, 255, 255, .2);
+    border-top-color: #FFFFFF;
+    border-radius: 50%;
+    animation: aurora-spin .8s linear infinite;
+}
+
+.pawtunes .meta {
+    width: 100%;
+    min-width: 0;
+}
+
+.pawtunes .live-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 12px;
+    padding: 4px 11px 4px 9px;
+    border-radius: 999px;
+    background: rgba($live-color, .16);
+    color: if($is-day, darken($live-color, 12%), lighten($live-color, 6%));
+    font-size: .78rem;
+    font-weight: 650;
+    letter-spacing: .04em;
+
+    .live-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: $live-color;
+        box-shadow: 0 0 10px $live-color;
+    }
+
+    .live-streamer {
+        max-width: 22ch;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        letter-spacing: 0;
+        font-weight: 550;
+    }
+}
+
+// The one loud thing in the type: the song title, large, tight and allowed two lines
+.pawtunes .track-title {
+    display: -webkit-box;
+    margin: 0;
+    overflow: hidden;
+    font-size: clamp(1.4rem, min(calc(1rem + 4.4cqi), calc(.6rem + 4.2cqh)), 3.9rem);
+    font-weight: 650;
+    line-height: 1.02;
+    letter-spacing: -.025em;
+    text-wrap: balance;
+    text-shadow: 0 2px 18px var(--sky);
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.pawtunes .track-artist {
+    margin: .45em 0 0;
+    overflow: hidden;
+    color: var(--frost);
+    text-shadow: 0 1px 12px var(--sky);
+    font-size: clamp(.95rem, min(calc(.82rem + 1.1cqi), calc(.7rem + 1.1cqh)), 1.4rem);
+    font-weight: 500;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+// Portrait: the play button on the center line, the volume beside it in the right-hand column
+.pawtunes .player {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: clamp(12px, 2.4cqi, 22px);
+    margin-top: clamp(14px, 3.2cqh, 30px);
+
+    .play-button {
+        grid-area: 1 / 2;
+    }
+
+    .volume-control {
+        grid-area: 1 / 3;
+        justify-self: start;
+        max-width: 100%;
+    }
+}
+
+.pawtunes .play-button {
+    position: relative;
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: clamp(58px, 13cqh, 76px);
+    height: clamp(58px, 13cqh, 76px);
+    border-radius: 50%;
+    background: var(--ac);
+    color: var(--on-ac);
+    box-shadow: 0 14px 34px -10px color-mix(in oklab, var(--ac) 75%, transparent), inset 0 1px 0 rgba(255, 255, 255, .28);
+    transition: transform .18s $ease-out, box-shadow .3s ease;
+
+    &:hover {
+        transform: scale(1.04);
+    }
+
+    &:active {
+        transform: scale(.94);
+    }
+
+    // The glyphs scale with the button; the play triangle is centered by its visual mass in the SVG itself
+    svg {
+        display: block;
+        width: 46%;
+        height: 46%;
+    }
+}
+
+// Buffering: a ring of light chases around the stop button
+.pawtunes .player.paw-seeking .stop::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border: 2px solid transparent;
+    border-top-color: var(--ac);
+    border-right-color: color-mix(in oklab, var(--ac) 40%, transparent);
+    border-radius: 50%;
+    animation: aurora-spin .9s linear infinite;
+}
+
+.pawtunes .volume-control {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+}
+
+.pawtunes .volume-icon {
+    width: 40px;
+    padding: 0;
+    color: var(--ink); // full text color: it often sits over the brightest part of the aurora
+
+    svg {
+        display: block;
+    }
+}
+
+// The slider is a tall, invisible hit area around a thin line: easy to grab, quiet to look at
+.pawtunes .volume-slider {
+    flex: 0 1 auto;
+    width: clamp(90px, 20cqi, 170px);
+    min-width: 48px;
+}
+
+.pawtunes .vol-progress {
+    position: relative;
+    height: 22px;
+    cursor: pointer;
+    touch-action: none;
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 4px;
+        margin-top: -2px;
+        border-radius: 4px;
+        background: var(--line);
+    }
+}
+
+.pawtunes .vol-bar {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    height: 4px;
+    margin-top: -2px;
+    border-radius: 4px;
+    background: var(--ink);
+}
+
+.pawtunes .circle-control {
+    position: absolute;
+    top: 50%;
+    right: -7px;
+    width: 14px;
+    height: 14px;
+    margin-top: -7px;
+    border-radius: 50%;
+    background: var(--ink);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .3);
+    opacity: 0;
+    transform: scale(.6);
+    transition: opacity .2s ease, transform .2s ease;
+}
+
+.pawtunes .volume-control:hover .circle-control,
+.pawtunes .circle-control:focus-visible {
+    opacity: 1;
+    transform: none;
+}
+
+.pawtunes .up-next {
+    display: flex;
+    justify-content: center;
+    gap: .6ch;
+    margin: clamp(14px, 3cqh, 24px) 0 0;
+    overflow: hidden;
+    color: var(--frost);
+    font-size: .92rem;
+    white-space: nowrap;
+
+    .up-next-label {
+        flex: none;
+        color: var(--ink);
+        font-weight: 600;
+    }
+
+    .up-next-track {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+
+// ─── Tabs ───────────────────────────────────────────────────────────────────────
+// Narrow players: a bottom bar. Wide players move it above the side rail (see the player container queries).
+.pawtunes .tabs {
+    grid-area: tabs;
+    position: relative;
+    z-index: 12;
+    display: flex;
+    justify-content: space-around;
+    height: var(--tabs-h);
+    padding: 0 8px env(safe-area-inset-bottom, 0px);
+    border-top: 1px solid var(--line);
+    background: var(--glass);
+    -webkit-backdrop-filter: blur(22px) saturate(1.4);
+    backdrop-filter: blur(22px) saturate(1.4);
+}
+
+.pawtunes .tab {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    max-width: 120px;
+    color: var(--frost);
+    font-size: .74rem;
+    font-weight: 550;
+    transition: color .2s ease;
+
+    svg {
+        transition: transform .3s $ease-out;
+    }
+
+    &:hover {
+        color: var(--ink);
+    }
+
+    &.active {
+        color: var(--ink);
+
+        svg {
+            color: var(--ac);
+            transform: translateY(-1px);
+        }
+    }
+}
+
+
+// ─── Rail (wide) / sheet (narrow) ───────────────────────────────────────────────
+.pawtunes .rail {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: var(--tabs-h);
+    z-index: 11;
+    display: flex;
+    flex-direction: column;
+    height: min(78%, 680px);
+    border: 1px solid var(--line);
+    border-bottom: 0;
+    border-radius: 24px 24px 0 0;
+    background: var(--glass);
+    -webkit-backdrop-filter: blur(26px) saturate(1.4);
+    backdrop-filter: blur(26px) saturate(1.4);
+    box-shadow: 0 -24px 60px -20px rgba(0, 0, 0, if($is-day, .15, .5));
+    transform: translateY(calc(100% + var(--tabs-h)));
+    visibility: hidden;
+    transition: transform .42s $ease-out, visibility 0s linear .42s;
+}
+
+.pawtunes.sheet-open .rail {
+    transform: none;
+    visibility: visible;
+    transition: transform .42s $ease-out, visibility 0s;
+}
+
+// The stage steps back while the sheet is up
+.pawtunes.sheet-open .stage {
+    transform: scale(.96);
+    opacity: .4;
+}
+
+.pawtunes .panel {
+    display: none;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+    padding: 20px 14px 16px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: var(--line) transparent;
+
+    &.active {
+        display: flex;
+    }
+}
+
+.pawtunes .panel-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 8px 14px;
+    font-size: 1.2rem;
+    font-weight: 650;
+    letter-spacing: -.01em;
+}
+
+.pawtunes .panel-subtitle {
+    margin: 24px 8px 10px;
+    color: var(--frost);
+    font-size: .88rem;
+    font-weight: 600;
+}
+
+.pawtunes .panel-empty {
+    margin: 8px;
+    padding: 28px 16px;
+    border: 1px dashed var(--line);
+    border-radius: 14px;
+    color: var(--frost);
+    font-size: .92rem;
+    text-align: center;
+}
+
+.pawtunes .panel ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+// History rows
+.pawtunes .history-item {
+    display: grid;
+    grid-template-columns: 46px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+    padding: 8px;
+    border-radius: 12px;
+    transition: background .2s ease;
+
+    &:hover {
+        background: var(--surface);
+    }
+
+    &:first-child .history-track {
+        color: var(--ink);
+    }
+}
+
+.pawtunes .history-artwork {
+    width: 46px;
+    height: 46px;
+    overflow: hidden;
+    border-radius: 9px;
+    background: var(--surface);
+
+    img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .artwork-preloader {
+        width: 16px;
+        height: 16px;
+        margin: -8px 0 0 -8px;
+        position: relative;
+        top: 50%;
+        left: 50%;
+        border-color: var(--line);
+        border-top-color: var(--frost);
+    }
+}
+
+.pawtunes .history-track {
+    display: -webkit-box;
+    overflow: hidden;
+    color: color-mix(in oklab, var(--ink) 88%, transparent);
+    font-size: .92rem;
+    font-weight: 500;
+    line-height: 1.3;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.pawtunes .history-time-ago {
+    color: var(--frost);
+    font-size: .78rem;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+// Stations
+.pawtunes .channel-list .channel a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 50px;
+    padding: 0 16px;
+    border-radius: 14px;
+    color: var(--ink);
+    font-weight: 550;
+    text-decoration: none;
+    transition: background .2s ease;
+
+    &:hover {
+        background: var(--surface);
+    }
+}
+
+.pawtunes .channel-list .channel.active a {
+    background: color-mix(in oklab, var(--ac) 16%, transparent);
+
+    // Three bars that dance while this station plays
+    &::after {
+        content: '';
+        flex: none;
+        width: 16px;
+        height: 14px;
+        background: linear-gradient(var(--ac), var(--ac)) 0 100% / 3px 40% no-repeat,
+        linear-gradient(var(--ac), var(--ac)) 50% 100% / 3px 100% no-repeat,
+        linear-gradient(var(--ac), var(--ac)) 100% 100% / 3px 65% no-repeat;
+    }
+}
+
+.pawtunes.is-playing .channel-list .channel.active a::after {
+    animation: aurora-eq 1s steps(4) infinite;
+}
+
+.pawtunes .streams-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 0 8px !important;
+
+    .stream a {
+        display: block;
+        padding: 8px 14px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        color: var(--ink);
+        font-size: .88rem;
+        font-weight: 550;
+        text-decoration: none;
+        transition: border-color .2s ease, background .2s ease;
+
+        &:hover {
+            background: var(--surface);
+        }
+    }
+
+    .stream.active a {
+        border-color: var(--ac);
+        background: color-mix(in oklab, var(--ac) 14%, transparent);
+    }
+}
+
+// Listeners
+.pawtunes .listeners-total {
+    padding: 2px 10px;
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--frost);
+    font-size: .8rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.pawtunes .listeners-list.animate {
+    animation: aurora-fade .3s ease;
+}
+
+.pawtunes .listener {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 2px 12px;
+    padding: 10px 8px;
+    border-bottom: 1px solid var(--line);
+    font-size: .9rem;
+
+    &:last-child {
+        border-bottom: 0;
+    }
+
+    .listener-device {
+        overflow: hidden;
+        font-weight: 550;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .listener-ip {
+        grid-column: 1;
+        color: var(--frost);
+        font-size: .8rem;
+    }
+
+    .listener-time {
+        grid-column: 2;
+        grid-row: 1 / span 2;
+        align-self: center;
+        color: var(--frost);
+        font-size: .82rem;
+        font-variant-numeric: tabular-nums;
+    }
+}
+
+
+// ─── Toast ──────────────────────────────────────────────────────────────────────
+.pawtunes .player-message {
+    position: absolute;
+    left: 50%;
+    bottom: calc(var(--tabs-h) + 18px);
+    z-index: 30;
+    max-width: calc(100% - 32px);
+    padding: 10px 18px;
+    border-radius: 999px;
+    background: var(--ink);
+    color: var(--sky);
+    font-size: .88rem;
+    font-weight: 550;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-shadow: 0 16px 40px -12px rgba(0, 0, 0, .5);
+    transform: translateX(-50%);
+    animation: aurora-toast .3s $ease-out;
+}
+
+
+// ─── Layouts by the player's own size ──────────────────────────────────────────
+// Wide: the rail becomes a permanent column with its tabs on top, there is no "Now" tab
+@container player (min-width: 1040px) {
+
+    .pawtunes .shell {
+        --tabs-h: 0px;
+        grid-template: auto minmax(0, 1fr) / minmax(0, 1fr) clamp(320px, 30cqi, 400px);
+    }
+
+    .pawtunes .stage {
+        grid-area: 1 / 1 / span 2 / 2;
+    }
+
+    .pawtunes .tabs, .pawtunes .rail {
+        border-left: 1px solid var(--line);
+        background: #{rgba($ink, .025)};
+    }
+
+    .pawtunes .tabs {
+        grid-area: 1 / 2;
+        justify-content: flex-start;
+        gap: 4px;
+        height: auto;
+        padding: 22px 18px 6px;
+        border-top: 0;
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+    }
+
+    .pawtunes .tab {
+        flex: none;
+        flex-direction: row;
+        gap: 8px;
+        max-width: none;
+        height: 38px;
+        padding: 0 14px;
+        border-radius: 999px;
+        font-size: .9rem;
+
+        &[data-tab="now"] {
+            display: none;
+        }
+
+        &.active {
+            background: var(--surface);
+        }
+    }
+
+    .pawtunes .rail {
+        position: relative;
+        inset: auto;
+        grid-area: 2 / 2;
+        height: auto;
+        min-height: 0;
+        border-top: 0;
+        border-right: 0;
+        border-radius: 0;
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+        box-shadow: none;
+        transform: none;
+        visibility: visible;
+        transition: none;
+    }
+
+    .pawtunes .panel {
+        padding-top: 10px;
+    }
+
+    .pawtunes .panel-title {
+        display: none;
+    }
+
+    .pawtunes .player-message {
+        bottom: 28px;
+    }
+}
+
+// Landscape stage: artwork left, text right and left-aligned. The slot is a column of the stage's full height,
+// so the cover is again the largest square that fits.
+@container stage (orientation: landscape) {
+
+    .pawtunes .now {
+        flex-direction: row;
+        align-items: center;
+        gap: clamp(20px, 5cqi, 64px);
+        text-align: left;
+    }
+
+    .pawtunes .cover-slot {
+        flex: 0 0 min(44cqw, 460px);
+        align-self: stretch;
+        aspect-ratio: auto;
+        place-items: center;
+    }
+
+    .pawtunes .cover {
+        width: min(100cqw, 100cqh, 460px);
+    }
+
+    .pawtunes .meta {
+        flex: 1;
+    }
+
+    .pawtunes .track-title {
+        font-size: clamp(1.4rem, min(calc(.8rem + 3.4cqi), calc(.6rem + 6cqh)), 3.9rem);
+    }
+
+    .pawtunes .player {
+        display: flex;
+    }
+
+    .pawtunes .up-next {
+        justify-content: flex-start;
+    }
+}
+
+// Short narrow players: a slimmer tab bar leaves the height to the artwork
+@container player (max-height: 720px) and (max-width: 1039px) {
+
+    .pawtunes .shell {
+        --tabs-h: calc(54px + env(safe-area-inset-bottom, 0px));
+    }
+
+    .pawtunes .tab {
+        gap: 2px;
+        font-size: .7rem;
+    }
+}
+
+// Small boxes (a square widget, a short sidebar box): no room for a tab bar. The station picker in the top bar
+// still opens the stations sheet, and tapping the stage closes it.
+@container player (max-height: 420px) and (max-width: 520px) {
+
+    .pawtunes .shell {
+        --tabs-h: 0px;
+    }
+
+    .pawtunes .tabs {
+        display: none;
+    }
+
+    .pawtunes .stage {
+        grid-area: 1 / 1 / -1 / -1;
+    }
+}
+
+// Mini strip (a short, wide banner on another site): one row, no tabs, no top bar. Short but squarish boxes
+// keep the stacked layout above instead, a row would leave the text no width.
+@container player (max-height: 300px) and (min-aspect-ratio: 2/1) {
+
+    .pawtunes .shell {
+        --tabs-h: 0px;
+    }
+
+    .pawtunes .tabs, .pawtunes .rail, .pawtunes .topbar, .pawtunes .up-next {
+        display: none !important;
+    }
+
+    .pawtunes .stage {
+        grid-area: 1 / 1 / -1 / -1;
+        padding: 12px 16px;
+    }
+
+    .pawtunes .now {
+        flex-direction: row;
+        align-items: center;
+        gap: 16px;
+        padding: 0;
+        text-align: left;
+    }
+
+    .pawtunes .cover-slot {
+        flex: none;
+        width: min(calc(100cqh - 24px), 160px);
+        height: min(calc(100cqh - 24px), 160px);
+        place-items: center;
+    }
+
+    .pawtunes .cover {
+        border-radius: 12px;
+    }
+
+    // Text on the left, controls on the right, all in one row
+    .pawtunes .meta {
+        display: grid;
+        grid-template: "badge player" auto "title player" auto "artist player" auto / minmax(0, 1fr) auto;
+        align-items: center;
+        column-gap: 16px;
+    }
+
+    .pawtunes .live-badge {
+        grid-area: badge;
+        justify-self: start;
+        margin-bottom: 4px;
+    }
+
+    .pawtunes .track-title {
+        grid-area: title;
+        font-size: clamp(1.1rem, calc(.7rem + 2cqi), 1.6rem);
+        -webkit-line-clamp: 1;
+        line-clamp: 1;
+    }
+
+    .pawtunes .track-artist {
+        grid-area: artist;
+        margin-top: 2px;
+        font-size: .95rem;
+    }
+
+    .pawtunes .player {
+        display: flex;
+        grid-area: player;
+        margin-top: 0;
+    }
+
+    .pawtunes .play-button {
+        width: 50px;
+        height: 50px;
+    }
+
+    .pawtunes .player-message {
+        bottom: 12px;
+    }
+}
+
+// Very narrow strips drop the volume slider (the wheel and the icon still work)
+@container player (max-width: 380px) {
+    .pawtunes .volume-slider {
+        display: none;
+    }
+}
+
+
+// ─── Motion ─────────────────────────────────────────────────────────────────────
+@keyframes aurora-spin {
+    to {
+        transform: rotate(1turn);
+    }
+}
+
+@keyframes aurora-pop {
+    from {
+        opacity: 0;
+        transform: translateY(-6px) scale(.97);
+    }
+}
+
+@keyframes aurora-toast {
+    from {
+        opacity: 0;
+        transform: translate(-50%, 10px);
+    }
+}
+
+@keyframes aurora-fade {
+    from {
+        opacity: 0;
+    }
+}
+
+@keyframes aurora-breathe {
+    50% {
+        opacity: .4;
+    }
+}
+
+@keyframes aurora-eq {
+    0% {
+        background-size: 3px 40%, 3px 100%, 3px 65%;
+    }
+    25% {
+        background-size: 3px 90%, 3px 50%, 3px 30%;
+    }
+    50% {
+        background-size: 3px 60%, 3px 80%, 3px 100%;
+    }
+    75% {
+        background-size: 3px 100%, 3px 35%, 3px 55%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pawtunes, .pawtunes * {
+        transition-duration: .01ms !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+    }
+}

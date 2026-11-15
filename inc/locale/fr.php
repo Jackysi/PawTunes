@@ -51,4 +51,7 @@ return array (
   'sleep_timer' => 'Minuterie de veille',
   'sleep_off' => 'Désactivée',
   'sleep_remaining' => 'Arrêt dans {TIME}',
+  'tab_now' => 'En cours',
+  'tab_played' => 'Diffusés',
+  'tab_stations' => 'Stations',
 );

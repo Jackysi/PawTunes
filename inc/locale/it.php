@@ -51,4 +51,7 @@ return array (
   'sleep_timer' => 'Timer di spegnimento',
   'sleep_off' => 'Spento',
   'sleep_remaining' => 'Si ferma tra {TIME}',
+  'tab_now' => 'Ora',
+  'tab_played' => 'Trasmessi',
+  'tab_stations' => 'Stazioni',
 );

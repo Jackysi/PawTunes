@@ -1,0 +1,113 @@
+{
+    "author": "Jaka Prasnikar",
+    "name": "Aurora",
+    "template": "template.html",
+    "size": "960x600",
+    "theme_color": "#0E1622",
+    "background_color": "#0E1622",
+    "screenshot": "screenshot.webp",
+    "url": "https://prahec.com",
+    "schemes": [
+        {
+            "name": "Night",
+            "compile": "scss/aurora.scss",
+            "style": "./css/aurora.css"
+        },
+        {
+            "name": "Day",
+            "compile": "scss/aurora-day.scss",
+            "style": "./css/aurora-day.css"
+        }
+    ],
+    "extra": {
+        "visualizer": {
+            "name": "visualizer",
+            "type": "checkbox",
+            "group": "Visualizer",
+            "label": "Aurora visualizer",
+            "description": "The music's spectrum rises behind the player as northern lights. Needs streams that send CORS headers.",
+            "default": true,
+            "value": "true"
+        },
+        "artworkAccent": {
+            "name": "artworkAccent",
+            "type": "checkbox",
+            "group": "Artwork colors",
+            "label": "Accent from artwork",
+            "description": "Tint the aurora, the play button and highlights with the current artwork's color.",
+            "default": true,
+            "value": "true"
+        },
+        "artworkBackground": {
+            "name": "artworkBackground",
+            "type": "checkbox",
+            "group": "Artwork colors",
+            "label": "Background from artwork",
+            "description": "Let the sky behind the player take on the artwork's color as well.",
+            "default": true,
+            "value": "true"
+        },
+        "useChannelLogos": {
+            "name": "useChannelLogos",
+            "type": "checkbox",
+            "group": "Layout",
+            "label": "Channel logos",
+            "description": "Show the channel logo instead of its name at the top of the player.",
+            "default": false,
+            "value": "true"
+        },
+        "showUpNext": {
+            "name": "showUpNext",
+            "type": "checkbox",
+            "group": "Layout",
+            "label": "Up next",
+            "description": "Show the queued track below the controls. Works for AzuraCast and SAM channels with their Up Next switch on.",
+            "default": true,
+            "value": "true"
+        },
+        "showLiveBadge": {
+            "name": "showLiveBadge",
+            "type": "checkbox",
+            "group": "Layout",
+            "label": "Live DJ badge",
+            "description": "Show a LIVE badge with the streamer name while an AzuraCast channel has a live DJ.",
+            "default": true,
+            "value": "true"
+        },
+        "keyboardShortcuts": {
+            "name": "keyboardShortcuts",
+            "type": "checkbox",
+            "group": "Layout",
+            "label": "Keyboard shortcuts",
+            "description": "Space plays and stops, M mutes, arrow up and down change the volume.",
+            "default": true,
+            "value": "true"
+        },
+        "songSearchEnable": {
+            "name": "songSearchEnable",
+            "type": "checkbox",
+            "group": "Song search",
+            "label": "Search on artwork click",
+            "description": "Clicking the artwork opens the search URL below for the playing song.",
+            "default": true,
+            "value": "true"
+        },
+        "songSearch": {
+            "name": "songSearch",
+            "type": "text",
+            "group": "Song search",
+            "label": "Search URL",
+            "description": "<code>{query}</code> is replaced with the playing artist and title.",
+            "default": "https://music.apple.com/us/search?term={query}"
+        },
+        "showListeners": {
+            "name": "showListeners",
+            "type": "checkbox",
+            "group": "Listeners",
+            "label": "Listeners tab",
+            "description": "Add a tab listing every current listener: masked IP (such as 93.103.x.x), device and listening time. Off by default for privacy. Needs the AzuraCast (with an API key), Icecast (admin) or Shoutcast (admin) track info method.",
+            "default": false,
+            "value": "true"
+        }
+    }
+}

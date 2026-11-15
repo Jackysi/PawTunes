@@ -64,17 +64,33 @@ Explore the live demo:
   **Username**: `admin`  
   **Password**: `password`
 
-##### Default - PawTunes
-[![PawTunes default template with circular artwork and spectrum visualizer](https://cdn.prahec.com/projects/pawtunes/screens/20241129175123.png)](https://cdn.prahec.com/projects/pawtunes/screens/20241129175123.png)
+##### Aurora (default)
+The music rises behind the player as northern lights, in the colours of the current artwork. One layout for every size: desktop, phone, popup and a strip for your website.
 
-##### AIO Radio Player
-[![PawTunes AIO Radio Player template with multi-channel support](https://cdn.prahec.com/projects/pawtunes/screens/20241129175330.png)](https://cdn.prahec.com/projects/pawtunes/screens/20241129175330.png)
+[![PawTunes Aurora template, Night scheme: a blue aurora and play button taken from the artwork, with the played songs in a side rail](https://cdn.prahec.com/projects/pawtunes/screens/aurora-night-desktop.webp)](https://cdn.prahec.com/projects/pawtunes/screens/aurora-night-desktop.webp)
 
-##### HTML5 Radio Player
-[![PawTunes HTML5 Radio Player compact template](https://cdn.prahec.com/projects/pawtunes/screens/20241129175356.png)](https://cdn.prahec.com/projects/pawtunes/screens/20241129175356.png)
+<p>
+  <img src="https://cdn.prahec.com/projects/pawtunes/screens/aurora-night-phone.webp" width="32%" alt="Aurora on a phone, Night scheme">
+  <img src="https://cdn.prahec.com/projects/pawtunes/screens/aurora-day-phone.webp" width="32%" alt="Aurora on a phone, Day scheme">
+  <img src="https://cdn.prahec.com/projects/pawtunes/screens/aurora-polar-phone.webp" width="32%" alt="Aurora on a phone, Night scheme with artwork colours off">
+</p>
 
-##### Simple Template
-[![PawTunes Simple minimal radio player template](https://cdn.prahec.com/projects/pawtunes/screens/20241129175419.png)](https://cdn.prahec.com/projects/pawtunes/screens/20241129175419.png)
+##### Aurora: Day
+[![PawTunes Aurora template, Day scheme: a light sky with a gold aurora taken from the artwork](https://cdn.prahec.com/projects/pawtunes/screens/aurora-day-desktop.webp)](https://cdn.prahec.com/projects/pawtunes/screens/aurora-day-desktop.webp)
+
+##### Aurora: Night with artwork colours off
+[![PawTunes Aurora template with its own teal and violet aurora instead of the artwork colours](https://cdn.prahec.com/projects/pawtunes/screens/aurora-polar-desktop.webp)](https://cdn.prahec.com/projects/pawtunes/screens/aurora-polar-desktop.webp)
+
+##### Aurora: popup and website strip
+<p>
+  <img src="https://cdn.prahec.com/projects/pawtunes/screens/aurora-day-popup.webp" width="58%" alt="Aurora in a 960 x 600 popup, Day scheme">
+</p>
+<p>
+  <img src="https://cdn.prahec.com/projects/pawtunes/screens/aurora-night-strip.webp" width="58%" alt="Aurora as a 728 x 120 strip for a website">
+</p>
+
+##### PawTunes
+[![PawTunes template with circular artwork and spectrum visualizer](https://cdn.prahec.com/projects/pawtunes/screens/20241129175123.png)](https://cdn.prahec.com/projects/pawtunes/screens/20241129175123.png)
 
 ##### Modern Light
 [![PawTunes Modern Light theme with ring visualizer and mobile-first design](https://cdn.prahec.com/projects/pawtunes/screens/modern-light.png)](https://cdn.prahec.com/projects/pawtunes/screens/modern-light.png)
@@ -94,7 +110,7 @@ Explore the live demo:
 | Caching | Redis, Memcached, APCu, Disk | None |
 | Docker support | Yes, with persistent volumes | Rare |
 | Self-hosted | Full control, no SaaS dependency | Often SaaS |
-| Templates | 6 included, fully customizable | 1 fixed layout |
+| Templates | 3 included with 6 color schemes, fully customizable | 1 fixed layout |
 | WebSocket support | Built-in for live updates | Not available |
 | Artwork management | Auto-crop, optimize, cache | Pass-through only |
 | PHP backend | Full control panel with API integrations | JavaScript only |
@@ -245,9 +261,10 @@ Every template has a cast button that appears once a device is available: Chrome
 ### Home screen icon (web app manifest)
 The player serves a web app manifest at `index.php?manifest` with the player title, description, template colours and an icon, so listeners who add the player to their home screen get your station, not a generic icon. Upload a square image of at least 512 x 512 px under Settings > App Icon; without one the PawTunes icon is used.
 
-### Modern template extras (listeners, up next, live DJ, sleep timer)
-The Modern template has a few features of its own, switched in the control panel under Settings > Template Options:
+### Aurora and Modern template extras (listeners, up next, live DJ, sleep timer)
+The Aurora and Modern templates have a few features of their own, switched in the control panel under Settings > Template Options:
 
+- **Aurora visualizer** (Aurora): the music's spectrum rises behind the player as northern lights in the current artwork's color; the page, the buttons and the aurora cross-fade on every track. The layout follows the size of the player itself, not the window: a side rail on wide screens, tabs and a bottom sheet on phones, artwork beside the text in landscape, and a one-row strip when it is embedded short (from 120 px high). Keyboard: Space plays and stops, M mutes, the arrow keys change the volume.
 - **Listeners page** (off by default): one more tab that shows who is listening right now: a masked address (`93.103.x.x`, `2a01:260:x:x`), the device ("Chrome on Android", "VLC", "Sonos") and the listening time. It works for channels whose track info method is **AzuraCast** (add an API key with the "View Station Reports" permission in the channel editor; the key stays on the server), **Icecast (Admin)** or **Shoutcast (Admin)**. The list is fetched from the admin API at most once every 30 seconds, only while the page is open, and raw addresses are masked before anything is cached or sent. **Privacy**: the page is visible to every visitor, which is why it is off unless you switch it on; the endpoint `index.php?listeners&channel=...` refuses to answer while the option is off.
 - **Up next**: the queued track below the current one, for AzuraCast and SAM Broadcaster channels with their own "Up Next" switch on in the channel editor.
 - **Live DJ badge**: a LIVE pill with the streamer name while an AzuraCast channel has a live DJ.

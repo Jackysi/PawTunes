@@ -29,26 +29,6 @@ const scssFiles = [
  */
 const templateScss = [
     {
-        src: 'templates/aio-radio/scss/aio.light.scss',
-        dest: 'templates/aio-radio/css/',
-        outputName: 'aio.light.css',
-    },
-    {
-        src: 'templates/aio-radio/scss/aio.dark.scss',
-        dest: 'templates/aio-radio/css/',
-        outputName: 'aio.dark.css',
-    },
-    {
-        src: 'templates/html5player/scss/html5-radio-skin.scss',
-        dest: 'templates/html5player/css/',
-        outputName: 'html5-radio-skin.css',
-    },
-    {
-        src: 'templates/simple/scss/simple.scss',
-        dest: 'templates/simple/css/',
-        outputName: 'simple.css',
-    },
-    {
         src: 'templates/pawtunes/scss/pawtunes.scss',
         dest: 'templates/pawtunes/css/',
         outputName: 'pawtunes.css',
@@ -67,6 +47,16 @@ const templateScss = [
         src: 'templates/modern/scss/modern-dark.scss',
         dest: 'templates/modern/css/',
         outputName: 'modern-dark.css',
+    },
+    {
+        src: 'templates/aurora/scss/aurora.scss',
+        dest: 'templates/aurora/css/',
+        outputName: 'aurora.css',
+    },
+    {
+        src: 'templates/aurora/scss/aurora-day.scss',
+        dest: 'templates/aurora/css/',
+        outputName: 'aurora-day.css',
     },
 ];
 
@@ -105,14 +95,14 @@ const tsPaths = [
         outputName: 'pawtunes-tpl.min.js',
     },
     {
-        src: 'src/templates/simple.ts',
-        dest: 'templates/simple/js/',
-        outputName: 'simple.min.js',
-    },
-    {
         src: 'src/templates/modern.ts',
         dest: 'templates/modern/js/',
         outputName: 'modern-tpl.min.js',
+    },
+    {
+        src: 'src/templates/aurora.ts',
+        dest: 'templates/aurora/js/',
+        outputName: 'aurora-tpl.min.js',
     },
 ];
 

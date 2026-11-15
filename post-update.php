@@ -30,6 +30,9 @@ if ( PHP_VERSION_ID < 80100 ) {
 
 }
 
+// Templates removed in PawTunes 2: Aurora replaces them
+$removedTemplates = [ 'aio-radio', 'html5player', 'simple' ];
+
 // *** PAWTUNES 2 CONFIG MIGRATION
 // Read from disk, not from $this->pawtunes: the running instance may have been built before the update
 $configFile = $this->path . '/inc/config/general.php';
@@ -58,6 +61,24 @@ if ( is_array( $config ) ) {
         unset( $config[ 'license' ] );
         $configChanged = true;
 
+    }
+
+    // A player on a removed template moves to Aurora; the removed templates' saved options go
+    if ( in_array( $config[ 'template' ] ?? '', $removedTemplates, true ) ) {
+
+        $this->sendSSE( '<div>The "' . htmlspecialchars( $config[ 'template' ] ) . '" template was removed in PawTunes 2, the player now uses Aurora.</div>' );
+        $config[ 'template' ] = 'aurora';
+        $configChanged        = true;
+
+    }
+
+    foreach ( $removedTemplates as $removed ) {
+        if ( isset( $config[ 'tplOptions' ][ $removed ] ) ) {
+
+            unset( $config[ 'tplOptions' ][ $removed ] );
+            $configChanged = true;
+
+        }
     }
 
     if ( $configChanged && !$this->panel->storeConfig( 'config/general', $config ) ) {
@@ -91,6 +112,29 @@ foreach ( $deleteFiles as $file ) {
             $this->pawtunes->writeLog( 'panel_errors', 'POST UPDATE: Unable to delete "' . $file . '" directory!' );
 
         }
+    }
+
+}
+
+// Removed templates, with any color schemes compiled for them in the panel (useless without the template).
+// The updater only adds and replaces files, so without this they would stay selectable forever.
+foreach ( $removedTemplates as $removed ) {
+
+    $dir = $this->path . '/templates/' . $removed;
+    if ( !is_dir( $dir ) ) {
+        continue;
+    }
+
+    $items = new RecursiveIteratorIterator( new RecursiveDirectoryIterator( $dir, FilesystemIterator::SKIP_DOTS ), RecursiveIteratorIterator::CHILD_FIRST );
+    foreach ( $items as $item ) {
+        $item->isDir() ? @rmdir( $item->getPathname() ) : @unlink( $item->getPathname() );
+    }
+
+    if ( !@rmdir( $dir ) ) {
+
+        $this->sendSSE( '<div class="text-danger">Unable to delete the removed <strong>"templates/' . $removed . '"</strong> template!</div>' );
+        $this->pawtunes->writeLog( 'panel_errors', 'POST UPDATE: Unable to delete the "templates/' . $removed . '" directory!' );
+
     }
 
 }

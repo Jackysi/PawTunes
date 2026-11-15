@@ -51,4 +51,7 @@ return array (
   'sleep_timer' => 'Časovnik spanja',
   'sleep_off' => 'Izklopljen',
   'sleep_remaining' => 'Ustavi se čez {TIME}',
+  'tab_now' => 'Zdaj',
+  'tab_played' => 'Predvajano',
+  'tab_stations' => 'Postaje',
 );

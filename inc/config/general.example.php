@@ -55,7 +55,7 @@ return array(
     'debugging'            => 'log-only',
     'default_channel'      => '0',
     'default_volume'       => '75',
-    'template'             => 'pawtunes',
+    'template'             => 'aurora',
     'artist_default'       => 'Various Artists',
     'title_default'        => 'Unknown Track',
     'dynamic_title'        => true,
