@@ -243,6 +243,10 @@ if ( ! empty($_POST)) {
 
         $message = $panel->alert('Invalid range for Stats Refresh Speed. The value must not be lower than <b>3</b> and higher than <b>120</b>!', 'error');
 
+    } elseif ( ! is_numeric($_POST['historyLength'] ?? null) || $_POST['historyLength'] < 1 || $_POST['historyLength'] > lib\PawTunes\History::MAX_LENGTH) {
+
+        $message = $panel->alert('Invalid range for Track History Length. The value must not be lower than <b>1</b> and higher than <b>'.lib\PawTunes\History::MAX_LENGTH.'</b>!', 'error');
+
     } elseif ( ! isset($cacheModes[$cache['mode']])) {
 
         $message = $panel->alert('Unknown cache mode, please pick one from the list.', 'error');
@@ -271,6 +275,8 @@ if ( ! empty($_POST)) {
             $_POST['admin_password'] = $pawtunes->config('admin_password');
 
         }
+
+        $_POST['historyLength'] = (int) $_POST['historyLength'];
 
         // Keep development key
         if ( ! empty($pawtunes->config('development'))) {
@@ -301,6 +307,8 @@ if ( ! empty($_POST)) {
     foreach ($checkboxes as $key => $default) {
         $_POST[$key] = $_POST[$key] ?? $default;
     }
+
+    $_POST['historyLength'] = lib\PawTunes\History::length($pawtunes);
 
 }
 

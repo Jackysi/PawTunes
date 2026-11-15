@@ -220,8 +220,19 @@
             'class'       => 'col-sm-9',
             'value'       => 'true',
             'type'        => 'checkbox',
-            'description' => 'Show recently played tracks',
-            'hint'        => 'Uses the stream server\'s history when the source provides one, otherwise the tracks played since the listener opened the player.',
+            'description' => 'Show recently played tracks &middot; <a target="_blank" href="https://doc.prahec.com/pawtunes#track-history">Docs</a>',
+            'hint'        => 'PawTunes records each channel\'s tracks whenever track info is fetched and adds the stream server\'s own history when the source provides one. Set up the cron job from the docs to keep recording while nobody listens.',
+        ],
+        [
+            'label'       => 'Track History Length',
+            'name'        => 'historyLength',
+            'placeholder' => 20,
+            'min'         => 1,
+            'max'         => lib\PawTunes\History::MAX_LENGTH,
+            'class'       => 'col-sm-2',
+            'description' => 'tracks per channel',
+            'hint'        => 'How many recently played tracks are kept and shown. The whole list is part of every track info response, so a long one is best combined with artwork lazy loading.',
+            'type'        => 'number',
         ],
     ];
 

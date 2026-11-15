@@ -132,7 +132,7 @@ The music rises behind the player as northern lights, in the colours of the curr
 - **Dynamic Window Title**: Updates the browser window title dynamically based on the current track info.
 - **MediaInfoAPI**: Similar to YouTube, **PawTunes** displays artwork/track info on any Bluetooth device.
 - **Easy Customization**: With minimal development skills, you can tailor the front-end to your preferences.
-- **Stream History**: Track stream history for each channel using API data or generate it dynamically.
+- **Track History**: PawTunes keeps each channel's recently played tracks itself, merged with the stream server's history where there is one, so every visitor sees the full list at once. A cron job keeps it complete while nobody listens, see [Track history and the cron job](#track-history-and-the-cron-job).
 - **Auto-Reconnect**: Automatically reconnects streams in case of browser disconnection or network errors.
 - **Casting**: Chromecast (Chromium browsers) and AirPlay (Safari, iOS) buttons in every template, see [Casting](#casting-chromecast-and-airplay).
 - **Installable**: a web app manifest with your station's name and icon, so "Add to Home Screen" installs a branded app.
@@ -269,6 +269,37 @@ The Aurora and Modern templates have a few features of their own, switched in th
 - **Up next**: the queued track below the current one, for AzuraCast and SAM Broadcaster channels with their own "Up Next" switch on in the channel editor.
 - **Live DJ badge**: a LIVE pill with the streamer name while an AzuraCast channel has a live DJ.
 - **Sleep timer**: the moon in the header offers Off, 15, 30, 60 and 90 minutes; playback fades out over the last 30 seconds and stops. (The timer itself lives in the player core, so other templates can offer it too.)
+
+### Track history and the cron job
+With **Show Track History** on (Settings > Live Information), PawTunes records the tracks of every channel in its cache, whatever the track info method. Each track info fetch adds the track on air when it changed, and a history sent by the stream server (Shoutcast Admin, AzuraCast, Custom JSON) is merged in with its real start times. The list (20 tracks by default, **Track History Length** allows up to 200) is part of every `index.php?channel=<name>` response as `history`.
+
+Track info is only fetched while a player is open, so have `cron.php` run once a minute to keep recording without listeners. On Linux and macOS (or the "Cron Jobs" page of a hosting control panel) that is a cron job:
+
+```bash
+# Command line, as the web server's user (crontab -u www-data -e)
+* * * * * php /var/www/html/player/cron.php > /dev/null 2>&1
+
+# Or by URL
+* * * * * curl -s https://your-radio-url.com/player/cron.php > /dev/null
+
+# Docker, from the host
+* * * * * docker exec -u www-data pawtunes php /var/www/html/cron.php > /dev/null 2>&1
+```
+
+On Windows the Task Scheduler does the same. From a Command Prompt opened as Administrator:
+
+```bat
+:: Command line
+schtasks /Create /TN "PawTunes Cron" /SC MINUTE /MO 1 /RU SYSTEM /TR "\"C:\php\php.exe\" \"C:\inetpub\wwwroot\player\cron.php\""
+
+:: Or by URL
+schtasks /Create /TN "PawTunes Cron" /SC MINUTE /MO 1 /RU SYSTEM /TR "curl.exe -s -o NUL https://your-radio-url.com/player/cron.php"
+```
+
+- The cron job uses the same cache and refresh lock as the player: a channel a listener fetched within the refresh interval is skipped, so it never adds a second request to your stream server.
+- The URL needs no password, it can do nothing a visitor polling the player could not.
+- Channels with a `wss://` stats URL are read by the browser directly and are not recorded.
+- Emptying the cache empties the history. Details: [Track History & Cron Job](https://doc.prahec.com/pawtunes#track-history).
 
 ## Developer API & Customization
 **PawTunes** is designed to be easily extended, upgraded, and customized.

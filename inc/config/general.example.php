@@ -65,6 +65,7 @@ return array(
     'api'                  => false,
     'track_regex'          => '(?P<artist>[^-]*)[ ]?-[ ]?(?P<title>.*)',
     'history'              => true,
+    'historyLength'        => 20,
     'cache_images'         => true,
     'cache_api_requests'   => true,
     'clean_artwork_search' => true,

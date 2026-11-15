@@ -14,6 +14,7 @@
 namespace lib;
 
 use lib\AI\ArtworkGenerator;
+use lib\PawTunes\History;
 use RuntimeException;
 use Throwable;
 
@@ -887,7 +888,7 @@ class PawTunes
             'dynamicTitle'  => $this->config('dynamic_title') ?? false,
             'prefix'        => $this->prefix,
             'history'       => $this->config('history'),
-            'historyMaxLen' => $this->config('historyLength') ?? 20,
+            'historyMaxLen' => History::length($this),
             'language'      => $this->getLanguage(),
             'refreshRate'   => (is_numeric($this->config('stats_refresh')) && $this->config('stats_refresh') >= 3) ? (int) $this->config('stats_refresh') : 15,
             'template'      => $this->config('template'),
