@@ -18,7 +18,7 @@
             <br><br>
             <b>Example 2:</b><br>
             <a href="#" class="launchPlayer" style="margin-top: 8px; display:block;">
-                <img width="350" height="196" src="./../assets/img/popup-banner.png" alt="Open Popup">
+                <img width="auto" height="256" src="./../assets/img/popup-banner.webp" alt="Open Popup">
             </a>
             <br>
             <div class="row">
