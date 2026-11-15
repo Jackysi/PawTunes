@@ -86,6 +86,77 @@ body {
         }
     }
 
+    // Cast button (Chromecast / AirPlay) at the right edge of the header: the player shows it once a device
+    // is available and sets cast-chromecast or cast-airplay, connecting and connected (see the DOM contract)
+    .header .cast {
+        position: absolute;
+        top: 50%;
+        right: 1.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 44px;
+        height: 44px;
+        margin-top: -22px;
+        cursor: pointer;
+        transition: color $duration-fast ease, transform $duration-fast $ease-spring;
+        color: $text-secondary;
+        border-radius: 50%;
+
+        &.hidden {
+            display: none;
+        }
+
+        &:hover {
+            color: $text-color;
+        }
+
+        &:active {
+            transform: scale(.9);
+        }
+
+        .icon-cast-connected, .icon-airplay {
+            display: none;
+        }
+
+        &.cast-airplay {
+            .icon-cast {
+                display: none;
+            }
+
+            .icon-airplay {
+                display: block;
+            }
+        }
+
+        &.cast-chromecast.connected {
+            .icon-cast {
+                display: none;
+            }
+
+            .icon-cast-connected {
+                display: block;
+            }
+        }
+
+        &.connecting {
+            animation: cast-pulse 1.2s ease-in-out infinite;
+        }
+
+        &.connected, &.connected:hover {
+            color: $accent-color;
+        }
+    }
+
+    @keyframes cast-pulse {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: .35;
+        }
+    }
+
 
     // ═════════════════════════════════════════════════════════════════════════
     // BOTTOM TAB BAR
@@ -218,7 +289,13 @@ body {
         inset: 0;
         width: 100%;
         height: 100%;
+        transition: opacity $duration-normal ease;
         pointer-events: none;
+    }
+
+    // Audio plays on a cast device: the analyser only sees silence, so the ring fades out
+    &.casting .visualizer-canvas {
+        opacity: 0;
     }
 
     .artwork-circle {

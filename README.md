@@ -118,6 +118,7 @@ Explore the live demo:
 - **Easy Customization**: With minimal development skills, you can tailor the front-end to your preferences.
 - **Stream History**: Track stream history for each channel using API data or generate it dynamically.
 - **Auto-Reconnect**: Automatically reconnects streams in case of browser disconnection or network errors.
+- **Casting**: Chromecast (Chromium browsers) and AirPlay (Safari, iOS) buttons in every template, see [Casting](#casting-chromecast-and-airplay).
 - **and much more...**
 
 ### Backend
@@ -225,6 +226,15 @@ location ~* ^/data/.*\.(cgi|pl|py|sh|asp|aspx|jsp|shtml)$ { deny all; }
 The Docker image bundles its own nginx configuration; apply the same rules there if you replace it.
 
 ---
+
+### Casting (Chromecast and AirPlay)
+Every template has a cast button that appears once a device is available: Chromecast in Chromium browsers (Chrome, Edge, Opera, Android) through Google's Cast SDK, AirPlay in Safari and every iOS browser through the system picker. Firefox has neither, so it shows no button. Casting can be switched off in the control panel under Settings.
+
+- **HTTPS** is required for Chromecast (the Cast SDK only works in a secure context); `localhost` works for development.
+- The Chromecast fetches the stream itself, so the **stream URL must be reachable from the device**: a public host name, not a LAN address or a URL behind a login. HTTPS streams are preferred.
+- **MP3 and AAC** streams play on every Cast device. FLAC, Ogg and WebM are supported by Cast audio devices only; the player prefers MP3, then AAC, then the rest of the stream group. A stream the device cannot play ends the cast session with a message and keeps playing in the browser.
+- While casting, the play, stop and volume controls drive the device, track info keeps updating in the page, and the sleep timer stops the device. The device screen shows the channel name, the station title and the channel logo (or the default artwork); it cannot show track names, because the Cast receiver would have to reload the stream for every change.
+- **Privacy**: Chromecast support loads `cast_sender.js` from `gstatic.com` in Chromium browsers; mention it in your privacy policy or turn casting off. AirPlay loads nothing.
 
 ## Developer API & Customization
 **PawTunes** is designed to be easily extended, upgraded, and customized.

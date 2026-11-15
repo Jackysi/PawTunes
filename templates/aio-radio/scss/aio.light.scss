@@ -219,6 +219,53 @@ body, html {
                     background: lighten($accent-color, 6%);
                 }
 
+                // Cast button (Chromecast / AirPlay): the player shows it once a device is available and sets
+                // cast-chromecast or cast-airplay, connecting and connected (see the DOM contract)
+                > a.cast {
+                    color: #fff;
+
+                    &.hidden {
+                        display: none;
+                    }
+
+                    svg {
+                        vertical-align: middle;
+                    }
+
+                    .icon-cast-connected, .icon-airplay {
+                        display: none;
+                    }
+
+                    &.cast-airplay {
+                        .icon-cast {
+                            display: none;
+                        }
+
+                        .icon-airplay {
+                            display: inline;
+                        }
+                    }
+
+                    &.cast-chromecast.connected {
+                        .icon-cast {
+                            display: none;
+                        }
+
+                        .icon-cast-connected {
+                            display: inline;
+                        }
+                    }
+
+                    &.connecting svg {
+                        animation: cast-pulse 1.2s ease-in-out infinite;
+                    }
+
+                    &.connected {
+                        background: lighten($accent-color, 12%);
+                        box-shadow: inset 0 -0.25rem 0 #fff;
+                    }
+                }
+
                 // Dropdowns
                 > ul {
                     font-size: $base-font-size;
@@ -1075,5 +1122,15 @@ html.artwork-tint-background {
 
     body {
         background: transparent;
+    }
+}
+
+// Cast button: pulse while a connection is being established
+@keyframes cast-pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: .35;
     }
 }

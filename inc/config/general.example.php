@@ -53,6 +53,7 @@ return array(
     'default_lang'         => 'en.php',
     'multi_lang'           => true,
     'autoplay'             => true,
+    'cast'                 => true,            // Chromecast (loads Google's Cast SDK in Chromium browsers) and AirPlay buttons
     'debugging'            => 'log-only',
     'default_channel'      => '0',
     'default_volume'       => '75',

@@ -10,12 +10,14 @@
  */
 import AudioMotionAnalyzer from 'audiomotion-analyzer';
 import PawTunes from "../player/ts/pawtunes";
+import {CastChangeEvent} from "../player/ts/types";
 
 export default class PawTunesTpl {
 
     protected pawtunes: PawTunes;
     private resizeCounter: number = 0;
     private firstResize: Date = new Date();
+    private audioMotion: AudioMotionAnalyzer | null = null;
 
 
     constructor(PawTunes: PawTunes) {
@@ -63,6 +65,11 @@ export default class PawTunesTpl {
 
         // Open the main tab
         this.pawtunes.on('channel.change', () => this.pawtunes.pagination('main'))
+
+        // The analyser only sees silence while audio plays on a cast device: pause it (the CSS hides it)
+        this.pawtunes.on('cast.change', (event: CastChangeEvent) => {
+            if (this.audioMotion) this.audioMotion.toggleAnalyzer(event.state !== 'connected');
+        })
 
         // Facebook
         this.pawtunes._('.share-area .facebook-share', (el: HTMLElement) => {
@@ -239,7 +246,7 @@ export default class PawTunesTpl {
         this.pawtunes.audio.crossOrigin = 'anonymous';
 
         // create the analyser using the media element as a source
-        const audioMotion = new AudioMotionAnalyzer(element, {
+        const audioMotion = this.audioMotion = new AudioMotionAnalyzer(element, {
             source         : this.pawtunes.audio,
             frequencyScale : 'linear',
             fftSize        : 4096,

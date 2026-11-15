@@ -48,6 +48,25 @@ export interface ReconnectEvent {
     reason: 'error' | 'ended' | 'stalled';     // what was detected
 }
 
+/**
+ * Casting path of this browser: Google Cast (Chromium) or AirPlay (WebKit)
+ */
+export type CastKind = 'chromecast' | 'airplay';
+
+/**
+ * Casting state shown by the template's .cast button
+ */
+export type CastState = 'unavailable' | 'available' | 'connecting' | 'connected';
+
+/**
+ * Payload of the `cast.change` event, emitted whenever the casting state or device changes
+ */
+export interface CastChangeEvent {
+    kind: CastKind;
+    state: CastState;
+    device?: string;                           // receiver name while connected (Chromecast only)
+}
+
 export enum ReadyState {
     HAVE_NOTHING = 0,
     HAVE_METADATA = 1,

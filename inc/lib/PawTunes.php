@@ -782,6 +782,8 @@ class PawTunes
             'debug'         => ($this->config('debugging') && $this->config('debugging') === 'enabled'),
             'channels'      => $channels,
             'analytics'     => (! empty($this->config('google_analytics')) ? $this->config('google_analytics') : false),
+            // Casting is on unless the panel switched it off (configs from before the option have no key)
+            'cast'          => filter_var($this->settings['cast'] ?? true, FILTER_VALIDATE_BOOLEAN),
             'defaults'      => [
                 'channel'        => Helpers::strToUTF8($this->config('default_channel')),
                 'default_volume' => (($this->config('default_volume') >= 1 && $this->config('default_volume') <= 100) ? (int) $this->config('default_volume') : 50),

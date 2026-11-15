@@ -348,6 +348,12 @@ html {
         text-align: center;
     }
 
+    // Audio plays on a cast device: the analyser only sees silence, so the spectrum is hidden
+    &.casting #analyzer {
+        visibility: hidden;
+        opacity: 0;
+    }
+
     [data-toggle="dropdown"] {
         #channels-icon {
             transition: fill 250ms ease;
@@ -802,6 +808,65 @@ html {
             padding: 0 1.25rem;
             color: #505050;
             justify-items: flex-end;
+        }
+
+        // Cast button (Chromecast / AirPlay): the player shows it once a device is available and sets
+        // cast-chromecast or cast-airplay, connecting and connected (see the DOM contract)
+        .cast {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: .75rem;
+            cursor: pointer;
+
+            &.hidden {
+                display: none;
+            }
+
+            svg path {
+                transition: fill 250ms ease;
+            }
+
+            .icon-cast-connected, .icon-airplay {
+                display: none;
+            }
+
+            &.cast-airplay {
+                .icon-cast {
+                    display: none;
+                }
+
+                .icon-airplay {
+                    display: block;
+                }
+            }
+
+            &.cast-chromecast.connected {
+                .icon-cast {
+                    display: none;
+                }
+
+                .icon-cast-connected {
+                    display: block;
+                }
+            }
+
+            &.connecting {
+                animation: cast-pulse 1.2s ease-in-out infinite;
+            }
+
+            &:hover svg path, &.connected svg path {
+                fill: $accent-color;
+            }
+        }
+
+        @keyframes cast-pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: .35;
+            }
         }
 
         .playback {

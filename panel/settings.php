@@ -92,6 +92,7 @@ $checkboxes = [
     'disable_index'        => false,
     'multi_lang'           => false,
     'autoplay'             => false,
+    'cast'                 => true,
     'dynamic_title'        => false,
     'api'                  => false,
     'history'              => false,
@@ -133,6 +134,7 @@ if ( ! empty($_POST)) {
 
         }
     }
+
 
 
     if (isset($message)) {

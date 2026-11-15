@@ -103,6 +103,11 @@ body, html {
                     left: 0;
                 }
 
+                // Audio plays on a cast device: the analyser only sees silence, so the spectrum is hidden
+                .casting & #analyzer {
+                    visibility: hidden;
+                }
+
                 .artwork-img img, .artwork-img {
                     display: block;
                     width: 100%;
@@ -543,6 +548,58 @@ body, html {
                 width: 1.5rem;
                 text-align: center;
                 vertical-align: middle;
+            }
+
+            // Cast button (Chromecast / AirPlay): the player shows it once a device is available and sets
+            // cast-chromecast or cast-airplay, connecting and connected (see the DOM contract)
+            .cast {
+                color: #fff;
+
+                svg {
+                    vertical-align: middle;
+                    transition: color 250ms ease;
+                }
+
+                .icon-cast-connected, .icon-airplay {
+                    display: none;
+                }
+
+                &.cast-airplay {
+                    .icon-cast {
+                        display: none;
+                    }
+
+                    .icon-airplay {
+                        display: inline;
+                    }
+                }
+
+                &.cast-chromecast.connected {
+                    .icon-cast {
+                        display: none;
+                    }
+
+                    .icon-cast-connected {
+                        display: inline;
+                    }
+                }
+
+                &.connecting {
+                    animation: cast-pulse 1.2s ease-in-out infinite;
+                }
+
+                &.connected {
+                    color: lighten($accent-color, 35%);
+                }
+            }
+        }
+
+        @keyframes cast-pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: .35;
             }
         }
 

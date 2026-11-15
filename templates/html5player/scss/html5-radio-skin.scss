@@ -224,6 +224,53 @@ body, html {
                     background: rgba(#fff, 0.1);
                 }
 
+                // Cast button (Chromecast / AirPlay): the player shows it once a device is available and sets
+                // cast-chromecast or cast-airplay, connecting and connected (see the DOM contract)
+                > a.cast {
+                    color: #fff;
+
+                    &.hidden {
+                        display: none;
+                    }
+
+                    svg {
+                        vertical-align: middle;
+                    }
+
+                    .icon-cast-connected, .icon-airplay {
+                        display: none;
+                    }
+
+                    &.cast-airplay {
+                        .icon-cast {
+                            display: none;
+                        }
+
+                        .icon-airplay {
+                            display: inline;
+                        }
+                    }
+
+                    &.cast-chromecast.connected {
+                        .icon-cast {
+                            display: none;
+                        }
+
+                        .icon-cast-connected {
+                            display: inline;
+                        }
+                    }
+
+                    &.connecting svg {
+                        animation: cast-pulse 1.2s ease-in-out infinite;
+                    }
+
+                    &.connected {
+                        background: rgba(#fff, 0.18);
+                        box-shadow: inset 0 -0.2rem 0 #fff;
+                    }
+                }
+
                 // Settings & Channels
                 > ul {
                     font-size: $base-font-size;
@@ -1080,4 +1127,14 @@ html.artwork-tint-background, html.artwork-tint-background body {
     transition: background-color 800ms ease;
     background-color: var(--artwork-color, transparent);
     background-blend-mode: luminosity;
+}
+
+// Cast button: pulse while a connection is being established
+@keyframes cast-pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: .35;
+    }
 }

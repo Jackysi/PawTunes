@@ -74,6 +74,14 @@
             'description' => ' Start playback automatically (some devices and browsers do not support this feature)',
         ],
         [
+            'label'       => 'Casting',
+            'name'        => 'cast',
+            'class'       => 'col-sm-9',
+            'value'       => 'true',
+            'type'        => 'checkbox',
+            'description' => ' Chromecast and AirPlay buttons in the player. Chromecast support loads Google\'s Cast SDK from gstatic.com in Chromium browsers (Chrome, Edge, Opera, Android), which may need a mention in your privacy policy (GDPR). AirPlay uses Safari\'s built-in support and loads nothing.',
+        ],
+        [
             'label'   => 'Debug Mode',
             'class'   => 'col-sm-4',
             'name'    => 'debugging',

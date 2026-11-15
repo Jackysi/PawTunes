@@ -10,6 +10,7 @@
  */
 import AudioMotionAnalyzer from 'audiomotion-analyzer';
 import PawTunes from "../player/ts/pawtunes";
+import {CastChangeEvent} from "../player/ts/types";
 
 export default class PawTunesTpl {
 
@@ -30,6 +31,11 @@ export default class PawTunesTpl {
         // Initially happens in the init method
         this.pawtunes.on('theme.change', () => {
             this.changeSpectrumColor();
+        })
+
+        // The analyser only sees silence while audio plays on a cast device: pause it (the CSS hides it)
+        this.pawtunes.on('cast.change', (event: CastChangeEvent) => {
+            if (this.audioMotion) this.audioMotion.toggleAnalyzer(event.state !== 'connected');
         })
 
         this.pawtunes.init();

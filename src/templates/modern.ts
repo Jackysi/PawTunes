@@ -10,6 +10,7 @@
  * @repository   https://github.com/Jackysi/pawtunes
  */
 import PawTunes from "../player/ts/pawtunes";
+import {CastChangeEvent} from "../player/ts/types";
 import AudioMotionAnalyzer from 'audiomotion-analyzer';
 
 export default class ModernTpl {
@@ -130,9 +131,25 @@ export default class ModernTpl {
             this.updateStatusInfo(status);
         });
 
-        // Start/stop visualizer with playback
-        this.pawtunes.on('playing', () => this.startVisualizerLoop());
+        // Start/stop visualizer with playback. While casting the analyser only sees silence (the audio
+        // plays on another device), so the ring stays off until the session ends.
+        this.pawtunes.on('playing', () => {
+            if (this.pawtunes.cast.state !== 'connected') this.startVisualizerLoop();
+        });
         this.pawtunes.on('stopped', () => this.stopVisualizerLoop());
+        this.pawtunes.on('cast.change', (event: CastChangeEvent) => {
+
+            if (event.state === 'connected') {
+                this.stopVisualizerLoop();
+                return;
+            }
+
+            // AirPlay ends with the element still playing, so no "playing" event follows
+            if (this.pawtunes.audio && !this.pawtunes.audio.paused) {
+                this.startVisualizerLoop();
+            }
+
+        });
 
     }
 
@@ -322,7 +339,7 @@ export default class ModernTpl {
 
     startVisualizerLoop() {
 
-        if (!this.audioMotion || !this.ctx || !this.canvas) return;
+        if (!this.audioMotion || !this.ctx || !this.canvas || this.animationId) return;
 
         const draw = () => {
             this.animationId = requestAnimationFrame(draw);

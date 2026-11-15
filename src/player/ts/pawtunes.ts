@@ -10,6 +10,7 @@
  */
 import {OnAir, PawMediaSource, Channel, ReconnectEvent} from "./types";
 import PawTunesWS from "./pawtunes-ws";
+import PawTunesCast from "./pawtunes-cast";
 import HTML5Audio from "./html5-audio";
 import Storage from "./storage";
 
@@ -157,6 +158,13 @@ export default class PawTunes extends HTML5Audio {
     ws: PawTunesWS;
 
     /**
+     * Casting plugin (Chromecast, AirPlay), see pawtunes-cast.ts
+     *
+     * @var {object} cast
+     */
+    cast: PawTunesCast;
+
+    /**
      * Player translations can be changed
      * Defined here as defaults.
      *
@@ -170,6 +178,11 @@ export default class PawTunes extends HTML5Audio {
         error_network       : "ERROR: Network error occurred!",
         error_playback      : "ERROR: Playback failed, loading stream failed!",
         error_stream        : "ERROR: The specified or selected stream does not exist!",
+        cast_airplay_hint   : "Start playback first, then choose an AirPlay device.",
+        cast_connecting     : "Connecting...",
+        cast_failed         : "The device could not play this stream, playing here instead.",
+        cast_playing_on     : "Playing on {DEVICE}",
+        cast_unsupported    : "This stream cannot be cast, playing here instead.",
         history_added       : "Added",
         history_artist_title: "Artist/Title",
         history_hour_ago    : "hr ago",
@@ -187,7 +200,9 @@ export default class PawTunes extends HTML5Audio {
         status_stopped      : "Player stopped.",
         status_volume       : "Volume: {LEVEL}",
         twitter_share       : "I am listening to {TRACK}!",
+        ui_airplay          : "AirPlay",
         ui_back             : "Back",
+        ui_cast             : "Cast to a device",
         ui_channels         : "Channels list",
         ui_history          : "Show Track History",
         ui_play             : "Start playing",
@@ -205,6 +220,7 @@ export default class PawTunes extends HTML5Audio {
     settings: { [p: string]: any } = {
         api          : '',
         analytics    : false,
+        cast         : true,
         defaults     : {
             autoplay      : false,
             channel       : "",
@@ -276,8 +292,9 @@ export default class PawTunes extends HTML5Audio {
         // Debug?
         this.debug = settings.debug ?? false;
 
-        // Inject web socket "plugin"
+        // Inject web socket and casting "plugins"
         this.ws = new PawTunesWS(this);
+        this.cast = new PawTunesCast(this);
 
         // Make sure the settings are OK
         if (this.channels.length < 1) {
@@ -320,6 +337,7 @@ export default class PawTunes extends HTML5Audio {
         // HTML Audio
         this.setup();
         this.bindPlayerControls();
+        this.cast.init();
         await this.bindPlayerEvents();
         await this.bindEvents();
 
@@ -345,11 +363,33 @@ export default class PawTunes extends HTML5Audio {
     }
 
     /**
-     * A stop is listener intent (see HTML5Audio.stop): it also ends a running sleep timer
+     * Play, or while a Chromecast session runs, play on the receiver (the local element stays silent)
+     */
+    async play(): Promise<void> {
+
+        if (this.cast.isRemote()) {
+            this.wantsPlayback = true;
+            this.cast.play();
+            return;
+        }
+
+        await super.play();
+
+    }
+
+    /**
+     * A stop is listener intent (see HTML5Audio.stop): it also ends a running sleep timer.
+     * While a Chromecast session runs it stops the receiver (the session stays open).
      */
     async stop(): Promise<void> {
 
-        await super.stop();
+        if (this.cast.isRemote()) {
+            this.wantsPlayback = false;
+            this.cast.stop();
+        } else {
+            await super.stop();
+        }
+
         this.clearSleepTimer();
 
     }
@@ -1205,7 +1245,12 @@ export default class PawTunes extends HTML5Audio {
 
             }
 
-            this.storage!.set('last-volume', this.volume);
+            // While casting the slider shows the receiver volume (mirrored from the TV or set for it), not the
+            // listener's local one: storing it would carry the TV level over to the next visit. The session
+            // end restores the local volume after remote playback is off, and that change is stored again.
+            if (!this.remotePlayback) {
+                this.storage!.set('last-volume', this.volume);
+            }
 
         });
 
@@ -1666,9 +1711,10 @@ export default class PawTunes extends HTML5Audio {
     }
 
     /**
-     * Send a temporary Toast to the player, useful for various playback states and issues
+     * Send a temporary Toast to the player, useful for various playback states and issues.
+     * Public so plugins (casting) can report their status through the same element.
      */
-    protected toast(text: string | null = null, permanent: boolean = false): string | null {
+    public toast(text: string | null = null, permanent: boolean = false): string | null {
 
         // Emit no matter what!
         this.emit('status.change', text);

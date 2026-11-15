@@ -30,14 +30,12 @@ export default class HTML5Audio extends PawTunesEvents {
     wantsPlayback: boolean = false;
 
     /**
-     * Remote playback seam (Cast/AirPlay are not implemented yet).
-     * While audio plays on a remote device the local <audio> element is idle, so its error, ended and
-     * stall events are not drops. A future cast feature calls setReconnectSuspended(true) when playback
-     * leaves this device and setReconnectSuspended(false) when it comes back.
+     * True while a remote device (Chromecast) plays instead of the local element, see setRemotePlayback().
+     * The local element is idle meanwhile, so its error, ended and stall events are not drops (handleDrop).
      *
      * @var {boolean}
      */
-    reconnectSuspended: boolean = false;
+    remotePlayback: boolean = false;
 
     /**
      * Reconnect tuning in milliseconds. The delay doubles from minDelay up to maxDelay with +-25% jitter,
@@ -175,6 +173,7 @@ export default class HTML5Audio extends PawTunesEvents {
 
         play: '.play',
         stop: '.stop',
+        cast: '.cast',
 
         mute           : '.volume-icon .volume',
         unmute         : '.volume-icon .muted',
@@ -354,6 +353,12 @@ export default class HTML5Audio extends PawTunesEvents {
 
             if (!this.audio) return;
             this.audio.addEventListener(event, () => {
+
+                // A remote device plays: the idle local element's events are noise. The volume still goes
+                // through the element (the slider moves it, the cast plugin mirrors it to the receiver).
+                if (this.remotePlayback && event !== 'volumechange') {
+                    return;
+                }
 
                 // When ERROR occurs, pass data
                 if (event === 'error') {
@@ -613,15 +618,62 @@ export default class HTML5Audio extends PawTunesEvents {
     }
 
     /**
-     * Remote playback seam, see reconnectSuspended. Suspending also cancels a reconnect in progress.
+     * Hands playback to a remote device (Chromecast) or takes it back.
      *
-     * @param {boolean} suspended
+     * While active the local element is released (paused, its source dropped so nothing keeps buffering
+     * in the background, then re-armed like after a stop) and its events are ignored: the remote player
+     * reports its state through setRemoteState() instead. The listener's intent (wantsPlayback) is not
+     * touched, the caller decides what it means for the remote device.
+     *
+     * @param {boolean} active
      */
-    setReconnectSuspended(suspended: boolean): void {
+    setRemotePlayback(active: boolean): void {
 
-        this.reconnectSuspended = suspended;
-        if (suspended) {
+        if (this.remotePlayback === active) {
+            return;
+        }
+
+        this.remotePlayback = active;
+
+        // A reconnect in progress belongs to the local element, which is about to be released
+        if (active) {
             this.clearReconnect();
+        }
+
+        if (active && this.audio) {
+
+            this.audio.pause();
+            this.clearMedia();
+            if (this.media.length >= 1) {
+                this.setMedia(Object.assign([], this.media));
+            }
+
+        }
+
+    }
+
+    /**
+     * Shows the state of a remote player through the same UI updates and events as local playback
+     * (play, playing, stopped), so templates need no second code path for casting.
+     *
+     * @param {string} state - buffering (connecting UI), playing or stopped
+     */
+    setRemoteState(state: 'buffering' | 'playing' | 'stopped'): void {
+
+        switch (state) {
+
+            case 'buffering':
+                this.trigger('play');
+                break;
+
+            case 'playing':
+                this.trigger('playing');
+                break;
+
+            case 'stopped':
+                this.trigger('stop');
+                break;
+
         }
 
     }
@@ -657,7 +709,7 @@ export default class HTML5Audio extends PawTunesEvents {
      */
     protected handleDrop(reason: ReconnectEvent['reason']): boolean {
 
-        if (!this.wantsPlayback || this.reconnectSuspended || this.unloading || this.media.length < 1) {
+        if (!this.wantsPlayback || this.remotePlayback || this.unloading || this.media.length < 1) {
             return false;
         }
 
@@ -830,7 +882,7 @@ export default class HTML5Audio extends PawTunesEvents {
                 break;
 
             case 'play':
-            case 'waiting':
+            case 'waiting': {
                 const status = this.status();
                 if (status && status.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
                     this.updateUI('seeking');
@@ -841,6 +893,7 @@ export default class HTML5Audio extends PawTunesEvents {
                     this.armStallWatchdog();
                 }
                 break;
+            }
 
             case 'stalled':
             case 'seeking':
