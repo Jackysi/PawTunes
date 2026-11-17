@@ -396,11 +396,6 @@ $changelog-tones: (
                     border-color: rgba(255, 255, 255, 0.9);
                 }
             }
-
-            @media (max-width: 768px) {
-                right: .1rem;
-                bottom: .1rem;
-            }
         }
     }
 }
@@ -485,6 +480,11 @@ $changelog-tones: (
 
 .container.main {
     padding: 10px 15px;
+}
+
+// Row actions of a table stay on one line: wrapped, the icons stacked in whatever order happened to fit
+.row-btns {
+    white-space: nowrap;
 }
 
 fieldset:first-child {
@@ -1407,8 +1407,79 @@ html.login-page {
         margin-left: 1rem;
     }
 
+    // A gutter beside the cards: flush against the screen edges they read as one long sheet, not as cards
     .container.main {
-        padding: 0 !important;
+        padding: 0 12px !important;
+    }
+
+    // Phone navigation: a sheet as wide as the screen with finger-sized rows. The generic .dropdown styles
+    // are made for small action menus (180 x 200px, 34px rows): the tabs did not fit and had to be scrolled.
+    .menu {
+        position: relative; // the sheet hangs off the whole bar, not off the Menu button
+
+        .dropdown {
+            position: static;
+
+            ul.dropdown-menu {
+                right: 0;
+                max-height: none;
+                margin: 0 !important;
+                padding: 6px 0;
+                border-bottom: 1px solid $slate-200;
+                border-radius: 0 0 12px 12px;
+                background: #fff;
+                box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+
+                li a {
+                    font-size: 16px;
+                    font-weight: $font-bold;
+                    display: flex;
+                    align-items: center;
+                    min-height: 48px; // comfortable touch target
+                    padding: 0 20px;
+                    color: $slate-500;
+
+                    // One fixed column for the icons, so the labels line up whatever the glyph's width
+                    .icon {
+                        font-size: 17px;
+                        width: 24px;
+                        margin-right: 12px;
+                        text-align: center;
+                    }
+                }
+
+                li.active a {
+                    color: $slate-800;
+                    background: $slate-100;
+                    box-shadow: inset 3px 0 0 $primary-bg-color;
+                }
+            }
+        }
+    }
+
+    // Header: the version sits under the logo and Logout shrinks to its icon. Both were positioned beside
+    // the logo, where a phone has no room, so they ended up on top of each other.
+    .intro.small {
+        .heading .logo .version {
+            position: static;
+            margin-top: 2px;
+        }
+
+        > .content .logout-btn {
+            top: 12px;
+            right: 12px;
+            padding: 8px 10px;
+
+            .icon {
+                margin: 0;
+            }
+        }
+    }
+
+    // Row actions (edit, delete) large enough to hit with a finger
+    .row-btns .btn {
+        font-size: 16px;
+        padding: 8px 10px;
     }
 
     .panel > .content {

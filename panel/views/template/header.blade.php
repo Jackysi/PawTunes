@@ -118,7 +118,7 @@
                         </div>
                         <h1>PawTunes</h1>
                     </div>
-                    <button type="submit" form="logout-form" class="btn btn-danger logout-btn"><i class="icon fa fa-sign-out"></i> Logout</button>
+                    <button type="submit" form="logout-form" class="btn btn-danger logout-btn" title="Logout" aria-label="Logout"><i class="icon fa fa-sign-out"></i> <span class="d-mobile-none">Logout</span></button>
                 </div>
             </section>
             {{-- Logout is a POST (CSRF-checked), so a third-party page can not log the admin out with a plain link --}}

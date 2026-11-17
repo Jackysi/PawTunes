@@ -156,6 +156,22 @@
             color: #e2e8f0;
             background: transparent;
         }
+
+        // The phone navigation sheet
+        .dropdown ul.dropdown-menu {
+            background: $slate-800;
+            border-bottom-color: #334155;
+
+            li a {
+                color: #94a3b8;
+            }
+
+            li a:hover,
+            li.active a {
+                color: #e2e8f0;
+                background: rgba(255, 255, 255, 0.08);
+            }
+        }
     }
 
     .panel {

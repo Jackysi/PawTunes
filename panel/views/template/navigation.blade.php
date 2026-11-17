@@ -26,7 +26,7 @@
             @endforeach
         </ul>
         <div class="dropdown d-desktop-none d-mobile-block align-self-center">
-            <a href="#" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown"><i class="icon fa fa-bars"></i> Menu</a>
+            <a href="#" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" data-bs-display="static"><i class="icon fa fa-bars"></i> Menu</a>
             <ul class="dropdown-menu">
                 @foreach( $tabs as $tab => $link )
                     @php
