@@ -29,7 +29,7 @@ final class RedisStore implements Store
     private const CONNECT_TIMEOUT = 1.0;
 
     /**
-     * @var \Redis
+     * @var Redis
      */
     private Redis $redis;
 

@@ -46,7 +46,7 @@ final class History
 
 
     /**
-     * @param  \lib\PawTunes  $pawtunes
+     * @param  PawTunes  $pawtunes
      *
      * @return int  The configured number of entries to keep
      */
@@ -61,7 +61,7 @@ final class History
     /**
      * Add a fresh provider answer to the channel's stored history and return the list, newest first.
      *
-     * @param  \lib\PawTunes  $pawtunes
+     * @param  PawTunes  $pawtunes
      * @param  int|string  $chnKey  Channel index (cache keys use it)
      * @param  array  $channel
      * @param  array  $info  What the provider returned: artist, title, artwork_override, optional history[]

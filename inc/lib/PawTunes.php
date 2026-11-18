@@ -13,10 +13,13 @@
 
 namespace lib;
 
+use Exception;
+use JsonException;
 use lib\AI\ArtworkGenerator;
 use lib\Image\Formats;
 use lib\Image\Image;
 use lib\PawTunes\History;
+use lib\PawTunes\StreamInfo\ListenersInterface;
 use RuntimeException;
 use Throwable;
 
@@ -24,11 +27,11 @@ class PawTunes
 {
 
     /**
-     * @var \lib\Cache
+     * @var Cache
      */
     public Cache $cache;
     /**
-     * @var \lib\HttpClient
+     * @var HttpClient
      */
     public HttpClient $http;
     /**
@@ -291,7 +294,7 @@ class PawTunes
 
 
     /**
-     * @param  \Throwable  $e
+     * @param  Throwable  $e
      *
      * @return void
      */
@@ -324,7 +327,7 @@ class PawTunes
      * @param  bool  $uppercase
      *
      * @return string
-     * @throws \Exception
+     * @throws Exception
      */
     public function template(string $content, array $array, bool $uppercase = false): string
     {
@@ -741,7 +744,7 @@ class PawTunes
      * ============================================================================ */
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function outputBufferHandler($buffer)
     {
@@ -778,7 +781,7 @@ class PawTunes
 
 
     /**
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function getTemplateEngineOpts(): array
     {
@@ -869,7 +872,7 @@ class PawTunes
 
 
     /**
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function exitJSON(): void
     {
@@ -884,7 +887,7 @@ class PawTunes
 
 
     /**
-     * @throws \JsonException
+     * @throws JsonException
      */
     private function generateConfigJSON(): array
     {
@@ -1013,7 +1016,7 @@ class PawTunes
      * @param $template
      *
      * @return array
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function getAdvancedTemplateOptions($template): array
     {
@@ -1068,7 +1071,7 @@ class PawTunes
      *
      * @param  array  $channel
      *
-     * @return \lib\PawTunes\StreamInfo\ListenersInterface|null
+     * @return ListenersInterface|null
      */
     public function listenersProvider(array $channel): ?PawTunes\StreamInfo\ListenersInterface
     {
@@ -1088,7 +1091,7 @@ class PawTunes
      * option (a manifest checkbox saved per template in tplOptions) opens it, whatever a request says.
      *
      * @return bool
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function listenersEnabled(): bool
     {
@@ -1105,7 +1108,7 @@ class PawTunes
 
     /**
      * @return array|mixed
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function getTemplates()
     {

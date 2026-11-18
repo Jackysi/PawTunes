@@ -30,7 +30,7 @@ final class MemcacheStore extends MemcacheFamilyStore
     private const CONNECT_TIMEOUT = 1;
 
     /**
-     * @var \Memcache
+     * @var Memcache
      */
     private Memcache $memcache;
 

@@ -29,7 +29,7 @@ final class MemcachedStore extends MemcacheFamilyStore
     private const CONNECT_TIMEOUT_MS = 1000;
 
     /**
-     * @var \Memcached
+     * @var Memcached
      */
     private Memcached $memcached;
 

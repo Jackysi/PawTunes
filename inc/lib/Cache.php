@@ -57,12 +57,12 @@ final class Cache
     private const PROBE_KEY = 'cache.probe';
 
     /**
-     * @var \lib\Cache\Store|null  Active store, null when not even the disk store works
+     * @var Store|null  Active store, null when not even the disk store works
      */
     private ?Store $store = null;
 
     /**
-     * @var \lib\Cache\DiskStore|null  Fallback store, created on first need
+     * @var DiskStore|null  Fallback store, created on first need
      */
     private ?DiskStore $disk = null;
 
@@ -292,7 +292,7 @@ final class Cache
      * Pick the store for this request: the configured backend, or the disk store when the backend is
      * unavailable or failed within the last OFFLINE_SECONDS.
      *
-     * @return \lib\Cache\Store|null
+     * @return Store|null
      */
     private function boot(): ?Store
     {
@@ -323,7 +323,7 @@ final class Cache
     /**
      * @param  string  $mode
      *
-     * @return \lib\Cache\Store
+     * @return Store
      * @throws StoreException
      */
     private function connect(string $mode): Store
@@ -356,7 +356,7 @@ final class Cache
     /**
      * The disk store, created once. Null when the cache directory is unusable.
      *
-     * @return \lib\Cache\DiskStore|null
+     * @return DiskStore|null
      */
     private function disk(): ?DiskStore
     {

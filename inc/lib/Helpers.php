@@ -13,6 +13,9 @@
 
 namespace lib;
 
+use Normalizer;
+use SimpleXMLElement;
+
 /**
  * Stateless utility methods. All methods are static — no instance state needed.
  */
@@ -70,7 +73,7 @@ final class Helpers
      */
     private static function xmlToArray($node)
     {
-        if ($node instanceof \SimpleXMLElement) {
+        if ($node instanceof SimpleXMLElement) {
 
             $children = $node->children();
             $attrs    = $node->attributes();
@@ -526,7 +529,7 @@ final class Helpers
     private static function nameTokens(string $name): array
     {
         if (class_exists('Normalizer')) {
-            $name = preg_replace('/\p{Mn}+/u', '', (string) \Normalizer::normalize($name, \Normalizer::FORM_D));
+            $name = preg_replace('/\p{Mn}+/u', '', (string) Normalizer::normalize($name, Normalizer::FORM_D));
         }
 
         $name   = str_replace('&', ' and ', mb_strtolower((string) $name, 'UTF-8'));
