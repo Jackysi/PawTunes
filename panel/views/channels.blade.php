@@ -9,18 +9,6 @@
             <input type="hidden" name="action" value="reorder">
             @endif
 
-            @if ( count( $channels ) <= 0 )
-                <div class="panel">
-                    <div class="content">
-                        <div class="empty-state">
-                            <i class="icon fa fa-headphones"></i>
-                            <h3>No channels configured</h3>
-                            <p>Add your first radio channel to get started.</p>
-                            <a href="index.php?page=channel" class="btn btn-primary"><i class="icon fa fa-plus-circle"></i> Add Channel</a>
-                        </div>
-                    </div>
-                </div>
-            @endif
             {!! $message !!}
 
             <div class="panel">
@@ -29,6 +17,14 @@
                         PawTunes supports multichannel configuration(s) but If a single channel is configured or a single stream, the player will hide the unused buttons.
                         Other settings that affect all channels are covered in the <b>Settings tab</b>.
                     </p>
+                    @if ( count( $channels ) <= 0 )
+                            <div class="empty-state">
+                                <i class="icon fa fa-headphones"></i>
+                                <h3>No channels configured</h3>
+                                <p>Add your first radio channel to get started.</p>
+                                <a href="index.php?page=channel" class="btn btn-primary"><i class="icon fa fa-plus-circle"></i> Add Channel</a>
+                            </div>
+                    @endif
                     @if ( count( $channels ) >= 1 )
                             <table class="table vertical-center hover">
                                 <thead>
