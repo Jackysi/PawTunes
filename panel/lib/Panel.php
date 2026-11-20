@@ -372,6 +372,12 @@ class Panel
      */
     public function view($view, $vars = []): void
     {
+        // BladeOne does not create its compile folder and no page (the login included) renders without
+        // it, so a missing one is created here instead of relying on the release zip to ship it.
+        if ( ! is_dir('./panel/views/cache')) {
+            @mkdir('./panel/views/cache', 0755, true);
+        }
+
         $blade = new BladeOne(
             './panel/views',
             './panel/views/cache',

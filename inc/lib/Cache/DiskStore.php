@@ -60,8 +60,15 @@ final class DiskStore implements Store
         $this->directory = rtrim($directory, '/\\');
         $this->extension = $extension;
 
+        // A fresh install or a git clone can lack the directory (an empty folder is not shipped), so it
+        // is created here. Two requests may race for it: the loser's mkdir fails quietly and is_dir()
+        // below still passes.
+        if ( ! is_dir($this->directory)) {
+            @mkdir($this->directory, 0755, true);
+        }
+
         if ( ! is_dir($this->directory) || ! is_writable($this->directory)) {
-            throw new StoreException("Disk cache directory \"{$this->directory}\" does not exist or is not writable.");
+            throw new StoreException("Disk cache directory \"{$this->directory}\" could not be created or is not writable.");
         }
     }
 
